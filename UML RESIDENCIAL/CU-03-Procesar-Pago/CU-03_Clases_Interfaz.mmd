@@ -1,0 +1,60 @@
+classDiagram
+    class IPago {
+        <<interface>>
+        +procesarPago(reserva, metodo)
+        +validarPago(pago)
+        +generarComprobante(pago)
+    }
+
+    class IReserva {
+        <<interface>>
+        +obtenerResumen(reserva)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class IVistaPago {
+        <<interface>>
+        +mostrarResumen(reserva)
+        +mostrarMetodosPago()
+        +mostrarComprobante(comprobante)
+        +mostrarError(mensaje)
+    }
+
+    class ProcesarPagoController {
+        +procesarPago(reserva, metodo)
+        +validarPago(pago)
+        +generarComprobante(pago)
+    }
+
+    class Pago {
+        +monto
+        +metodoPago
+        +estado
+        +fechaPago
+        +procesarPago(reserva, metodo)
+        +validarPago(pago)
+        +generarComprobante(pago)
+    }
+
+    class Reserva {
+        +codigo
+        +estado
+        +montoTotal
+        +obtenerResumen(reserva)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class FormularioPago {
+        +mostrarResumen(reserva)
+        +mostrarMetodosPago()
+        +mostrarComprobante(comprobante)
+        +mostrarError(mensaje)
+    }
+
+    IPago <|.. ProcesarPagoController
+    IPago <|.. Pago
+    IReserva <|.. Reserva
+    IVistaPago <|.. FormularioPago
+    ProcesarPagoController --> Pago : crea
+    ProcesarPagoController --> Reserva : actualiza
+    FormularioPago --> ProcesarPagoController : solicita

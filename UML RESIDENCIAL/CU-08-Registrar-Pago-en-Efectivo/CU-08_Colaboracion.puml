@@ -1,0 +1,31 @@
+@startuml CU-08_Colaboracion
+title CU-08 — Diagrama de Colaboración: Registrar Pago en Efectivo
+
+left to right direction
+
+actor Recepcionista as actor
+
+boundary "PantallaPagoEfectivo"      as boundary
+control "PagoEfectivoController"     as control
+entity  "Reserva"                    as reserva
+entity  "Pago"                       as pago
+
+actor    --> boundary : 1. busca reserva por codigo o CI del huesped
+boundary --> control  : 2. buscarReservaPendiente(codigoOci)
+control  --> reserva  : 3. buscarPorCodigoOCi(codigoOci)
+reserva  --> control  : 4. resumen de la reserva
+control  --> boundary : 5. mostrarResumen(reserva)
+boundary --> actor    : 6. muestra habitacion, tipo, fecha y monto total
+actor    --> boundary : 7. ingresa monto recibido en efectivo
+boundary --> control  : 8. validarMonto(montoRecibido, montoTotal)
+control  --> control  : 9. validar que monto cubre el total
+actor    --> boundary : 10. confirma registro del pago
+boundary --> control  : 11. registrarPago(reserva, monto)
+control  --> pago     : 12. registrarPago(efectivo, turnoActivo)
+control  --> reserva  : 13. actualizarEstado(Confirmada)
+control  --> pago     : 14. generarComprobante(pago)
+pago     --> control  : 15. comprobante generado
+control  --> boundary : 16. mostrarConfirmacion(comprobante)
+boundary --> actor    : 17. muestra confirmacion exitosa con comprobante
+
+@enduml

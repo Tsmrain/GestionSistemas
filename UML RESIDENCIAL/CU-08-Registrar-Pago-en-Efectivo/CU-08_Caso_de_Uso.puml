@@ -1,0 +1,31 @@
+@startuml CU-08: Registrar Pago en Efectivo
+!theme plain
+left to right direction
+
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Registrar Pago\nen Efectivo" as CU08
+    usecase "Buscar reserva\npendiente de pago" as UC1
+    usecase "Mostrar resumen\nde reserva" as UC2
+    usecase "Ingresar monto\nen efectivo" as UC3
+    usecase "Registrar pago\ny confirmar reserva" as UC4
+    usecase "Generar comprobante\nde pago" as UC5
+    usecase "Monto ingresado\ninsuficiente" as UC6
+    usecase "Reserva no encontrada\no no pendiente" as UC7
+}
+
+Recepcionista --> CU08
+
+' Pasos obligatorios (Inclusión)
+CU08 ..> UC1 : <<include>>
+CU08 ..> UC2 : <<include>>
+CU08 ..> UC3 : <<include>>
+CU08 ..> UC4 : <<include>>
+CU08 ..> UC5 : <<include>>
+
+' Casos alternativos (Extensión)
+UC6 ..> CU08 : <<extend>>
+UC7 ..> CU08 : <<extend>>
+
+@enduml

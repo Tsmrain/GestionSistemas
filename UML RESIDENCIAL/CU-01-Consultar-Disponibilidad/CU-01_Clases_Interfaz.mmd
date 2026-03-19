@@ -1,0 +1,45 @@
+classDiagram
+    class IDisponibilidad {
+        <<interface>>
+        +consultarDisponibilidad(tipo, fecha, hora)
+        +validarFechaYHora(fecha, hora)
+    }
+
+    class IHabitacion {
+        <<interface>>
+        +obtenerHabitacionesDisponibles(tipo, fecha, hora)
+        +estaDisponible()
+    }
+
+    class IVistaBusqueda {
+        <<interface>>
+        +mostrarFormulario()
+        +mostrarResultados(lista)
+        +mostrarError(mensaje)
+    }
+
+    class DisponibilidadController {
+        +consultarDisponibilidad(tipo, fecha, hora)
+        +validarFechaYHora(fecha, hora)
+    }
+
+    class Habitacion {
+        +numero
+        +tipo
+        +estado
+        +precio
+        +obtenerHabitacionesDisponibles(tipo, fecha, hora)
+        +estaDisponible()
+    }
+
+    class PaginaBusqueda {
+        +mostrarFormulario()
+        +mostrarResultados(lista)
+        +mostrarError(mensaje)
+    }
+
+    IDisponibilidad <|.. DisponibilidadController
+    IHabitacion <|.. Habitacion
+    IVistaBusqueda <|.. PaginaBusqueda
+    DisponibilidadController --> Habitacion : consulta
+    PaginaBusqueda --> DisponibilidadController : solicita

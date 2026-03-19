@@ -1,0 +1,54 @@
+classDiagram
+    class IReporteTurno {
+        <<interface>>
+        +obtenerResumenTurno(turno)
+        +consolidarIngresos(turno)
+        +generarReporte(turno)
+        +cerrarTurno(turno)
+    }
+
+    class IVistaReporte {
+        <<interface>>
+        +mostrarResumenOperaciones(resumen)
+        +mostrarReporte(reporte)
+        +exportarReporte(reporte)
+        +mostrarError(mensaje)
+    }
+
+    class ReporteTurnoController {
+        +obtenerResumenTurno(turno)
+        +consolidarIngresos(turno)
+        +generarReporte(turno)
+        +cerrarTurno(turno)
+    }
+
+    class Turno {
+        +tipo
+        +fechaInicio
+        +recepcionista
+        +estado
+        +obtenerResumenTurno(turno)
+        +cerrarTurno(turno)
+    }
+
+    class Reporte {
+        +totalIngresos
+        +desgloseQR
+        +desgloseEfectivo
+        +checkins
+        +checkouts
+        +generarReporte(turno)
+    }
+
+    class PantallaReporte {
+        +mostrarResumenOperaciones(resumen)
+        +mostrarReporte(reporte)
+        +exportarReporte(reporte)
+        +mostrarError(mensaje)
+    }
+
+    IReporteTurno <|.. ReporteTurnoController
+    IVistaReporte <|.. PantallaReporte
+    ReporteTurnoController --> Turno : consulta
+    ReporteTurnoController --> Reporte : genera
+    PantallaReporte --> ReporteTurnoController : solicita

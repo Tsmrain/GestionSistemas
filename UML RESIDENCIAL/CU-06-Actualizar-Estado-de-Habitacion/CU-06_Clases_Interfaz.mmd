@@ -1,0 +1,50 @@
+classDiagram
+    class IEstadoHabitacion {
+        <<interface>>
+        +obtenerPanelEstados()
+        +validarTransicion(habitacion, nuevoEstado)
+        +actualizarEstado(habitacion, nuevoEstado)
+    }
+
+    class IHabitacion {
+        <<interface>>
+        +obtenerEstadoActual()
+        +obtenerTransicionesValidas()
+        +actualizarEstado(nuevoEstado)
+    }
+
+    class IVistaEstados {
+        <<interface>>
+        +mostrarPanelEstados(habitaciones)
+        +mostrarTransicionesValidas(transiciones)
+        +mostrarConfirmacion(cambio)
+        +mostrarError(mensaje)
+    }
+
+    class EstadoHabitacionController {
+        +obtenerPanelEstados()
+        +validarTransicion(habitacion, nuevoEstado)
+        +actualizarEstado(habitacion, nuevoEstado)
+    }
+
+    class Habitacion {
+        +numero
+        +tipo
+        +estado
+        +obtenerEstadoActual()
+        +obtenerTransicionesValidas()
+        +actualizarEstado(nuevoEstado)
+    }
+
+    class PantallaEstados {
+        +mostrarPanelEstados(habitaciones)
+        +mostrarTransicionesValidas(transiciones)
+        +mostrarConfirmacion(cambio)
+        +mostrarError(mensaje)
+    }
+
+    IEstadoHabitacion <|.. EstadoHabitacionController
+    IHabitacion <|.. Habitacion
+    IVistaEstados <|.. PantallaEstados
+    EstadoHabitacionController --> Habitacion : actualiza
+    PantallaEstados --> EstadoHabitacionController : solicita

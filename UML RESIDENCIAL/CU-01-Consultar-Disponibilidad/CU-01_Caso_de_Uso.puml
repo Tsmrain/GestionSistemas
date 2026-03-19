@@ -1,0 +1,30 @@
+@startuml CU-01_Caso_de_Uso
+!theme plain
+title CU-01: Consultar Disponibilidad de Habitaciones
+left to right direction
+
+actor "Cliente" as Cliente
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Consultar\nDisponibilidad" as CU01
+    usecase "Seleccionar tipo\nde habitación" as UC1
+    usecase "Ingresar fecha y hora" as UC2
+    usecase "Verificar\ndisponibilidad" as UC3
+    usecase "Mostrar habitaciones\ndisponibles" as UC4
+    usecase "Mostrar mensaje\nsin disponibilidad" as UC5
+}
+
+Cliente --> CU01
+Recepcionista --> CU01
+
+' Pasos obligatorios (Inclusión)
+CU01 ..> UC1 : <<include>>
+CU01 ..> UC2 : <<include>>
+CU01 ..> UC3 : <<include>>
+CU01 ..> UC4 : <<include>>
+
+' Caso alternativo (Extensión)
+UC5 ..> CU01 : <<extend>>
+
+@enduml

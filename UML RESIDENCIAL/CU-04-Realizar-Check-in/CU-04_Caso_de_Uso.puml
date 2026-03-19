@@ -1,0 +1,31 @@
+@startuml CU-04: Realizar Check-in
+!theme plain
+left to right direction
+
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Realizar\nCheck-in" as CU04
+    usecase "Consultar reservas\nconfirmadas del dia" as UC1
+    usecase "Seleccionar reserva\ndel cliente" as UC2
+    usecase "Verificar identidad\ndel cliente" as UC3
+    usecase "Confirmar check-in\ny entregar llave" as UC4
+    usecase "Registrar hora de\nentrada y actualizar estado" as UC5
+    usecase "CI no coincide\ncon reserva" as UC6
+    usecase "Reserva no existe\no no confirmada" as UC7
+}
+
+Recepcionista --> CU04
+
+' Pasos obligatorios (Inclusión)
+CU04 ..> UC1 : <<include>>
+CU04 ..> UC2 : <<include>>
+CU04 ..> UC3 : <<include>>
+CU04 ..> UC4 : <<include>>
+CU04 ..> UC5 : <<include>>
+
+' Casos alternativos (Extensión)
+UC6 ..> CU04 : <<extend>>
+UC7 ..> CU04 : <<extend>>
+
+@enduml

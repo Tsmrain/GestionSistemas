@@ -1,0 +1,27 @@
+@startuml CU-06: Actualizar Estado de Habitacion
+!theme plain
+left to right direction
+
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Actualizar Estado\nde Habitacion" as CU06
+    usecase "Consultar panel\nde estados" as UC1
+    usecase "Seleccionar\nhabitacion" as UC2
+    usecase "Seleccionar nuevo\nestado" as UC3
+    usecase "Validar transicion\ny registrar cambio" as UC4
+    usecase "Transicion de\nestado no valida" as UC5
+}
+
+Recepcionista --> CU06
+
+' Pasos obligatorios (Inclusión)
+CU06 ..> UC1 : <<include>>
+CU06 ..> UC2 : <<include>>
+CU06 ..> UC3 : <<include>>
+CU06 ..> UC4 : <<include>>
+
+' Caso alternativo (Extensión)
+UC5 ..> CU06 : <<extend>>
+
+@enduml

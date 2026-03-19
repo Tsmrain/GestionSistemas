@@ -1,0 +1,29 @@
+@startuml CU-03_Colaboracion
+title CU-03 — Diagrama de Colaboración: Procesar Pago
+
+left to right direction
+
+actor Cliente as actor
+
+boundary "FormularioPago"            as boundary
+control "ProcesarPagoController"     as control
+entity  "Reserva"                    as reserva
+entity  "Pago"                       as pago
+
+actor    --> boundary : 1. selecciona reserva en estado Pendiente de Pago
+boundary --> control  : 2. obtenerResumen(reserva)
+control  --> reserva  : 3. obtenerResumen(reserva)
+reserva  --> control  : 4. resumen (habitacion, tipo, fecha, monto)
+control  --> boundary : 5. mostrarResumen(reserva)
+boundary --> actor    : 6. muestra resumen y metodos de pago
+actor    --> boundary : 7. selecciona metodo de pago y confirma
+boundary --> control  : 8. procesarPago(reserva, metodo)
+control  --> pago     : 9. procesarPago(reserva, metodo)
+pago     --> control  : 10. pago validado exitosamente
+control  --> reserva  : 11. actualizarEstado(Confirmada)
+control  --> pago     : 12. generarComprobante(pago)
+pago     --> control  : 13. comprobante generado
+control  --> boundary : 14. mostrarComprobante(comprobante)
+boundary --> actor    : 15. entrega comprobante de pago electronico
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml CU-10: Generar Reporte por Turno
+!theme plain
+left to right direction
+
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Generar Reporte\npor Turno" as CU10
+    usecase "Solicitar cierre\nde turno" as UC1
+    usecase "Consolidar ingresos\ny operaciones" as UC2
+    usecase "Generar reporte\ndel turno" as UC3
+    usecase "Exportar\nreporte" as UC4
+    usecase "Sin operaciones\nen el turno" as UC5
+}
+
+Recepcionista --> CU10
+
+' Pasos obligatorios (Inclusión)
+CU10 ..> UC1 : <<include>>
+CU10 ..> UC2 : <<include>>
+CU10 ..> UC3 : <<include>>
+CU10 ..> UC4 : <<include>>
+
+' Caso alternativo (Extensión)
+UC5 ..> CU10 : <<extend>>
+
+@enduml

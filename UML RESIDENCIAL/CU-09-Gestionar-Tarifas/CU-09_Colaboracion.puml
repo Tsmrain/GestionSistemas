@@ -1,0 +1,30 @@
+@startuml CU-09_Colaboracion
+title CU-09 — Diagrama de Colaboración: Gestionar Tarifas y Tipos de Habitacion
+
+left to right direction
+
+actor Dueno as actor
+
+boundary "PantallaConfiguracion"  as boundary
+control "TarifaController"        as control
+entity  "TipoHabitacion"          as tipo
+
+actor    --> boundary : 1. solicita panel de configuracion de tarifas
+boundary --> control  : 2. obtenerTarifasActuales()
+control  --> tipo     : 3. obtenerTarifasActuales()
+tipo     --> control  : 4. tipos con tarifas actuales
+control  --> boundary : 5. mostrarPanelTarifas(tarifas)
+boundary --> actor    : 6. muestra tipos de habitacion y tarifas
+actor    --> boundary : 7. selecciona tipo de habitacion a modificar
+boundary --> control  : 8. mostrarValoresActuales(tipo)
+control  --> boundary : 9. muestra precio por bloque y politica de recargo
+actor    --> boundary : 10. ingresa nuevo precio y configura recargo
+boundary --> control  : 11. validarValores(precio, recargo)
+control  --> control  : 12. valida valores numericos y mayores a cero
+actor    --> boundary : 13. confirma activacion de nueva tarifa
+boundary --> control  : 14. actualizarTarifa(tipo, precio, recargo)
+control  --> tipo     : 15. guardar tarifa con vigencia inmediata
+control  --> boundary : 16. mostrarConfirmacion(cambio, auditoria)
+boundary --> actor    : 17. muestra confirmacion exitosa del cambio
+
+@enduml

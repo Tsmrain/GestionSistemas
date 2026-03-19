@@ -1,0 +1,71 @@
+classDiagram
+    class ICheckin {
+        <<interface>>
+        +consultarReservasConfirmadas(fecha)
+        +verificarIdentidad(ciPresentado, ciReserva)
+        +confirmarCheckin(reserva)
+    }
+
+    class IReserva {
+        <<interface>>
+        +obtenerReservasDelDia(fecha)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class IHabitacion {
+        <<interface>>
+        +actualizarEstado(habitacion, estado)
+    }
+
+    class IVistaCheckin {
+        <<interface>>
+        +mostrarReservasConfirmadas(lista)
+        +mostrarDatosReserva(reserva)
+        +mostrarConfirmacion(checkin)
+        +mostrarError(mensaje)
+    }
+
+    class CheckinController {
+        +consultarReservasConfirmadas(fecha)
+        +verificarIdentidad(ciPresentado, ciReserva)
+        +confirmarCheckin(reserva)
+    }
+
+    class Reserva {
+        +codigo
+        +estado
+        +horaEntrada
+        +obtenerReservasDelDia(fecha)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class Habitacion {
+        +numero
+        +tipo
+        +estado
+        +actualizarEstado(habitacion, estado)
+    }
+
+    class Huesped {
+        +nombre
+        +ci
+        +telefono
+    }
+
+    class PantallaCheckin {
+        +mostrarReservasConfirmadas(lista)
+        +mostrarDatosReserva(reserva)
+        +mostrarConfirmacion(checkin)
+        +mostrarError(mensaje)
+    }
+
+    ICheckin <|.. CheckinController
+    IReserva <|.. Reserva
+    IHabitacion <|.. Habitacion
+    IVistaCheckin <|.. PantallaCheckin
+    CheckinController --> Reserva : consulta
+    CheckinController --> Habitacion : actualiza
+    CheckinController --> Huesped : verifica
+    PantallaCheckin --> CheckinController : solicita
+    Reserva --> Habitacion : tiene
+    Reserva --> Huesped : pertenece a

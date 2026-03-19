@@ -1,0 +1,30 @@
+@startuml CU-01_Secuencia
+title CU-01 — Diagrama de Secuencia: Consultar Disponibilidad de Habitaciones
+
+actor Cliente as actor
+boundary "PaginaBusqueda"          as boundary
+control  "DisponibilidadController" as control
+entity   "Habitacion"               as entity
+
+actor    ->  boundary : ingresa tipo de habitacion, fecha y hora
+boundary ->  control  : consultarDisponibilidad(tipo, fecha, hora)
+
+control  ->  control  : validarFechaYHora(fecha, hora)
+
+alt fecha u hora invalida
+    control  --> boundary : error fecha/hora invalida
+    boundary --> actor    : muestra mensaje de error
+else fecha y hora valida
+    control  ->  entity   : obtenerHabitacionesDisponibles(tipo, fechaEntrada, fechaSalida)
+    entity   --> control  : lista de habitaciones en estado Disponible
+
+    alt hay habitaciones disponibles
+        control  --> boundary : retorna lista de habitaciones
+        boundary --> actor    : muestra numero, tipo, precio y horario disponible
+    else no hay disponibilidad
+        control  --> boundary : sin resultados
+        boundary --> actor    : muestra mensaje y sugiere otras opciones
+    end
+end
+
+@enduml

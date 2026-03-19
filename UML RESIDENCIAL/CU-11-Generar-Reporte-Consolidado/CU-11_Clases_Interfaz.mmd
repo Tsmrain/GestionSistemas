@@ -1,0 +1,46 @@
+classDiagram
+    class IReporteConsolidado {
+        <<interface>>
+        +validarRangoFechas(fechaInicio, fechaFin)
+        +consolidarDatos(filtros)
+        +generarReporte(datos)
+        +exportarPDF(reporte)
+    }
+
+    class IVistaReporteConsolidado {
+        <<interface>>
+        +mostrarFiltros()
+        +mostrarReporte(reporte, graficos)
+        +exportarPDF(reporte)
+        +mostrarError(mensaje)
+    }
+
+    class ReporteConsolidadoController {
+        +validarRangoFechas(fechaInicio, fechaFin)
+        +consolidarDatos(filtros)
+        +generarReporte(datos)
+        +exportarPDF(reporte)
+    }
+
+    class ReporteConsolidado {
+        +rangoFechas
+        +ingresosPorMetodo
+        +ocupacionPorTipo
+        +desglosePorTurno
+        +graficos
+        +consolidarDatos(filtros)
+        +generarReporte(datos)
+    }
+
+    class PantallaReporteConsolidado {
+        +mostrarFiltros()
+        +mostrarReporte(reporte, graficos)
+        +exportarPDF(reporte)
+        +mostrarError(mensaje)
+    }
+
+    IReporteConsolidado <|.. ReporteConsolidadoController
+    IReporteConsolidado <|.. ReporteConsolidado
+    IVistaReporteConsolidado <|.. PantallaReporteConsolidado
+    ReporteConsolidadoController --> ReporteConsolidado : genera
+    PantallaReporteConsolidado --> ReporteConsolidadoController : solicita

@@ -1,0 +1,41 @@
+classDiagram
+    class ITarifa {
+        <<interface>>
+        +obtenerTarifasActuales()
+        +validarValores(precio, recargo)
+        +actualizarTarifa(tipo, precio, recargo)
+    }
+
+    class IVistaConfiguracion {
+        <<interface>>
+        +mostrarPanelTarifas(tarifas)
+        +mostrarValoresActuales(tarifa)
+        +mostrarConfirmacion(cambio)
+        +mostrarError(mensaje)
+    }
+
+    class TarifaController {
+        +obtenerTarifasActuales()
+        +validarValores(precio, recargo)
+        +actualizarTarifa(tipo, precio, recargo)
+    }
+
+    class TipoHabitacion {
+        +nombre
+        +precioBloque
+        +politicaRecargo
+        +obtenerTarifasActuales()
+        +actualizarTarifa(tipo, precio, recargo)
+    }
+
+    class PantallaConfiguracion {
+        +mostrarPanelTarifas(tarifas)
+        +mostrarValoresActuales(tarifa)
+        +mostrarConfirmacion(cambio)
+        +mostrarError(mensaje)
+    }
+
+    ITarifa <|.. TarifaController
+    IVistaConfiguracion <|.. PantallaConfiguracion
+    TarifaController --> TipoHabitacion : actualiza
+    PantallaConfiguracion --> TarifaController : solicita

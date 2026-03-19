@@ -1,0 +1,20 @@
+@startuml CU-01_Colaboracion
+title CU-01 — Diagrama de Colaboración: Consultar Disponibilidad
+
+left to right direction
+
+actor Cliente as actor
+
+boundary "PaginaBusqueda"          as boundary
+control "DisponibilidadController" as control
+entity  "Habitacion"               as entity
+
+actor    --> boundary : 1. ingresa tipo, fecha y hora
+boundary --> control  : 2. consultarDisponibilidad(tipo, fecha, hora)
+control  --> control  : 3. validarFechaYHora(fecha, hora)
+control  --> entity   : 4. obtenerHabitacionesDisponibles(tipo, fecha, hora)
+entity   --> control  : 5. lista de habitaciones disponibles
+control  --> boundary : 6. retorna resultados
+boundary --> actor    : 7. muestra habitaciones disponibles
+
+@enduml

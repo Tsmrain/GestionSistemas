@@ -1,0 +1,29 @@
+@startuml CU-11: Generar Reporte Consolidado
+!theme plain
+left to right direction
+
+actor "Dueño" as Dueno
+
+rectangle "Sistema de Reservas" {
+    usecase "Generar Reporte\nConsolidado" as CU11
+    usecase "Seleccionar filtros\ndel reporte" as UC1
+    usecase "Consolidar datos\nhistoricos" as UC2
+    usecase "Mostrar reporte\ncon graficos" as UC3
+    usecase "Exportar reporte\nen PDF" as UC4
+    usecase "Rango de fechas\ninvalido" as UC5
+    usecase "Sin datos para\nfiltros seleccionados" as UC6
+}
+
+Dueno --> CU11
+
+' Pasos obligatorios (Inclusión)
+CU11 ..> UC1 : <<include>>
+CU11 ..> UC2 : <<include>>
+CU11 ..> UC3 : <<include>>
+CU11 ..> UC4 : <<include>>
+
+' Casos alternativos (Extensión)
+UC5 ..> CU11 : <<extend>>
+UC6 ..> CU11 : <<extend>>
+
+@enduml

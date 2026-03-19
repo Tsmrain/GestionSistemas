@@ -1,0 +1,34 @@
+@startuml CU-06_Secuencia
+title CU-06 — Diagrama de Secuencia: Actualizar Estado de Habitacion
+
+actor Recepcionista as actor
+boundary "PantallaEstados"              as boundary
+control  "EstadoHabitacionController"   as control
+entity   "Habitacion"                   as habitacion
+
+actor    ->  boundary : solicita panel de estados de habitaciones
+boundary ->  control  : obtenerPanelEstados()
+control  ->  habitacion : obtenerTodasConEstado()
+habitacion --> control : lista de habitaciones con estado actual
+control  --> boundary : mostrarPanelEstados(habitaciones)
+boundary --> actor    : muestra panel con todas las habitaciones
+
+actor    ->  boundary : selecciona habitacion a actualizar
+boundary ->  control  : obtenerTransicionesValidas(habitacion)
+control  --> boundary : mostrarTransicionesValidas(transiciones)
+boundary --> actor    : muestra transiciones validas disponibles
+
+actor    ->  boundary : selecciona nuevo estado y confirma
+boundary ->  control  : actualizarEstado(habitacion, nuevoEstado)
+control  ->  control  : validarTransicion(habitacion, nuevoEstado, RN-03)
+
+alt transicion no valida (6a)
+    control  --> boundary : transicion no permitida segun RN-03
+    boundary --> actor    : informa motivo y solicita seleccionar otra
+else transicion valida
+    control  ->  habitacion : actualizarEstado(nuevoEstado)
+    control  --> boundary : mostrarConfirmacion(cambio, marcaTiempo, recepcionista)
+    boundary --> actor    : muestra confirmacion exitosa del cambio
+end
+
+@enduml

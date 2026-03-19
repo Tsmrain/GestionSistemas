@@ -1,0 +1,40 @@
+@startuml CU-08_Secuencia
+title CU-08 — Diagrama de Secuencia: Registrar Pago en Efectivo
+
+actor Recepcionista as actor
+boundary "PantallaPagoEfectivo"      as boundary
+control  "PagoEfectivoController"    as control
+entity   "Reserva"                   as reserva
+entity   "Pago"                      as pago
+
+actor    ->  boundary : busca reserva por codigo o CI del huesped
+boundary ->  control  : buscarReservaPendiente(codigoOci)
+control  ->  reserva  : buscarPorCodigoOCi(codigoOci)
+
+alt reserva no encontrada o no pendiente (1a)
+    control  --> boundary : reserva no encontrada o no en estado Pendiente de Pago
+    boundary --> actor    : informa estado actual de la reserva
+else reserva valida
+    reserva  --> control  : resumen de la reserva
+    control  --> boundary : mostrarResumen(reserva)
+    boundary --> actor    : muestra habitacion, tipo, fecha y monto total
+
+    actor    ->  boundary : ingresa monto recibido en efectivo
+    boundary ->  control  : validarMonto(montoRecibido, montoTotal)
+
+    alt monto insuficiente (4a)
+        control  --> boundary : informa monto faltante
+        boundary --> actor    : solicita corregir monto
+    else monto suficiente
+        actor    ->  boundary : confirma registro del pago
+        boundary ->  control  : registrarPago(reserva, monto)
+        control  ->  pago     : registrarPago(efectivo, turnoActivo)
+        control  ->  reserva  : actualizarEstado(Confirmada)
+        control  ->  pago     : generarComprobante(pago)
+        pago     --> control  : comprobante generado
+        control  --> boundary : mostrarConfirmacion(comprobante)
+        boundary --> actor    : muestra confirmacion exitosa con comprobante
+    end
+end
+
+@enduml
