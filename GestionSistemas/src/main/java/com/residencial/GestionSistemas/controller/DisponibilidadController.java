@@ -18,15 +18,14 @@ public class DisponibilidadController {
     private DisponibilidadService service;
 
     @GetMapping("/buscar")
-    public ResponseEntity<?> buscarHabitaciones(@RequestParam String tipo, @RequestParam String fecha) {
+    public ResponseEntity<?> buscarHabitaciones(@RequestParam("tipo") String tipo, @RequestParam("fecha") String fecha) {
         try {
             LocalDate fechaIngreso = LocalDate.parse(fecha);
             List<Habitacion> resultados = service.consultar(tipo, fechaIngreso);
 
             // Regla de Jira: Mensaje de no disponibilidad con sugerencias
             if (resultados.isEmpty()) {
-                return ResponseEntity.ok("No hay habitaciones de tipo " + tipo
-                        + " disponibles. Sugerencia: Consulte disponibilidad para tipo Estándar o en otras fechas.");
+                return ResponseEntity.ok(List.of());
             }
 
             // Retorna los resultados (número, tipo, precio, estado)

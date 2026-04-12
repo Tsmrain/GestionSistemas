@@ -12,6 +12,6 @@ import java.util.List;
 public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
 
     // Consulta SQL automática de Spring: Filtra por Tipo y Estado
-    @Query("SELECT h FROM Habitacion h WHERE h.tipo = :tipo AND h.estado = 'Disponible'")
+    @Query("SELECT h FROM Habitacion h WHERE LOWER(h.tipo) = LOWER(:tipo) AND h.estado = 'Disponible'")
     List<Habitacion> findDisponiblesPorTipo(@Param("tipo") String tipo);
 }
