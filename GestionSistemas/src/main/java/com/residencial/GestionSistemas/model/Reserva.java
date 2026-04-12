@@ -1,4 +1,5 @@
 package com.residencial.GestionSistemas.model;
+import com.residencial.GestionSistemas.model.Habitacion;
 
 import jakarta.persistence.*;
 import lombok.Data;
