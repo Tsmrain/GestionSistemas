@@ -2,6 +2,7 @@ package com.reservas.residencial.infrastructure.controllers;
 
 import com.reservas.residencial.domain.models.Habitacion;
 import com.reservas.residencial.application.services.DisponibilidadService;
+import com.reservas.residencial.infrastructure.controllers.dto.DisponibilidadRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,9 +20,7 @@ public class DisponibilidadController {
     private DisponibilidadService disponibilidadService;
 
     @GetMapping("/disponibles")
-    public List<Habitacion> consultarDisponibilidad(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String tipo,
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String fecha) {
-        return disponibilidadService.obtenerHabitacionesDisponibles(tipo, fecha);
+    public List<Habitacion> consultarDisponibilidad(DisponibilidadRequestDTO request) {
+        return disponibilidadService.obtenerHabitacionesDisponibles(request.getTipo(), request.getFecha());
     }
 }
