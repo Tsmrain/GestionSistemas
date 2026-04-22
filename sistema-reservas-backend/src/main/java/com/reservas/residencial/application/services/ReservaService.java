@@ -20,6 +20,7 @@ public class ReservaService {
      * Sigue los principios de Larman (Expert) y Mannino (Integridad/Transaccionalidad)
      */
     @Transactional
+    @SuppressWarnings("null")
     public Reserva crearReserva(Reserva reserva) {
         // Validación defensiva (Null Safety)
         if (reserva == null || reserva.getHabitacion() == null || reserva.getHabitacion().getId() == null) {
@@ -27,8 +28,8 @@ public class ReservaService {
         }
 
         // 1. Buscar la habitación asociada (Experto en Información)
-        Habitacion habitacion = habitacionRepository.findById(reserva.getHabitacion().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada"));
+        Long habitacionId = reserva.getHabitacion().getId();
+        Habitacion habitacion = habitacionRepository.findById(habitacionId).orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada"));
 
         // 2. Validar Precondición: Estado debe ser 'Disponible' (Mannino - Última línea de defensa)
         if (!"Disponible".equals(habitacion.getEstado())) {
