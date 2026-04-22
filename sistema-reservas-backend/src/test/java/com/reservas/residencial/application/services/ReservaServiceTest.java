@@ -32,7 +32,6 @@ class ReservaServiceTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void testCrearReserva_CaminoFeliz() {
         // Arrange
         Habitacion h = new Habitacion(1L, "101", "Estandar", "Disponible", 150.0, 1L);
@@ -54,7 +53,6 @@ class ReservaServiceTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void testCrearReserva_PrecondicionFallida_HabitacionOcupada() {
         // Arrange
         Habitacion h = new Habitacion(1L, "101", "Estandar", "Ocupada", 150.0, 1L);

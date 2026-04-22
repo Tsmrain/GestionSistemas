@@ -22,7 +22,6 @@ class DisponibilidadControllerIntegrationTest {
     private HabitacionRepository habitacionRepository;
 
     @Test
-    @SuppressWarnings("null")
     void testConsultarDisponibilidad_Integration() throws Exception {
         Habitacion h = new Habitacion();
         h.setNumero("INT-101");

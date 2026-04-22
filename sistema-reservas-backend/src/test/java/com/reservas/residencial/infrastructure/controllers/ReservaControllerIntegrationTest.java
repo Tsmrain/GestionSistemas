@@ -30,7 +30,6 @@ class ReservaControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @SuppressWarnings("null")
     void testRegistrarReserva_Integration() throws Exception {
         // Asegurar que existe una habitación disponible
         Habitacion h = new Habitacion();

@@ -20,7 +20,6 @@ public class ReservaService {
      * Sigue los principios de Larman (Expert) y Mannino (Integridad/Transaccionalidad)
      */
     @Transactional
-    @SuppressWarnings("null")
     public Reserva crearReserva(Reserva reserva) {
         // Validación defensiva (Null Safety)
         if (reserva == null || reserva.getHabitacion() == null || reserva.getHabitacion().getId() == null) {
