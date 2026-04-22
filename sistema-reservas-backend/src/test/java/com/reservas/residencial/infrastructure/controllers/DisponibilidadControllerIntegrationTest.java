@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@SuppressWarnings("null")
 class DisponibilidadControllerIntegrationTest {
 
     @Autowired
@@ -32,8 +31,8 @@ class DisponibilidadControllerIntegrationTest {
         habitacionRepository.save(h);
 
         mockMvc.perform(get("/api/habitaciones/disponibles")
-                .param("tipo", "Estandar")
-                .param("fecha", "2023-12-01"))
+                .param("tipoHabitacion", "Estandar")
+                .param("fechaConsulta", "2023-12-01"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].numero").exists());
     }
