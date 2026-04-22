@@ -1,0 +1,19 @@
+flowchart TD
+    Title[<b>CU-02: Registrar Reserva</b>]
+    
+    subgraph Contexto
+        Actores[Actores: Cliente Autoservicio]
+        Proposito[Propósito: Reservar una habitación seleccionada]
+    end
+
+    subgraph FlujoPrincipal[Flujo Principal]
+        S1[1. El cliente inicia registro desde resultados]
+        S2[2. El sistema despliega formulario]
+        S3[3. El cliente ingresa datos y sube fotos]
+        S4[4. El sistema valida disponibilidad y bloquea]
+        S5[5. El sistema crea reserva PENDIENTE_PAGO]
+        S6[6. Redirección al flujo de pago CU-03]
+    end
+
+    Title --> Contexto
+    Contexto --> FlujoPrincipal

@@ -1,59 +1,43 @@
+/**
+ * @referencia: 03_Diseño/CU-01-Consultar-Disponibilidad/CU-01_Clases_Diseño.mmd
+ */
 class DisponibilidadView {
     constructor() {
-        //aqui agarramos los "ganchos" del HTML que definimos con los id
-        this.tipoSelect = document.getElementById("tipo-select");
-        this.fechaInput = document.getElementById("fecha-input");
+        this.selectTipo = document.getElementById("tipo-select");
+        this.inputFecha = document.getElementById("fecha-input");
         this.btnBuscar = document.getElementById("btn-buscar");
-        this.resultadoContainer = document.getElementById("resultado-container");
+        this.container = document.getElementById("resultado-container");
     }
 
-    // El controlador llama a este método para saber cuando se hace click
     onBuscar(callback) {
-        this.btnBuscar.addEventListener("click", (e) => {
-            const tipoHabitacion = this.tipoSelect.value;
-            const fechaConsulta = this.fechaInput.value;
-            callback(tipoHabitacion, fechaConsulta); // le avisa al controlador
-        });
+        this.btnBuscar.onclick = () => {
+            const tipo = this.selectTipo.value;
+            const fecha = this.inputFecha.value;
+            callback(tipo, fecha);
+        };
     }
 
-    // Dibuja las tarjetas en el resultado-container (mostrarResultados en el diagrama)
     mostrarResultados(habitaciones) {
-        this.resultadoContainer.innerHTML = "";
-
+        this.container.innerHTML = "";
         habitaciones.forEach(h => {
             const card = document.createElement("div");
-            card.className = "card";
-
+            card.className = "habitacion-card";
             card.innerHTML = `
-            <div class="card-left">
-        <div class="numero-box ${h.tipo.nombreTipo.toLowerCase()}">${h.numero}</div>
-        <div class="info">
-            <p class="hab-num">Habitacion ${h.numero}</p>
-            <p class="hab-tipo">${h.tipo.nombreTipo}</p>
-        </div>
-    </div>
-    <div class="card-right">
-        <span class="badge">Disponible</span>
-        <div class="precio">
-            <p class="precio-monto">Bs ${h.tipo.precioBase}</p>
-        </div>
-        <button class="btn-reservar" data-id="${h.id}">Reservar</button>
-    </div>
+                <h3>Habitación ${h.numero}</h3>
+                <p>Tipo: ${h.tipo.nombreTipo}</p>
+                <p>Estado: ${h.estadoActual}</p>
+                <p class="precio">Bs ${h.tipo.precioBase}</p>
+                <button class="btn-reservar" data-id="${h.id}">Reservar Ahora</button>
             `;
-
-            this.resultadoContainer.appendChild(card);
+            this.container.appendChild(card);
         });
     }
 
-    //muestra mensaje de error
-    mostrarError(mensaje){
-        this.resultadoContainer.innerHTML = `
-        <p class="error">${mensaje}</p>
-        `;
+    limpiar() {
+        this.container.innerHTML = "<p>Buscando...</p>";
     }
 
-    //limpia todo antes de una nueva busqueda
-    limpiar(){
-        this.resultadoContainer.innerHTML = "";
+    mostrarError(msj) {
+        this.container.innerHTML = `<p class="error">${msj}</p>`;
     }
 }

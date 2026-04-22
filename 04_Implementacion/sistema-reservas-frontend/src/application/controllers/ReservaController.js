@@ -1,49 +1,30 @@
 /**
- * Controlador para Registrar Reserva (CU-02).
- * Aplicando Low Representational Gap: RegistrarReservaController.
- * Sincronizado con el Modelo de Dominio.
+ * @referencia: 03_Diseño/CU-02-Registrar-Reserva/CU-02_Clases_Diseño.mmd
  */
 class ReservaController {
     constructor() {
         this.view = new ReservaView();
         
-        // Manejador para buscar huésped por Documento (2a - Cliente ya registrado)
-        this.view.onBuscarHuesped(async (documentoIdentidad) => {
-            try {
-                const response = await fetch(`http://localhost:8081/api/reservas/huesped/${documentoIdentidad}`);
-                if (response.ok) {
-                    const huesped = await response.json();
-                    this.view.autocompletarHuesped(huesped);
-                }
-            } catch (error) {
-                console.error("Error al buscar huésped", error);
-            }
-        });
-
         // Manejador para confirmar la reserva
-        this.view.onConfirmar(async (datos) => {
+        this.view.onRegistrar(async (datos) => {
             await this.registrarReserva(datos);
         });
     }
 
+    // @mensaje: 2: registrarReserva(formData) | @patron: Controlador
     async registrarReserva(formData) {
         try {
             const response = await fetch("http://localhost:8081/api/reservas", {
                 method: "POST",
-                // El navegador setea automáticamente Content-Type: multipart/form-data con boundary
                 body: formData
             });
 
             if (response.ok) {
                 const reserva = await response.json();
-                this.view.mostrarExito(`Registro exitoso. Reserva #${reserva.id} en estado PENDIENTE_PAGO. Redirigiendo al flujo de pago...`);
+                this.view.mostrarExito(`Registro exitoso. Reserva #${reserva.id} en estado PENDIENTE_PAGO.`);
                 
-                // Redirección automática al flujo de pago (CU-03)
                 setTimeout(() => {
-                    console.log("Iniciando CU-03: Pago de Reserva");
-                    alert("Redirigiendo a Pasarela de Pago para completar la reserva...");
-                    // Aquí iría la redirección real:
-                    // window.location.href = `/pago.html?id=${reserva.id}`;
+                    alert("Redirigiendo a Pasarela de Pago (CU-03) para completar la reserva...");
                 }, 1500);
 
                 if (window.disponibilidadController) {
@@ -63,5 +44,4 @@ class ReservaController {
     }
 }
 
-// Instancia global para ser accedida desde DisponibilidadController
 window.reservaController = new ReservaController();

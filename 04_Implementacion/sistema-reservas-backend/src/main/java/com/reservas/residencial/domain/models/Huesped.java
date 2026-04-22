@@ -6,8 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Entidad que representa a un Huésped en el sistema.
- * Aplicando Low Representational Gap: nombres sincronizados con el Modelo de Dominio.
+ * @referencia: 01_Modelado_Negocio/ModeloDominio.mmd
  */
 @Entity
 @Table(name = "huespedes")
@@ -15,18 +14,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Huesped {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String nombre;
-
-    @Column(nullable = false, unique = true)
-    private String documentoIdentidad;
-
+    
     private String celular;
+
+    @Column(name = "urlFotoAnverso")
     private String urlFotoAnverso;
+
+    @Column(name = "urlFotoReverso")
     private String urlFotoReverso;
 }

@@ -3,6 +3,7 @@ package com.reservas.residencial.application.services;
 import com.reservas.residencial.domain.models.Habitacion;
 import com.reservas.residencial.domain.models.Huesped;
 import com.reservas.residencial.domain.models.Reserva;
+import com.reservas.residencial.infrastructure.controllers.dto.RegistroReservaRequest;
 import com.reservas.residencial.infrastructure.repositories.HabitacionRepository;
 import com.reservas.residencial.infrastructure.repositories.HuespedRepository;
 import com.reservas.residencial.infrastructure.repositories.ReservaRepository;
@@ -11,8 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
-
+/**
+ * @referencia: 03_Diseño/CU-02-Registrar-Reserva/CU-02_Clases_Diseño.mmd
+ */
 @Service
 @RequiredArgsConstructor
 public class ReservaService {
@@ -22,71 +24,53 @@ public class ReservaService {
     private final HuespedRepository huespedRepository;
     private final FileStorageService fileStorageService;
 
-    /**
-     * Implementación del Contrato de Operación: registrarReserva
-     * Sigue los principios de Larman (Expert) y Mannino
-     * (Integridad/Transaccionalidad)
-     */
+    // @mensaje: 2: registrarReserva(dto, files) | @patron: Controlador
     @Transactional
-    public Reserva registrarReserva(Reserva reserva, MultipartFile fotoAnverso, MultipartFile fotoReverso) {
-        if (reserva == null || reserva.getHabitacion() == null || reserva.getHuesped() == null) {
-            throw new IllegalArgumentException("La reserva, habitación y huésped son obligatorios.");
-        }
+    public Reserva registrarReserva(RegistroReservaRequest dto, MultipartFile fotoAnverso, MultipartFile fotoReverso) {
+        // 1. Validar disponibilidad (Uso de método privado según DCD)
+        // @mensaje: 2.1: validarDisponibilidad(habitacionId) | @patron: Experto
+        Habitacion habitacion = validarDisponibilidad(dto.getHabitacionId());
 
-        // 1. Gestionar Huésped (Baja Brecha de Representación)
-        Huesped huesped;
-        Huesped huespedTemporal = reserva.getHuesped();
-
-        // Guardar fotos y obtener URLs
+        // 2. Gestionar Huésped
+        // @patron: Fabricación Pura (Manejo de archivos)
+        Huesped huesped = new Huesped();
+        huesped.setNombre(dto.getNombre());
+        huesped.setCelular(dto.getCelular());
+        
         if (fotoAnverso != null && !fotoAnverso.isEmpty()) {
-            huespedTemporal.setUrlFotoAnverso(fileStorageService.store(fotoAnverso));
+            huesped.setUrlFotoAnverso(fileStorageService.guardar(fotoAnverso));
         }
         if (fotoReverso != null && !fotoReverso.isEmpty()) {
-            huespedTemporal.setUrlFotoReverso(fileStorageService.store(fotoReverso));
-        }
-
-        Optional<Huesped> optionalHuesped = huespedRepository.findByDocumentoIdentidad(huespedTemporal.getDocumentoIdentidad());
-        
-        if (optionalHuesped.isPresent()) {
-            huesped = optionalHuesped.get();
-            // Actualizar datos si es necesario (celular, fotos)
-            huesped.setCelular(huespedTemporal.getCelular());
-            huesped.setUrlFotoAnverso(huespedTemporal.getUrlFotoAnverso());
-            huesped.setUrlFotoReverso(huespedTemporal.getUrlFotoReverso());
-            huesped = huespedRepository.save(huesped);
-        } else {
-            huesped = huespedRepository.save(huespedTemporal);
-        }
-        reserva.setHuesped(huesped);
-
-        // 2. Buscar la habitación asociada (Experto en Información)
-        Long habitacionId = reserva.getHabitacion().getId();
-        if (habitacionId == null) {
-            throw new IllegalArgumentException("El ID de la habitación es obligatorio.");
+            huesped.setUrlFotoReverso(fileStorageService.guardar(fotoReverso));
         }
         
-        Optional<Habitacion> optionalHabitacion = habitacionRepository.findById(habitacionId);
-        if (!optionalHabitacion.isPresent()) {
-            throw new IllegalArgumentException("Habitación no encontrada");
-        }
-        Habitacion habitacion = optionalHabitacion.get();
+        huesped = huespedRepository.save(huesped);
 
-        // 3. Validar disponibilidad
-        if (!"Disponible".equals(habitacion.getEstado())) {
-            throw new IllegalStateException("La habitación no está disponible.");
-        }
-
-        // 4. Cambiar estado de habitación
-        habitacion.setEstado("Reservada"); // Cambiamos de Ocupada a Reservada para este flujo
+        // 3. Bloquear habitación
+        // @mensaje: 2.2: bloquear() | @patron: Experto en Información
+        habitacion.bloquear();
         habitacionRepository.save(habitacion);
 
-        // 5. Persistir Reserva con estado PENDIENTE_PAGO
+        // 4. Crear Reserva
+        // @patron: Creador (Larman)
+        Reserva reserva = new Reserva();
+        reserva.setHuesped(huesped);
         reserva.setHabitacion(habitacion);
+        reserva.setFechaIngreso(dto.getFechaIngreso());
+        reserva.setCantidadBloques(dto.getCantidadBloques());
+        reserva.setMontoTotal(dto.getMontoTotal());
         reserva.setEstado("PENDIENTE_PAGO");
+        
         return reservaRepository.save(reserva);
     }
 
-    public Huesped buscarHuespedPorDocumento(String documentoIdentidad) {
-        return huespedRepository.findByDocumentoIdentidad(documentoIdentidad).orElse(null);
+    private Habitacion validarDisponibilidad(Long habitacionId) {
+        Habitacion habitacion = habitacionRepository.findById(habitacionId)
+                .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada"));
+        
+        if (!"Disponible".equals(habitacion.getEstadoActual())) {
+            throw new IllegalStateException("La habitación no está disponible.");
+        }
+        return habitacion;
     }
 }

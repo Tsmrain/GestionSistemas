@@ -1,51 +1,48 @@
--- Tabla de Tipos de Habitación (Patrón de Descripción)
-CREATE TABLE IF NOT EXISTS tipos_habitacion (
+-- TABLA DE TIPOS DE HABITACIÓN (Descriptor)
+CREATE TABLE tipos_habitacion (
     id SERIAL PRIMARY KEY,
-    nombre_tipo VARCHAR(50) NOT NULL,
-    precio_base DOUBLE PRECISION NOT NULL,
+    nombreTipo VARCHAR(50) NOT NULL,
+    precioBase DOUBLE PRECISION NOT NULL,
     descripcion TEXT
 );
 
--- Tabla de Habitaciones
-CREATE TABLE IF NOT EXISTS habitaciones (
+-- TABLA DE HABITACIONES
+CREATE TABLE habitaciones (
     id SERIAL PRIMARY KEY,
-    numero VARCHAR(10) NOT NULL,
+    numero VARCHAR(10) NOT NULL UNIQUE,
     tipo_id INTEGER REFERENCES tipos_habitacion(id),
-    estado VARCHAR(20) NOT NULL,
+    estadoActual VARCHAR(20) DEFAULT 'Disponible',
     version BIGINT DEFAULT 0
 );
 
--- Tabla de Huéspedes
-CREATE TABLE IF NOT EXISTS huespedes (
+-- TABLA DE HUÉSPEDES
+CREATE TABLE huespedes (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
-    documento_identidad VARCHAR(20) UNIQUE NOT NULL,
     celular VARCHAR(20),
-    url_foto_anverso VARCHAR(255),
-    url_foto_reverso VARCHAR(255)
+    urlFotoAnverso TEXT,
+    urlFotoReverso TEXT
 );
 
--- Tabla de Reservas
-CREATE TABLE IF NOT EXISTS reservas (
+-- TABLA DE RESERVAS
+CREATE TABLE reservas (
     id SERIAL PRIMARY KEY,
     huesped_id INTEGER REFERENCES huespedes(id),
     habitacion_id INTEGER REFERENCES habitaciones(id),
-    fecha_entrada DATE NOT NULL,
-    fecha_salida DATE NOT NULL,
-    monto_total DOUBLE PRECISION NOT NULL,
-    fecha_registro DATE DEFAULT CURRENT_DATE,
-    estado VARCHAR(20) NOT NULL
+    montoTotal DOUBLE PRECISION NOT NULL,
+    fechaCreacion DATE DEFAULT CURRENT_DATE,
+    fechaIngreso DATE NOT NULL,
+    cantidadBloques INTEGER NOT NULL,
+    estado VARCHAR(20) DEFAULT 'PENDIENTE_PAGO'
 );
 
--- Inserciones iniciales
-TRUNCATE TABLE reservas, habitaciones, tipos_habitacion, huespedes CASCADE;
-
-INSERT INTO tipos_habitacion (nombre_tipo, precio_base, descripcion) VALUES
+-- DATOS INICIALES
+INSERT INTO tipos_habitacion (nombreTipo, precioBase, descripcion) VALUES
 ('Sencilla', 100.0, 'Habitación con cama individual'),
 ('Doble', 150.0, 'Habitación con dos camas individuales'),
 ('VIP', 300.0, 'Suite de lujo con vista al mar');
 
-INSERT INTO habitaciones (numero, tipo_id, estado) VALUES
+INSERT INTO habitaciones (numero, tipo_id, estadoActual) VALUES
 ('101', 1, 'Disponible'),
 ('102', 1, 'Disponible'),
 ('201', 2, 'Disponible'),

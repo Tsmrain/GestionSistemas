@@ -2,18 +2,19 @@ classDiagram
     direction TB
     class Huesped {
         nombre
-        identificacion
-        contacto
+        celular
+        fotosDocumento
     }
     class Reserva {
+        fechaCreacion
         fechaIngreso
-        bloqueHorario
+        cantidadBloques
+        montoTotal
         estado
-        totalEstimado
     }
     class Habitacion {
         numero
-        estadoOcupacion
+        estadoActual
     }
     class TipoHabitacion {
         nombreTipo

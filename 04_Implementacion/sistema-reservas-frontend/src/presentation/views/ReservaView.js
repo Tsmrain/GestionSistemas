@@ -1,7 +1,5 @@
 /**
- * Vista que representa el Formulario de Reserva (CU-02).
- * Aplicando Low Representational Gap: FormularioReserva.
- * Sincronizado con el Modelo de Dominio.
+ * @referencia: 03_Diseño/CU-02-Registrar-Reserva/CU-02_Clases_Diseño.mmd
  */
 class ReservaView {
     constructor() {
@@ -10,10 +8,10 @@ class ReservaView {
         this.btnCerrar = document.getElementById("btn-cerrar-modal");
         this.detallesHabitacion = document.getElementById("detalles-habitacion");
         
-        // Campos del formulario (IDs sincronizados)
+        // Campos del formulario (Sincronizados con el DCD y Backend)
         this.nombreInput = document.getElementById("huesped-nombre");
-        this.documentoInput = document.getElementById("documento-identidad");
         this.celularInput = document.getElementById("huesped-celular");
+        this.bloquesInput = document.getElementById("cantidad-bloques");
         this.fotoAnversoInput = document.getElementById("foto-anverso");
         this.fotoReversoInput = document.getElementById("foto-reverso");
         
@@ -25,17 +23,30 @@ class ReservaView {
         window.onclick = (event) => {
             if (event.target == this.modal) this.ocultar();
         };
+
+        // Actualizar precio total al cambiar bloques
+        this.bloquesInput.onchange = () => {
+            if (this.habitacionActual) {
+                const total = this.habitacionActual.tipo.precioBase * this.bloquesInput.value;
+                this.actualizarDetalles(total);
+            }
+        };
     }
 
     mostrar(habitacion, fecha) {
         this.habitacionActual = habitacion;
         this.fechaActual = fecha;
-        this.detallesHabitacion.innerHTML = `
-            <strong>Habitación:</strong> ${habitacion.numero} (${habitacion.tipo.nombreTipo})<br>
-            <strong>Fecha:</strong> ${fecha}<br>
-            <strong>Precio:</strong> Bs ${habitacion.tipo.precioBase}
-        `;
+        this.actualizarDetalles(habitacion.tipo.precioBase);
         this.modal.style.display = "block";
+    }
+
+    actualizarDetalles(montoTotal) {
+        this.detallesHabitacion.innerHTML = `
+            <strong>Habitación:</strong> ${this.habitacionActual.numero} (${this.habitacionActual.tipo.nombreTipo})<br>
+            <strong>Fecha de Ingreso:</strong> ${this.fechaActual}<br>
+            <strong>Precio Base:</strong> Bs ${this.habitacionActual.tipo.precioBase}<br>
+            <strong>Monto Total:</strong> <span style="color: #4facfe; font-weight: bold;">Bs ${montoTotal}</span>
+        `;
     }
 
     ocultar() {
@@ -43,17 +54,21 @@ class ReservaView {
         this.form.reset();
     }
 
-    onConfirmar(callback) {
+    // @mensaje: registrarReserva(datos)
+    onRegistrar(callback) {
         this.form.onsubmit = (e) => {
             e.preventDefault();
             const formData = new FormData();
-            formData.append("huespedNombre", this.nombreInput.value);
-            formData.append("huespedDocumentoIdentidad", this.documentoInput.value);
-            formData.append("huespedCelular", this.celularInput.value);
+            
+            const montoTotal = this.habitacionActual.tipo.precioBase * this.bloquesInput.value;
+
+            // Nombres de campos exactos según requerimiento y DCD
+            formData.append("nombre", this.nombreInput.value);
+            formData.append("celular", this.celularInput.value);
+            formData.append("fechaIngreso", this.fechaActual);
+            formData.append("cantidadBloques", this.bloquesInput.value);
             formData.append("habitacionId", this.habitacionActual.id);
-            formData.append("fechaEntrada", this.fechaActual);
-            formData.append("fechaSalida", this.fechaActual); // Simplificado para este demo
-            formData.append("montoTotal", this.habitacionActual.tipo.precioBase);
+            formData.append("montoTotal", montoTotal);
             
             if (this.fotoAnversoInput.files[0]) {
                 formData.append("fotoAnverso", this.fotoAnversoInput.files[0]);
@@ -64,21 +79,6 @@ class ReservaView {
             
             callback(formData);
         };
-    }
-
-    onBuscarHuesped(callback) {
-        this.documentoInput.onblur = () => {
-            if (this.documentoInput.value) {
-                callback(this.documentoInput.value);
-            }
-        };
-    }
-
-    autocompletarHuesped(huesped) {
-        if (huesped) {
-            this.nombreInput.value = huesped.nombre;
-            this.celularInput.value = huesped.celular;
-        }
     }
 
     mostrarExito(mensaje) {
