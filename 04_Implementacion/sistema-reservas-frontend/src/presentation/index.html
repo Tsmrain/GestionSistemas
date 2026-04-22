@@ -17,9 +17,9 @@
     <div class="busqueda-container">
         <select id="tipo-select">
             <option value="Todo">Todos</option>
-            <option value="Estandar">Estandar</option>
-            <option value="Vip">Vip</option>
-            <option value="Super Vip">Super Vip</option>
+            <option value="Sencilla">Sencilla</option>
+            <option value="Doble">Doble</option>
+            <option value="VIP">VIP</option>
         </select>
 
         <input type="date" id="fecha-input">
@@ -43,13 +43,21 @@
                 </div>
                 <div class="form-group">
                     <label>Documento de Identidad:</label>
-                    <input type="text" id="documento-identidad" required placeholder="Ingresa CI para autocompletar">
+                    <input type="text" id="documento-identidad" required>
                 </div>
                 <div class="form-group">
-                    <label>Información de Contacto:</label>
-                    <input type="text" id="contacto" required placeholder="Teléfono o Email">
+                    <label>Número de Celular:</label>
+                    <input type="text" id="huesped-celular" required>
                 </div>
-                <button type="submit" class="btn-confirmar">Confirmar Registro</button>
+                <div class="form-group">
+                    <label>Carnet de Identidad (Anverso):</label>
+                    <input type="file" id="foto-anverso" accept="image/*" required>
+                </div>
+                <div class="form-group">
+                    <label>Carnet de Identidad (Reverso):</label>
+                    <input type="file" id="foto-reverso" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn-confirmar">Continuar al Pago</button>
             </form>
         </div>
     </div>

@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface HabitacionRepository extends JpaRepository<Habitacion, Long> {
     List<Habitacion> findByEstado(String estado);
-    List<Habitacion> findByTipoAndEstado(String tipo, String estado);
+    List<Habitacion> findByTipo_NombreTipoAndEstado(String nombreTipo, String estado);
 }

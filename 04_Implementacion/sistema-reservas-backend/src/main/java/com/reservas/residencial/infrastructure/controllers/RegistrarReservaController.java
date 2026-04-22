@@ -7,8 +7,10 @@ import com.reservas.residencial.domain.models.Reserva;
 import com.reservas.residencial.infrastructure.controllers.dto.RegistroReservaRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Controlador para el registro de reservas.
@@ -22,14 +24,17 @@ public class RegistrarReservaController {
 
     private final ReservaService reservaService;
 
-    @PostMapping
-    public ResponseEntity<?> registrarReserva(@Valid @RequestBody RegistroReservaRequest request) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> registrarReserva(
+            @Valid @ModelAttribute RegistroReservaRequest request,
+            @RequestParam("fotoAnverso") MultipartFile fotoAnverso,
+            @RequestParam("fotoReverso") MultipartFile fotoReverso) {
         try {
             // Transformación a Objetos del Dominio (LRG)
             Huesped huesped = new Huesped();
             huesped.setNombre(request.getHuespedNombre());
             huesped.setDocumentoIdentidad(request.getHuespedDocumentoIdentidad());
-            huesped.setContacto(request.getHuespedContacto());
+            huesped.setCelular(request.getHuespedCelular());
 
             Habitacion habitacion = new Habitacion();
             habitacion.setId(request.getHabitacionId());
@@ -41,7 +46,7 @@ public class RegistrarReservaController {
             nuevaReserva.setFechaSalida(request.getFechaSalida());
             nuevaReserva.setMontoTotal(request.getMontoTotal());
 
-            Reserva creada = reservaService.crearReserva(nuevaReserva);
+            Reserva creada = reservaService.registrarReserva(nuevaReserva, fotoAnverso, fotoReverso);
             return ResponseEntity.ok(creada);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(409).body(e.getMessage());

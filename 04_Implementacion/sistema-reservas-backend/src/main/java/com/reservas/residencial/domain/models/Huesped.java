@@ -26,5 +26,7 @@ public class Huesped {
     @Column(nullable = false, unique = true)
     private String documentoIdentidad;
 
-    private String contacto;
+    private String celular;
+    private String urlFotoAnverso;
+    private String urlFotoReverso;
 }

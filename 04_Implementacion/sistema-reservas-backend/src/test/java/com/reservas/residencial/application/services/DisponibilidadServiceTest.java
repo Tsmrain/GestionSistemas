@@ -1,6 +1,7 @@
 package com.reservas.residencial.application.services;
 
 import com.reservas.residencial.domain.models.Habitacion;
+import com.reservas.residencial.domain.models.TipoHabitacion;
 import com.reservas.residencial.infrastructure.repositories.HabitacionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +30,11 @@ class DisponibilidadServiceTest {
 
     @Test
     void testObtenerHabitacionesDisponibles() {
-        Habitacion h1 = new Habitacion(1L, "101", "Estandar", "Disponible", 100.0, 1L);
-        Habitacion h2 = new Habitacion(2L, "102", "Estandar", "Disponible", 100.0, 1L);
+        TipoHabitacion tipo = new TipoHabitacion(1L, "Estandar", 100.0, "Desc");
+        Habitacion h1 = new Habitacion(1L, "101", tipo, "Disponible", 1L);
+        Habitacion h2 = new Habitacion(2L, "102", tipo, "Disponible", 1L);
         
-        when(habitacionRepository.findByTipoAndEstado("Estandar", "Disponible"))
+        when(habitacionRepository.findByTipo_NombreTipoAndEstado("Estandar", "Disponible"))
                 .thenReturn(Arrays.asList(h1, h2));
 
         List<Habitacion> resultado = disponibilidadService.obtenerHabitacionesDisponibles("Estandar", "2023-12-01");

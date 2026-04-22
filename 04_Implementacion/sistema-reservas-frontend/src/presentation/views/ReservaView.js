@@ -13,7 +13,9 @@ class ReservaView {
         // Campos del formulario (IDs sincronizados)
         this.nombreInput = document.getElementById("huesped-nombre");
         this.documentoInput = document.getElementById("documento-identidad");
-        this.contactoInput = document.getElementById("contacto");
+        this.celularInput = document.getElementById("huesped-celular");
+        this.fotoAnversoInput = document.getElementById("foto-anverso");
+        this.fotoReversoInput = document.getElementById("foto-reverso");
         
         this.setupEvents();
     }
@@ -29,9 +31,9 @@ class ReservaView {
         this.habitacionActual = habitacion;
         this.fechaActual = fecha;
         this.detallesHabitacion.innerHTML = `
-            <strong>Habitación:</strong> ${habitacion.numero} (${habitacion.tipo})<br>
+            <strong>Habitación:</strong> ${habitacion.numero} (${habitacion.tipo.nombreTipo})<br>
             <strong>Fecha:</strong> ${fecha}<br>
-            <strong>Precio:</strong> Bs ${habitacion.precioBase}
+            <strong>Precio:</strong> Bs ${habitacion.tipo.precioBase}
         `;
         this.modal.style.display = "block";
     }
@@ -44,15 +46,23 @@ class ReservaView {
     onConfirmar(callback) {
         this.form.onsubmit = (e) => {
             e.preventDefault();
-            const datos = {
-                nombre: this.nombreInput.value,
-                documentoIdentidad: this.documentoInput.value,
-                contacto: this.contactoInput.value,
-                habitacionId: this.habitacionActual.id,
-                fecha: this.fechaActual,
-                montoTotal: this.habitacionActual.precioBase
-            };
-            callback(datos);
+            const formData = new FormData();
+            formData.append("huespedNombre", this.nombreInput.value);
+            formData.append("huespedDocumentoIdentidad", this.documentoInput.value);
+            formData.append("huespedCelular", this.celularInput.value);
+            formData.append("habitacionId", this.habitacionActual.id);
+            formData.append("fechaEntrada", this.fechaActual);
+            formData.append("fechaSalida", this.fechaActual); // Simplificado para este demo
+            formData.append("montoTotal", this.habitacionActual.tipo.precioBase);
+            
+            if (this.fotoAnversoInput.files[0]) {
+                formData.append("fotoAnverso", this.fotoAnversoInput.files[0]);
+            }
+            if (this.fotoReversoInput.files[0]) {
+                formData.append("fotoReverso", this.fotoReversoInput.files[0]);
+            }
+            
+            callback(formData);
         };
     }
 
@@ -67,7 +77,7 @@ class ReservaView {
     autocompletarHuesped(huesped) {
         if (huesped) {
             this.nombreInput.value = huesped.nombre;
-            this.contactoInput.value = huesped.contacto;
+            this.celularInput.value = huesped.celular;
         }
     }
 

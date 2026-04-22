@@ -36,4 +36,6 @@ public class Reserva {
     @ManyToOne
     @JoinColumn(name = "habitacion_id", nullable = false)
     private Habitacion habitacion;
+
+    private String estado;
 }

@@ -9,6 +9,7 @@ import com.reservas.residencial.infrastructure.repositories.ReservaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ public class ReservaService {
     private final ReservaRepository reservaRepository;
     private final HabitacionRepository habitacionRepository;
     private final HuespedRepository huespedRepository;
+    private final FileStorageService fileStorageService;
 
     /**
      * Implementación del Contrato de Operación: registrarReserva
@@ -26,7 +28,7 @@ public class ReservaService {
      * (Integridad/Transaccionalidad)
      */
     @Transactional
-    public Reserva crearReserva(Reserva reserva) {
+    public Reserva registrarReserva(Reserva reserva, MultipartFile fotoAnverso, MultipartFile fotoReverso) {
         if (reserva == null || reserva.getHabitacion() == null || reserva.getHuesped() == null) {
             throw new IllegalArgumentException("La reserva, habitación y huésped son obligatorios.");
         }
@@ -34,10 +36,24 @@ public class ReservaService {
         // 1. Gestionar Huésped (Baja Brecha de Representación)
         Huesped huesped;
         Huesped huespedTemporal = reserva.getHuesped();
+
+        // Guardar fotos y obtener URLs
+        if (fotoAnverso != null && !fotoAnverso.isEmpty()) {
+            huespedTemporal.setUrlFotoAnverso(fileStorageService.store(fotoAnverso));
+        }
+        if (fotoReverso != null && !fotoReverso.isEmpty()) {
+            huespedTemporal.setUrlFotoReverso(fileStorageService.store(fotoReverso));
+        }
+
         Optional<Huesped> optionalHuesped = huespedRepository.findByDocumentoIdentidad(huespedTemporal.getDocumentoIdentidad());
         
         if (optionalHuesped.isPresent()) {
             huesped = optionalHuesped.get();
+            // Actualizar datos si es necesario (celular, fotos)
+            huesped.setCelular(huespedTemporal.getCelular());
+            huesped.setUrlFotoAnverso(huespedTemporal.getUrlFotoAnverso());
+            huesped.setUrlFotoReverso(huespedTemporal.getUrlFotoReverso());
+            huesped = huespedRepository.save(huesped);
         } else {
             huesped = huespedRepository.save(huespedTemporal);
         }
@@ -61,11 +77,12 @@ public class ReservaService {
         }
 
         // 4. Cambiar estado de habitación
-        habitacion.setEstado("Ocupada");
+        habitacion.setEstado("Reservada"); // Cambiamos de Ocupada a Reservada para este flujo
         habitacionRepository.save(habitacion);
 
-        // 5. Persistir Reserva
+        // 5. Persistir Reserva con estado PENDIENTE_PAGO
         reserva.setHabitacion(habitacion);
+        reserva.setEstado("PENDIENTE_PAGO");
         return reservaRepository.save(reserva);
     }
 

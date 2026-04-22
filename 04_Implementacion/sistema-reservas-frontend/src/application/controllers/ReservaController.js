@@ -26,28 +26,26 @@ class ReservaController {
         });
     }
 
-    async registrarReserva(datos) {
+    async registrarReserva(formData) {
         try {
-            const requestBody = {
-                huespedNombre: datos.nombre,
-                huespedDocumentoIdentidad: datos.documentoIdentidad,
-                huespedContacto: datos.contacto,
-                habitacionId: datos.habitacionId,
-                fechaEntrada: datos.fecha,
-                fechaSalida: datos.fecha, // Por simplicidad, un solo día en este demo
-                montoTotal: datos.montoTotal
-            };
-
             const response = await fetch("http://localhost:8081/api/reservas", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestBody)
+                // El navegador setea automáticamente Content-Type: multipart/form-data con boundary
+                body: formData
             });
 
             if (response.ok) {
                 const reserva = await response.json();
-                this.view.mostrarExito(`Reserva registrada con éxito. ID: ${reserva.id}`);
-                // Recargar disponibilidad para reflejar que la habitación está ocupada
+                this.view.mostrarExito(`Registro exitoso. Reserva #${reserva.id} en estado PENDIENTE_PAGO. Redirigiendo al flujo de pago...`);
+                
+                // Redirección automática al flujo de pago (CU-03)
+                setTimeout(() => {
+                    console.log("Iniciando CU-03: Pago de Reserva");
+                    alert("Redirigiendo a Pasarela de Pago para completar la reserva...");
+                    // Aquí iría la redirección real:
+                    // window.location.href = `/pago.html?id=${reserva.id}`;
+                }, 1500);
+
                 if (window.disponibilidadController) {
                     window.disponibilidadController.consultarDisponibilidad();
                 }

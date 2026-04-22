@@ -6,24 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "habitaciones")
+@Table(name = "tipos_habitacion")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Habitacion {
+public class TipoHabitacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String numero;
-    
-    @ManyToOne
-    @JoinColumn(name = "tipo_id")
-    private TipoHabitacion tipo;
-    
-    private String estado;
-
-    @Version
-    private Long version;
+    private String nombreTipo;
+    private Double precioBase;
+    private String descripcion;
 }

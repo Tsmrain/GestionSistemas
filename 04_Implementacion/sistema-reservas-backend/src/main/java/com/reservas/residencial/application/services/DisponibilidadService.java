@@ -17,6 +17,6 @@ public class DisponibilidadService {
         if (tipoHabitacion == null || tipoHabitacion.equals("Todo")) {
             return habitacionRepository.findByEstado("Disponible");
         }
-        return habitacionRepository.findByTipoAndEstado(tipoHabitacion, "Disponible");
+        return habitacionRepository.findByTipo_NombreTipoAndEstado(tipoHabitacion, "Disponible");
     }
 }

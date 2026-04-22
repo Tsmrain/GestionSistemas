@@ -1,7 +1,9 @@
 package com.reservas.residencial.infrastructure.controllers;
 
 import com.reservas.residencial.domain.models.Habitacion;
+import com.reservas.residencial.domain.models.TipoHabitacion;
 import com.reservas.residencial.infrastructure.repositories.HabitacionRepository;
+import com.reservas.residencial.infrastructure.repositories.TipoHabitacionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,13 +23,20 @@ class DisponibilidadControllerIntegrationTest {
     @Autowired
     private HabitacionRepository habitacionRepository;
 
+    @Autowired
+    private TipoHabitacionRepository tipoHabitacionRepository;
+
     @Test
     void testConsultarDisponibilidad_Integration() throws Exception {
+        TipoHabitacion tipo = new TipoHabitacion();
+        tipo.setNombreTipo("Estandar");
+        tipo.setPrecioBase(100.0);
+        tipo = tipoHabitacionRepository.save(tipo);
+
         Habitacion h = new Habitacion();
         h.setNumero("INT-101");
-        h.setTipo("Estandar");
+        h.setTipo(tipo);
         h.setEstado("Disponible");
-        h.setPrecioBase(100.0);
         habitacionRepository.save(h);
 
         mockMvc.perform(get("/api/habitaciones/disponibles")

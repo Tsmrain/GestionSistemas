@@ -34,7 +34,7 @@ class DisponibilidadController {
 
             // 4. Transformación a Objetos del Dominio (Baja Brecha de Representación)
             const habitaciones = data.map(h =>
-                new Habitacion(h.id, h.numero, h.tipo, h.estado, h.precioBase)
+                new Habitacion(h.id, h.numero, h.tipo, h.estado)
             );
 
             // 5. Verificar si hay resultados (Postcondición del CU)
@@ -44,6 +44,7 @@ class DisponibilidadController {
             }
 
             // 6. Actualizar la vista
+            this.ultimoResultado = habitaciones; // Guardamos para referencia
             this.view.mostrarResultados(habitaciones);
 
             // 7. Configurar eventos de reserva
@@ -56,14 +57,14 @@ class DisponibilidadController {
 
     configurarEventosReserva(fecha) {
         const botones = document.querySelectorAll(".btn-reservar");
-        botones.forEach(btn => {
+        botones.forEach((btn, index) => {
             btn.onclick = () => {
-                const habitacion = {
-                    id: btn.dataset.id,
-                    numero: btn.dataset.numero,
-                    tipo: btn.dataset.tipo,
-                    precioBase: btn.dataset.precio
-                };
+                // Obtenemos la habitación correspondiente de la lista cargada
+                const habitacionId = btn.dataset.id;
+                // Como no guardamos todo en data-attributes para evitar redundancia, 
+                // buscamos en la lista que ya tenemos en memoria
+                const habitacion = this.ultimoResultado.find(h => h.id == habitacionId);
+                
                 if (window.reservaController) {
                     window.reservaController.abrirFormulario(habitacion, fecha);
                 }

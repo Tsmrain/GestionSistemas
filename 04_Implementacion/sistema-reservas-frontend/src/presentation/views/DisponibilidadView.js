@@ -26,18 +26,18 @@ class DisponibilidadView {
 
             card.innerHTML = `
             <div class="card-left">
-        <div class="numero-box ${h.tipo.toLowerCase()}">${h.numero}</div>
+        <div class="numero-box ${h.tipo.nombreTipo.toLowerCase()}">${h.numero}</div>
         <div class="info">
             <p class="hab-num">Habitacion ${h.numero}</p>
-            <p class="hab-tipo">${h.tipo}</p>
+            <p class="hab-tipo">${h.tipo.nombreTipo}</p>
         </div>
     </div>
     <div class="card-right">
         <span class="badge">Disponible</span>
         <div class="precio">
-            <p class="precio-monto">Bs ${h.precioBase}</p>
+            <p class="precio-monto">Bs ${h.tipo.precioBase}</p>
         </div>
-        <button class="btn-reservar" data-id="${h.id}" data-numero="${h.numero}" data-tipo="${h.tipo}" data-precio="${h.precioBase}">Reservar</button>
+        <button class="btn-reservar" data-id="${h.id}">Reservar</button>
     </div>
             `;
 

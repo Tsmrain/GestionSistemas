@@ -21,7 +21,7 @@ public class RegistroReservaRequest {
     @NotBlank(message = "El documento de identidad es obligatorio")
     private String huespedDocumentoIdentidad;
 
-    private String huespedContacto;
+    private String huespedCelular;
 
     @NotNull(message = "El ID de la habitación es obligatorio")
     private Long habitacionId;
