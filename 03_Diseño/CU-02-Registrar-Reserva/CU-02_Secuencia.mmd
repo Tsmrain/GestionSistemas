@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant UI as :ReservaView
+    participant Ctrl as :ReservaController
+    participant Serv as :ReservaService
+    participant Storage as :FileStorageService
+    participant RepoH as :HuespedRepository
+    participant RepoR as :ReservaRepository
+    participant Hab as :Habitacion
+
+    UI->>Ctrl: onConfirmar(datos, fotos)
+    activate Ctrl
+    Ctrl->>Serv: registrarReserva(datos, fotos)
+    activate Serv
+    
+    Serv->>Storage: guardar(fotos)
+    Storage-->>Serv: urlsFotos
+    
+    Serv->>RepoH: save(huesped)
+    RepoH-->>Serv: huespedId
+    
+    Serv->>Hab: bloquear()
+    Note right of Hab: Cambio de estado a <br/>"Reservada" o "Bloqueada"
+    
+    Serv->>RepoR: save(nuevaReserva)
+    RepoR-->>Serv: reservaOk
+    
+    Serv-->>Ctrl: dtoResumen
+    deactivate Serv
+    Ctrl-->>UI: mostrarResumen()
+    deactivate Ctrl

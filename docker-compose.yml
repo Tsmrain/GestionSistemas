@@ -15,7 +15,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./sistema-reservas-backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./04_Implementacion/sistema-reservas-backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d sistema_reservas"]
       interval: 5s
@@ -29,7 +29,7 @@ services:
   # ----------------------------------------
   backend:
     build: 
-      context: ./sistema-reservas-backend
+      context: ./04_Implementacion/sistema-reservas-backend
       dockerfile: Dockerfile
     container_name: reservas-backend
     ports:
@@ -50,7 +50,7 @@ services:
   # ----------------------------------------
   frontend:
     build:
-      context: ./sistema-reservas-frontend
+      context: ./04_Implementacion/sistema-reservas-frontend
       dockerfile: Dockerfile
     container_name: reservas-frontend
     ports:
@@ -60,9 +60,9 @@ services:
     networks:
       - reservas-network
     volumes:
-      - ./sistema-reservas-frontend/src/presentation:/usr/share/nginx/html
-      - ./sistema-reservas-frontend/src/application/controllers:/usr/share/nginx/html/controllers
-      - ./sistema-reservas-frontend/src/domain/models:/usr/share/nginx/html/models
+      - ./04_Implementacion/sistema-reservas-frontend/src/presentation:/usr/share/nginx/html
+      - ./04_Implementacion/sistema-reservas-frontend/src/application/controllers:/usr/share/nginx/html/controllers
+      - ./04_Implementacion/sistema-reservas-frontend/src/domain/models:/usr/share/nginx/html/models
 
 volumes:
   postgres_data:

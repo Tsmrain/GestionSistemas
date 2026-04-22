@@ -1,0 +1,40 @@
+classDiagram
+    direction TB
+    class ReservaController {
+        +registrarReserva(dto, files)
+    }
+    class ReservaService {
+        +registrarReserva(dto, files)
+        -validarDisponibilidad(habitacionId)
+    }
+    class FileStorageService {
+        +guardar(files) String[]
+    }
+    class Huesped {
+        -String nombre
+        -String celular
+        -String urlFotoAnverso
+        -String urlFotoReverso
+    }
+    class Reserva {
+        -LocalDate fechaCreacion
+        -Double montoTotal
+        -String estado
+    }
+    class Habitacion {
+        -String numero
+        -String estadoActual
+        +bloquear()
+    }
+    class TipoHabitacion {
+        -String nombreTipo
+        -Double precioBase
+        -String descripcion
+    }
+
+    ReservaController --> ReservaService
+    ReservaService --> FileStorageService : Fabricación Pura
+    ReservaService --> Huesped : Experto
+    ReservaService --> Reserva : Creador
+    Reserva "1" --> "1" Habitacion : se asigna a
+    Habitacion "*" --> "1" TipoHabitacion : Patrón de Descripción

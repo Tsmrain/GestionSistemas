@@ -1,0 +1,32 @@
+classDiagram
+    direction LR
+
+    class DisponibilidadController {
+        +consultar(DisponibilidadRequestDTO)
+    }
+
+    class DisponibilidadService {
+        +buscarDisponibles(LocalDate, String) List
+    }
+
+    class HabitacionRepository {
+        <<interface>>
+        +findAvailableByTipo(LocalDate, String) List
+    }
+
+    class Habitacion {
+        -String numero
+        -String estado
+        -TipoHabitacion tipo
+    }
+
+    class TipoHabitacion {
+        -String nombreTipo
+        -Double precioBase
+        -String descripcion
+    }
+
+    DisponibilidadController --> DisponibilidadService : usa
+    DisponibilidadService --> HabitacionRepository : consulta
+    HabitacionRepository ..> Habitacion : retorna
+    Habitacion "0..*" --> "1" TipoHabitacion : tiene su descripción en
