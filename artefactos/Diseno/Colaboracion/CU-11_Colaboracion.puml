@@ -1,0 +1,31 @@
+@startuml CU-11_Colaboracion
+title CU-11 — Diagrama de Colaboración: Generar Reporte Consolidado
+
+left to right direction
+
+actor Dueno as actor
+
+boundary "PantallaReporteConsolidado"      as boundary
+control "ReporteConsolidadoController"     as control
+entity  "ReporteConsolidado"               as reporte
+
+actor    --> boundary : 1. solicita generacion de reporte consolidado
+boundary --> control  : 2. mostrarFiltros()
+control  --> boundary : 3. muestra panel de filtros (fechas, tipo, turno)
+boundary --> actor    : 4. muestra filtros disponibles
+actor    --> boundary : 5. selecciona rango de fechas y aplica filtros
+boundary --> control  : 6. validarRangoFechas(fechaInicio, fechaFin)
+control  --> control  : 7. validar que fecha inicio menor a fecha fin
+boundary --> control  : 8. consolidarDatos(filtros)
+control  --> reporte  : 9. consolidarDatos(filtros)
+reporte  --> control  : 10. datos consolidados de ocupacion e ingresos
+control  --> reporte  : 11. generarReporte(datos)
+reporte  --> control  : 12. reporte con graficos de rendimiento
+control  --> boundary : 13. mostrarReporte(reporte, graficos)
+boundary --> actor    : 14. muestra desglose por metodo, tipo y turno
+actor    --> boundary : 15. exporta reporte en PDF
+boundary --> control  : 16. exportarPDF(reporte)
+control  --> boundary : 17. reporte en formato PDF
+boundary --> actor    : 18. entrega reporte PDF
+
+@enduml

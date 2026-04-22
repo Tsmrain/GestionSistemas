@@ -1,0 +1,53 @@
+@startuml CU-03_Secuencia
+title CU-03 — Diagrama de Secuencia: Procesar Pago
+
+actor Cliente as actor
+boundary "FormularioPago"            as boundary
+control  "ProcesarPagoController"    as control
+entity   "Reserva"                   as reserva
+entity   "Pago"                      as pago
+
+actor    ->  boundary : selecciona reserva en estado Pendiente de Pago
+boundary ->  control  : obtenerResumen(reserva)
+control  ->  reserva  : obtenerResumen(reserva)
+reserva  --> control  : resumen (habitacion, tipo, fecha, monto)
+control  --> boundary : mostrarResumen(reserva)
+boundary --> actor    : muestra resumen y metodos de pago
+
+actor    ->  boundary : selecciona metodo de pago y confirma
+boundary ->  control  : procesarPago(reserva, metodo)
+
+alt pago por QR
+    control  ->  pago    : procesarPago(reserva, QR)
+    pago     --> control : resultado
+
+    alt pago QR rechazado
+        control  --> boundary : informa pago no procesado
+        boundary --> actor    : ofrece reintentar QR o cambiar a efectivo
+    else pago QR exitoso
+        control  ->  reserva  : actualizarEstado(Confirmada)
+        control  ->  pago     : generarComprobante(pago)
+        pago     --> control  : comprobante generado
+        control  --> boundary : mostrarComprobante(comprobante)
+        boundary --> actor    : entrega comprobante de pago electronico
+    end
+
+else pago en efectivo
+    boundary ->  control  : registrarEfectivo(montoRecibido)
+    control  ->  control  : validarMonto(montoRecibido, montoTotal)
+
+    alt monto insuficiente
+        control  --> boundary : informa monto faltante
+        boundary --> actor    : solicita corregir monto
+    else monto suficiente
+        control  ->  pago     : procesarPago(reserva, Efectivo)
+        pago     --> control  : pago registrado
+        control  ->  reserva  : actualizarEstado(Confirmada)
+        control  ->  pago     : generarComprobante(pago)
+        pago     --> control  : comprobante generado
+        control  --> boundary : mostrarComprobante(comprobante)
+        boundary --> actor    : entrega comprobante de pago electronico
+    end
+end
+
+@enduml

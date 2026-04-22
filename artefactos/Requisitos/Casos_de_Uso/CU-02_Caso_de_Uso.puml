@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+title CU-02: Registrar Reserva
+left to right direction
+
+actor "Cliente" as Cliente
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Registrar\nReserva" as CU02
+    usecase "Seleccionar\nhabitación disponible" as UC1
+    usecase "Ingresar datos\ndel huésped" as UC2
+    usecase "Verificar\ndisponibilidad" as UC3
+    usecase "Mostrar resumen\nde reserva" as UC4
+    usecase "Confirmar reserva\ny generar código" as UC5
+    usecase "Habitación no\ndisponible" as UC6
+}
+
+Cliente --> CU02
+Recepcionista --> CU02
+
+' Pasos obligatorios (Inclusión)
+CU02 ..> UC1 : <<include>>
+CU02 ..> UC2 : <<include>>
+CU02 ..> UC3 : <<include>>
+CU02 ..> UC4 : <<include>>
+CU02 ..> UC5 : <<include>>
+
+' Caso alternativo (Extensión)
+UC6 ..> CU02 : <<extend>>
+
+@enduml

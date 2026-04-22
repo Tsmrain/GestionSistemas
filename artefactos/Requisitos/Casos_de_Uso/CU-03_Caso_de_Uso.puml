@@ -1,0 +1,33 @@
+@startuml CU-03: Procesar Pago
+!theme plain
+left to right direction
+
+actor "Cliente" as Cliente
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Procesar\nPago" as CU03
+    usecase "Seleccionar reserva\npendiente de pago" as UC1
+    usecase "Mostrar resumen\nde reserva" as UC2
+    usecase "Seleccionar método\nde pago" as UC3
+    usecase "Validar pago y\nconfirmar reserva" as UC4
+    usecase "Generar comprobante\nde pago" as UC5
+    usecase "Reintentar pago\no cambiar método" as UC6
+    usecase "Registrar pago\nen efectivo" as UC7
+}
+
+Cliente --> CU03
+Recepcionista --> CU03
+
+' Pasos obligatorios (Inclusión)
+CU03 ..> UC1 : <<include>>
+CU03 ..> UC2 : <<include>>
+CU03 ..> UC3 : <<include>>
+CU03 ..> UC4 : <<include>>
+CU03 ..> UC5 : <<include>>
+
+' Casos alternativos (Extensión)
+UC6 ..> CU03 : <<extend>>
+UC7 ..> CU03 : <<extend>>
+
+@enduml

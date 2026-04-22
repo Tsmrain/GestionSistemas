@@ -1,0 +1,29 @@
+@startuml CU-07_Colaboracion
+title CU-07 — Diagrama de Colaboración: Cancelar Reserva
+
+left to right direction
+
+actor Cliente as actor
+
+boundary "PantallaCancelacion"    as boundary
+control "CancelacionController"   as control
+entity  "Reserva"                 as reserva
+entity  "Habitacion"              as habitacion
+
+actor      --> boundary    : 1. ingresa codigo de reserva o CI del huesped
+boundary   --> control     : 2. buscarReserva(codigoOci)
+control    --> reserva     : 3. buscarPorCodigoOCi(codigoOci)
+reserva    --> control     : 4. detalles de la reserva
+control    --> boundary    : 5. mostrarDetallesReserva(reserva)
+boundary   --> actor       : 6. muestra habitacion, tipo, fecha, estado
+actor      --> boundary    : 7. solicita cancelacion
+boundary   --> control     : 8. verificarCheckin(reserva)
+control    --> control     : 9. verificar que reserva no tenga check-in
+actor      --> boundary    : 10. ingresa motivo y confirma cancelacion
+boundary   --> control     : 11. cancelarReserva(reserva, motivo)
+control    --> reserva     : 12. actualizarEstado(Cancelada)
+control    --> habitacion  : 13. liberarHabitacion(habitacion)
+control    --> boundary    : 14. mostrarConfirmacion(cancelacion)
+boundary   --> actor       : 15. muestra confirmacion exitosa
+
+@enduml

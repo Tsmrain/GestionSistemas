@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------
+  # CAPA DE DATOS (PostgreSQL)
+  # ----------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: reservas-db
+    environment:
+      POSTGRES_DB: sistema_reservas
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sistema-reservas-backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d sistema_reservas"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reservas-network
+
+  # ----------------------------------------
+  # CAPA DE APLICACIÓN Y DOMINIO (Spring Boot)
+  # ----------------------------------------
+  backend:
+    build: 
+      context: ./sistema-reservas-backend
+      dockerfile: Dockerfile
+    container_name: reservas-backend
+    ports:
+      - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/sistema_reservas
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=adminpassword
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - reservas-network
+
+  # ----------------------------------------
+  # CAPA DE PRESENTACIÓN (Frontend)
+  # ----------------------------------------
+  frontend:
+    build:
+      context: ./sistema-reservas-frontend
+      dockerfile: Dockerfile
+    container_name: reservas-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - reservas-network
+    volumes:
+      - ./sistema-reservas-frontend/src/presentation:/usr/share/nginx/html
+      - ./sistema-reservas-frontend/src/application/controllers:/usr/share/nginx/html/controllers
+      - ./sistema-reservas-frontend/src/domain/models:/usr/share/nginx/html/models
+
+volumes:
+  postgres_data:
+
+networks:
+  reservas-network:
+    driver: bridge

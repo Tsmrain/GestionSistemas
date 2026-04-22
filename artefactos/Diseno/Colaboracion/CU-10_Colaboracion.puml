@@ -1,0 +1,32 @@
+@startuml CU-10_Colaboracion
+title CU-10 — Diagrama de Colaboración: Generar Reporte por Turno
+
+left to right direction
+
+actor Recepcionista as actor
+
+boundary "PantallaReporte"         as boundary
+control "ReporteTurnoController"   as control
+entity  "Turno"                    as turno
+entity  "Reporte"                  as reporte
+
+actor    --> boundary : 1. solicita cierre del turno activo
+boundary --> control  : 2. obtenerResumenTurno(turno)
+control  --> turno    : 3. obtenerResumenTurno(turno)
+turno    --> control  : 4. resumen de operaciones (checkins, checkouts, pagos)
+control  --> boundary : 5. mostrarResumenOperaciones(resumen)
+boundary --> actor    : 6. muestra resumen del turno
+actor    --> boundary : 7. verifica resumen y confirma cierre
+boundary --> control  : 8. consolidarIngresos(turno)
+control  --> control  : 9. calcular total con desglose QR y efectivo
+control  --> reporte  : 10. generarReporte(turno, RN-05)
+reporte  --> control  : 11. reporte generado
+control  --> turno    : 12. cerrarTurno(turno)
+control  --> boundary : 13. mostrarReporte(reporte)
+boundary --> actor    : 14. muestra reporte generado
+actor    --> boundary : 15. exporta o imprime reporte
+boundary --> control  : 16. exportarReporte(reporte)
+control  --> boundary : 17. reporte en formato exportable
+boundary --> actor    : 18. entrega reporte exportado
+
+@enduml

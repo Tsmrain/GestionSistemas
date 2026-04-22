@@ -1,0 +1,49 @@
+@startuml CU-04_Secuencia
+title CU-04 — Diagrama de Secuencia: Realizar Check-in
+
+actor Recepcionista as actor
+boundary "PantallaCheckin"     as boundary
+control  "CheckinController"   as control
+entity   "Reserva"             as reserva
+entity   "Huesped"             as huesped
+entity   "Habitacion"          as habitacion
+
+actor    ->  boundary : solicita lista de reservas confirmadas del dia
+boundary ->  control  : consultarReservasConfirmadas(fecha)
+control  ->  reserva  : obtenerReservasDelDia(fecha)
+reserva  --> control  : lista de reservas confirmadas
+control  --> boundary : mostrarReservasConfirmadas(lista)
+boundary --> actor    : muestra reservas con codigo, nombre, habitacion, tipo
+
+actor    ->  boundary : selecciona reserva del cliente
+boundary ->  control  : seleccionarReserva(codigoReserva)
+
+alt reserva no existe o no confirmada (3a)
+    control  --> boundary : reserva no encontrada o no en estado Confirmada
+    boundary --> actor    : informa estado actual, solicita verificar datos
+else reserva valida
+    control  --> boundary : mostrarDatosReserva(huesped, habitacion)
+    boundary --> actor    : muestra datos del huesped y habitacion asignada
+
+    actor    ->  boundary : ingresa CI presentado por el cliente
+    boundary ->  control  : verificarIdentidad(ciPresentado, ciReserva)
+    control  ->  huesped  : obtenerCI(huesped)
+    huesped  --> control  : CI registrado
+
+    alt CI no coincide (6a)
+        control  --> boundary : identidad no verificada
+        boundary --> actor    : solicita documento de identidad valido
+    else CI coincide
+        control  --> boundary : identidad verificada
+
+        actor    ->  boundary : confirma check-in y entrega llave, TV, aire
+        boundary ->  control  : confirmarCheckin(reserva)
+        control  ->  reserva  : actualizarEstado(Activa)
+        control  ->  reserva  : registrarHoraEntrada(horaActual)
+        control  ->  habitacion : actualizarEstado(Ocupada)
+        control  --> boundary : mostrarConfirmacion(horaEntrada)
+        boundary --> actor    : muestra confirmacion exitosa con hora de entrada
+    end
+end
+
+@enduml

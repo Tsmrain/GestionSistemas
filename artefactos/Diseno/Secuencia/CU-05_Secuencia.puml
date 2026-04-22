@@ -1,0 +1,48 @@
+@startuml CU-05_Secuencia
+title CU-05 — Diagrama de Secuencia: Realizar Check-out y Liquidacion
+
+actor Recepcionista as actor
+boundary "PantallaCheckout"      as boundary
+control  "CheckoutController"    as control
+entity   "Reserva"               as reserva
+entity   "Habitacion"            as habitacion
+entity   "Pago"                  as pago
+
+actor    ->  boundary : busca reserva activa del cliente
+boundary ->  control  : buscarReservaActiva(codigoOci)
+
+alt reserva no esta en estado Activa (1a)
+    control  --> boundary : reserva no encontrada o no en estado Activa
+    boundary --> actor    : informa al recepcionista
+else reserva valida
+    control  ->  reserva  : obtenerDatosEstadia(reserva)
+    reserva  --> control  : datos de estadia
+    control  --> boundary : mostrarDatosEstadia(reserva)
+    boundary --> actor    : muestra datos y tiempo transcurrido
+
+    actor    ->  boundary : solicita cierre de estadia
+    boundary ->  control  : calcularLiquidacion(reserva)
+    control  ->  reserva  : registrarHoraSalida(horaActual)
+    control  ->  control  : calcularTiempoTotal(horaEntrada, horaSalida)
+
+    alt tiempo supera bloque contratado (5a)
+        control  ->  pago     : calcularRecargo(tiempoExcedente)
+        pago     --> control  : recargo calculado (RN-02)
+    else cliente se retiro antes del bloque (5b)
+        control  ->  control  : sin recargo ni devolucion (RN-06)
+    end
+
+    control  ->  pago     : calcularMontoFinal(montoBase, recargo)
+    pago     --> control  : resumen de liquidacion
+    control  --> boundary : mostrarLiquidacion(resumen)
+    boundary --> actor    : muestra monto base, recargo y monto final
+
+    actor    ->  boundary : confirma cierre y registra pago
+    boundary ->  control  : confirmarCheckout(reserva)
+    control  ->  reserva  : actualizarEstado(Finalizada)
+    control  ->  habitacion : actualizarEstado(En Limpieza)
+    control  --> boundary : mostrarConfirmacion(checkout)
+    boundary --> actor    : muestra confirmacion exitosa del check-out
+end
+
+@enduml

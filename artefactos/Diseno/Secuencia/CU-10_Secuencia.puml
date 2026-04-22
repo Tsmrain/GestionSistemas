@@ -1,0 +1,38 @@
+@startuml CU-10_Secuencia
+title CU-10 — Diagrama de Secuencia: Generar Reporte por Turno
+
+actor Recepcionista as actor
+boundary "PantallaReporte"         as boundary
+control  "ReporteTurnoController"  as control
+entity   "Turno"                   as turno
+entity   "Reporte"                 as reporte
+
+actor    ->  boundary : solicita cierre del turno activo
+boundary ->  control  : obtenerResumenTurno(turno)
+control  ->  turno    : obtenerResumenTurno(turno)
+turno    --> control  : resumen de operaciones
+
+alt sin operaciones en el turno (1a)
+    control  --> boundary : no hay operaciones registradas
+    boundary --> actor    : solicita confirmacion para cerrar sin operaciones
+    actor    ->  boundary : confirma cierre sin operaciones
+else con operaciones
+    control  --> boundary : mostrarResumenOperaciones(resumen)
+    boundary --> actor    : muestra checkins, checkouts y pagos registrados
+end
+
+actor    ->  boundary : verifica resumen y confirma cierre
+boundary ->  control  : consolidarIngresos(turno)
+control  ->  control  : calcular total con desglose QR y efectivo
+control  ->  reporte  : generarReporte(turno, RN-05)
+reporte  --> control  : reporte generado
+control  ->  turno    : cerrarTurno(turno)
+control  --> boundary : mostrarReporte(reporte)
+boundary --> actor    : muestra reporte generado
+
+actor    ->  boundary : exporta o imprime reporte
+boundary ->  control  : exportarReporte(reporte)
+control  --> boundary : reporte en formato exportable
+boundary --> actor    : entrega reporte exportado
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml CU-02_Colaboracion
+title CU-02 — Diagrama de Colaboración: Registrar Reserva
+
+left to right direction
+
+actor Cliente as actor
+
+boundary "FormularioReserva"          as boundary
+control "RegistrarReservaController"  as control
+entity  "Huesped"                     as huesped
+entity  "Habitacion"                  as habitacion
+entity  "Reserva"                     as reserva
+
+actor      --> boundary    : 1. selecciona habitación disponible
+boundary   --> control     : 2. ingresarDatos(nombre, CI, contacto)
+control    --> huesped     : 3. buscarPorCI(CI)
+huesped    --> control     : 4. datos del cliente o null
+control    --> control     : 5. validarDatos(nombre, CI, contacto)
+control    --> habitacion  : 6. verificarDisponibilidad(habitacion)
+habitacion --> control     : 7. disponible / no disponible
+control    --> reserva     : 8. registrarReserva(habitacion, huesped)
+reserva    --> control     : 9. reserva en estado pendiente de pago
+control    --> boundary    : 10. mostrarDetallesReserva(reserva)
+boundary   --> actor       : 11. muestra detalles de la reserva registrada
+
+@enduml

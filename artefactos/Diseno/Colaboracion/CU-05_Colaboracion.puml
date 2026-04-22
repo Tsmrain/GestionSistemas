@@ -1,0 +1,34 @@
+@startuml CU-05_Colaboracion
+title CU-05 — Diagrama de Colaboración: Realizar Check-out y Liquidacion
+
+left to right direction
+
+actor Recepcionista as actor
+
+boundary "PantallaCheckout"      as boundary
+control "CheckoutController"     as control
+entity  "Reserva"                as reserva
+entity  "Habitacion"             as habitacion
+entity  "Pago"                   as pago
+
+actor    --> boundary   : 1. busca reserva activa del cliente
+boundary --> control    : 2. buscarReservaActiva(codigoOci)
+control  --> reserva    : 3. obtenerDatosEstadia(reserva)
+reserva  --> control    : 4. datos de estadia (huesped, habitacion, horaEntrada)
+control  --> boundary   : 5. mostrarDatosEstadia(reserva)
+boundary --> actor      : 6. muestra datos de estadia y tiempo transcurrido
+actor    --> boundary   : 7. solicita cierre de estadia
+boundary --> control    : 8. calcularLiquidacion(reserva)
+control  --> reserva    : 9. registrarHoraSalida(horaActual)
+control  --> pago       : 10. calcularMontoFinal(montoBase, recargo)
+pago     --> control    : 11. resumen de liquidacion
+control  --> boundary   : 12. mostrarLiquidacion(resumen)
+boundary --> actor      : 13. muestra monto base, recargo y monto final
+actor    --> boundary   : 14. confirma cierre y registra pago
+boundary --> control    : 15. confirmarCheckout(reserva)
+control  --> reserva    : 16. actualizarEstado(Finalizada)
+control  --> habitacion : 17. actualizarEstado(En Limpieza)
+control  --> boundary   : 18. mostrarConfirmacion(checkout)
+boundary --> actor      : 19. muestra confirmacion exitosa del check-out
+
+@enduml

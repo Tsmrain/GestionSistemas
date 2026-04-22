@@ -1,0 +1,57 @@
+classDiagram
+    class IPagoEfectivo {
+        <<interface>>
+        +buscarReservaPendiente(codigoOci)
+        +validarMonto(montoRecibido, montoTotal)
+        +registrarPago(reserva, monto)
+        +generarComprobante(pago)
+    }
+
+    class IReserva {
+        <<interface>>
+        +buscarPorCodigoOCi(codigoOci)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class IVistaPagoEfectivo {
+        <<interface>>
+        +mostrarResumen(reserva)
+        +mostrarComprobante(comprobante)
+        +mostrarError(mensaje)
+    }
+
+    class PagoEfectivoController {
+        +buscarReservaPendiente(codigoOci)
+        +validarMonto(montoRecibido, montoTotal)
+        +registrarPago(reserva, monto)
+        +generarComprobante(pago)
+    }
+
+    class Reserva {
+        +codigo
+        +estado
+        +montoTotal
+        +buscarPorCodigoOCi(codigoOci)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class Pago {
+        +monto
+        +metodoPago
+        +estado
+        +turnoActivo
+        +generarComprobante(pago)
+    }
+
+    class PantallaPagoEfectivo {
+        +mostrarResumen(reserva)
+        +mostrarComprobante(comprobante)
+        +mostrarError(mensaje)
+    }
+
+    IPagoEfectivo <|.. PagoEfectivoController
+    IReserva <|.. Reserva
+    IVistaPagoEfectivo <|.. PantallaPagoEfectivo
+    PagoEfectivoController --> Reserva : consulta
+    PagoEfectivoController --> Pago : crea
+    PantallaPagoEfectivo --> PagoEfectivoController : solicita

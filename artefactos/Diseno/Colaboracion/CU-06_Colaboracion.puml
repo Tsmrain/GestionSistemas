@@ -1,0 +1,29 @@
+@startuml CU-06_Colaboracion
+title CU-06 — Diagrama de Colaboración: Actualizar Estado de Habitacion
+
+left to right direction
+
+actor Recepcionista as actor
+
+boundary "PantallaEstados"              as boundary
+control "EstadoHabitacionController"    as control
+entity  "Habitacion"                    as habitacion
+
+actor      --> boundary    : 1. solicita panel de estados de habitaciones
+boundary   --> control     : 2. obtenerPanelEstados()
+control    --> habitacion  : 3. obtenerTodasConEstado()
+habitacion --> control     : 4. lista de habitaciones con estado actual
+control    --> boundary    : 5. mostrarPanelEstados(habitaciones)
+boundary   --> actor       : 6. muestra panel con todas las habitaciones
+actor      --> boundary    : 7. selecciona habitacion a actualizar
+boundary   --> control     : 8. obtenerTransicionesValidas(habitacion)
+habitacion --> control     : 9. transiciones validas disponibles
+control    --> boundary    : 10. mostrarTransicionesValidas(transiciones)
+actor      --> boundary    : 11. selecciona nuevo estado y confirma
+boundary   --> control     : 12. actualizarEstado(habitacion, nuevoEstado)
+control    --> control     : 13. validarTransicion(habitacion, nuevoEstado, RN-03)
+control    --> habitacion  : 14. actualizarEstado(nuevoEstado)
+control    --> boundary    : 15. mostrarConfirmacion(cambio, marcaTiempo, recepcionista)
+boundary   --> actor       : 16. muestra confirmacion exitosa del cambio
+
+@enduml

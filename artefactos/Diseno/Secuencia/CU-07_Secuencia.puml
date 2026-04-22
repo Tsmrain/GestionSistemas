@@ -1,0 +1,39 @@
+@startuml CU-07_Secuencia
+title CU-07 — Diagrama de Secuencia: Cancelar Reserva
+
+actor Cliente as actor
+boundary "PantallaCancelacion"    as boundary
+control  "CancelacionController"  as control
+entity   "Reserva"                as reserva
+entity   "Habitacion"             as habitacion
+
+actor    ->  boundary : ingresa codigo de reserva o CI del huesped
+boundary ->  control  : buscarReserva(codigoOci)
+control  ->  reserva  : buscarPorCodigoOCi(codigoOci)
+
+alt reserva no encontrada (1a)
+    control  --> boundary : reserva no encontrada
+    boundary --> actor    : informa que la reserva no fue encontrada
+else reserva encontrada
+    reserva  --> control  : detalles de la reserva
+    control  --> boundary : mostrarDetallesReserva(reserva)
+    boundary --> actor    : muestra habitacion, tipo, fecha, estado
+
+    actor    ->  boundary : solicita cancelacion
+    boundary ->  control  : verificarCheckin(reserva)
+
+    alt reserva ya tiene check-in (4a)
+        control  --> boundary : reserva en estado Activa
+        boundary --> actor    : informa que no es posible cancelar
+    else reserva sin check-in
+        control  --> boundary : cancelacion permitida
+        actor    ->  boundary : ingresa motivo y confirma
+        boundary ->  control  : cancelarReserva(reserva, motivo)
+        control  ->  reserva  : actualizarEstado(Cancelada)
+        control  ->  habitacion : liberarHabitacion(habitacion)
+        control  --> boundary : mostrarConfirmacion(cancelacion)
+        boundary --> actor    : muestra confirmacion exitosa
+    end
+end
+
+@enduml

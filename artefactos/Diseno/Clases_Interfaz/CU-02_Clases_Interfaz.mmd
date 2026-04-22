@@ -1,0 +1,70 @@
+classDiagram
+    class IReserva {
+        <<interface>>
+        +registrarReserva(habitacion, huesped)
+        +verificarDisponibilidad(habitacion)
+        +mostrarDetalles()
+    }
+
+    class IHuesped {
+        <<interface>>
+        +buscarPorCI(ci)
+        +registrarHuesped(nombre, ci, contacto)
+        +validarDatos(nombre, ci, contacto)
+    }
+
+    class IVistaReserva {
+        <<interface>>
+        +mostrarFormulario()
+        +mostrarDetallesReserva(reserva)
+        +mostrarError(mensaje)
+    }
+
+    class RegistrarReservaController {
+        +registrarReserva(habitacion, huesped)
+        +verificarDisponibilidad(habitacion)
+        +validarDatos(nombre, ci, contacto)
+    }
+
+    class Reserva {
+        +codigo
+        +estado
+        +fechaIngreso
+        +tipoHabitacion
+        +registrarReserva(habitacion, huesped)
+        +mostrarDetalles()
+    }
+
+    class Huesped {
+        +nombre
+        +ci
+        +contacto
+        +buscarPorCI(ci)
+        +registrarHuesped(nombre, ci, contacto)
+        +validarDatos(nombre, ci, contacto)
+    }
+
+    class Habitacion {
+        +numero
+        +tipo
+        +estado
+        +precio
+        +estaDisponible()
+    }
+
+    class FormularioReserva {
+        +mostrarFormulario()
+        +mostrarDetallesReserva(reserva)
+        +mostrarError(mensaje)
+    }
+
+    IReserva <|.. RegistrarReservaController
+    IReserva <|.. Reserva
+    IHuesped <|.. Huesped
+    IVistaReserva <|.. FormularioReserva
+    RegistrarReservaController --> Reserva : crea
+    RegistrarReservaController --> Huesped : consulta
+    RegistrarReservaController --> Habitacion : verifica
+    FormularioReserva --> RegistrarReservaController : solicita
+    Reserva --> Habitacion : tiene
+    Reserva --> Huesped : pertenece a

@@ -1,0 +1,38 @@
+classDiagram
+    direction TB
+
+    class Cliente {
+        nombre
+        documento
+        telefono
+        email
+    }
+
+    class Reserva {
+        fechaEntrada
+        fechaSalida
+        estado
+        /total
+    }
+
+    class Habitacion {
+        numero
+        estado
+    }
+
+    class TipoHabitacion {
+        nombre
+        descripcion
+        precioBase
+    }
+
+    class Pago {
+        monto
+        fecha
+        metodoPago
+    }
+
+    Cliente "1" -- "*" Reserva : Realiza >
+    Reserva "*" -- "1" Habitacion : Se-asigna-a >
+    Habitacion "*" -- "1" TipoHabitacion : Descrita-por >
+    Reserva "1" -- "0..1" Pago : Pagada-mediante >

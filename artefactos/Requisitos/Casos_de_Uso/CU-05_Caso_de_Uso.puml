@@ -1,0 +1,31 @@
+@startuml CU-05: Realizar Check-out y Liquidacion
+!theme plain
+left to right direction
+
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Realizar Check-out\ny Liquidacion" as CU05
+    usecase "Buscar reserva\nactiva del cliente" as UC1
+    usecase "Mostrar datos\nde estadia" as UC2
+    usecase "Calcular tiempo\ntotal y liquidacion" as UC3
+    usecase "Confirmar cierre\ny registrar pago" as UC4
+    usecase "Actualizar estado\na En Limpieza" as UC5
+    usecase "Aplicar recargo\npor excedente" as UC6
+    usecase "Reserva no esta\nen estado Activa" as UC7
+}
+
+Recepcionista --> CU05
+
+' Pasos obligatorios (Inclusión)
+CU05 ..> UC1 : <<include>>
+CU05 ..> UC2 : <<include>>
+CU05 ..> UC3 : <<include>>
+CU05 ..> UC4 : <<include>>
+CU05 ..> UC5 : <<include>>
+
+' Casos alternativos (Extensión)
+UC6 ..> CU05 : <<extend>>
+UC7 ..> CU05 : <<extend>>
+
+@enduml

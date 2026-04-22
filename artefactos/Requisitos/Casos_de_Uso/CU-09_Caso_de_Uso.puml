@@ -1,0 +1,27 @@
+@startuml CU-09: Gestionar Tarifas y Tipos de Habitacion
+!theme plain
+left to right direction
+
+actor "Dueño" as Dueno
+
+rectangle "Sistema de Reservas" {
+    usecase "Gestionar Tarifas\ny Tipos de Habitacion" as CU09
+    usecase "Consultar panel\nde configuracion" as UC1
+    usecase "Seleccionar tipo\nde habitacion" as UC2
+    usecase "Modificar precio\ny politica de recargo" as UC3
+    usecase "Activar nueva\ntarifa" as UC4
+    usecase "Valores ingresados\nno validos" as UC5
+}
+
+Dueno --> CU09
+
+' Pasos obligatorios (Inclusión)
+CU09 ..> UC1 : <<include>>
+CU09 ..> UC2 : <<include>>
+CU09 ..> UC3 : <<include>>
+CU09 ..> UC4 : <<include>>
+
+' Caso alternativo (Extensión)
+UC5 ..> CU09 : <<extend>>
+
+@enduml

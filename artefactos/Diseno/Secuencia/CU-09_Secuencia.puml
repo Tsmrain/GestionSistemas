@@ -1,0 +1,36 @@
+@startuml CU-09_Secuencia
+title CU-09 — Diagrama de Secuencia: Gestionar Tarifas y Tipos de Habitacion
+
+actor Dueno as actor
+boundary "PantallaConfiguracion"  as boundary
+control  "TarifaController"       as control
+entity   "TipoHabitacion"         as tipo
+
+actor    ->  boundary : solicita panel de configuracion de tarifas
+boundary ->  control  : obtenerTarifasActuales()
+control  ->  tipo     : obtenerTarifasActuales()
+tipo     --> control  : tipos con tarifas actuales
+control  --> boundary : mostrarPanelTarifas(tarifas)
+boundary --> actor    : muestra tipos de habitacion y tarifas
+
+actor    ->  boundary : selecciona tipo de habitacion a modificar
+boundary ->  control  : mostrarValoresActuales(tipo)
+control  --> boundary : muestra precio por bloque y politica de recargo
+boundary --> actor    : muestra valores actuales
+
+actor    ->  boundary : ingresa nuevo precio y configura recargo
+boundary ->  control  : validarValores(precio, recargo)
+
+alt valores no validos (4a)
+    control  --> boundary : valores no numericos o menores a cero
+    boundary --> actor    : informa error de validacion
+else valores validos
+    actor    ->  boundary : confirma activacion de nueva tarifa
+    boundary ->  control  : actualizarTarifa(tipo, precio, recargo)
+    control  ->  tipo     : guardar tarifa con vigencia inmediata
+    control  ->  control  : registrarAuditoria(usuario, fecha, valorAnterior, valorNuevo)
+    control  --> boundary : mostrarConfirmacion(cambio)
+    boundary --> actor    : muestra confirmacion exitosa del cambio
+end
+
+@enduml

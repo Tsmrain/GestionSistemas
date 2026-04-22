@@ -1,0 +1,33 @@
+@startuml CU-04_Colaboracion
+title CU-04 — Diagrama de Colaboración: Realizar Check-in
+
+left to right direction
+
+actor Recepcionista as actor
+
+boundary "PantallaCheckin"     as boundary
+control "CheckinController"    as control
+entity  "Reserva"              as reserva
+entity  "Huesped"              as huesped
+entity  "Habitacion"           as habitacion
+
+actor      --> boundary    : 1. solicita lista de reservas confirmadas del dia
+boundary   --> control     : 2. consultarReservasConfirmadas(fecha)
+control    --> reserva     : 3. obtenerReservasDelDia(fecha)
+reserva    --> control     : 4. lista de reservas confirmadas
+control    --> boundary    : 5. mostrarReservasConfirmadas(lista)
+boundary   --> actor       : 6. muestra reservas con codigo, nombre, habitacion, tipo
+actor      --> boundary    : 7. selecciona reserva del cliente
+boundary   --> control     : 8. verificarIdentidad(ciPresentado, ciReserva)
+control    --> huesped     : 9. obtenerCI(huesped)
+huesped    --> control     : 10. CI registrado
+control    --> control     : 11. comparar ciPresentado con ciReserva
+control    --> boundary    : 12. identidad verificada
+actor      --> boundary    : 13. confirma check-in y entrega llave, TV, aire
+boundary   --> control     : 14. confirmarCheckin(reserva)
+control    --> reserva     : 15. actualizarEstado(Activa)
+control    --> habitacion  : 16. actualizarEstado(Ocupada)
+control    --> boundary    : 17. mostrarConfirmacion(horaEntrada)
+boundary   --> actor       : 18. muestra confirmacion exitosa con hora de entrada
+
+@enduml

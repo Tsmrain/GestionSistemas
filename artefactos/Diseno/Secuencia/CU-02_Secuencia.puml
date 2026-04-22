@@ -1,0 +1,45 @@
+@startuml CU-02_Secuencia
+title CU-02 — Diagrama de Secuencia: Registrar Reserva
+
+actor Cliente as actor
+boundary "FormularioReserva"          as boundary
+control  "RegistrarReservaController" as control
+entity   "Huesped"                    as huesped
+entity   "Habitacion"                 as habitacion
+entity   "Reserva"                    as reserva
+
+actor    ->  boundary : selecciona habitación disponible
+boundary ->  control  : ingresarDatos(nombre, CI, contacto)
+
+control  ->  huesped  : buscarPorCI(CI)
+huesped  --> control  : clienteExistente o null
+
+alt cliente ya registrado (2a)
+    control --> boundary : muestra datos del cliente automaticamente
+else cliente nuevo
+    control ->  huesped  : registrarHuesped(nombre, CI, contacto)
+    huesped --> control  : cliente registrado
+end
+
+control  ->  control  : validarDatos(nombre, CI, contacto)
+
+alt error en los datos (4a)
+    control  --> boundary : solicita corregir los datos ingresados
+    boundary --> actor    : muestra mensaje de error
+else datos validos
+    control  ->  habitacion : verificarDisponibilidad(habitacion)
+    habitacion --> control  : estado
+
+    alt habitacion no disponible (3a)
+        control  --> boundary : mensaje habitacion no disponible
+        boundary --> actor    : puede seleccionar otra habitacion o cambiar fecha
+    else habitacion disponible
+        control  ->  reserva  : registrarReserva(habitacion, huesped)
+        reserva  --> control  : reserva en estado pendiente de pago
+
+        control  --> boundary : mostrarDetallesReserva(reserva)
+        boundary --> actor    : muestra detalles de la reserva registrada
+    end
+end
+
+@enduml

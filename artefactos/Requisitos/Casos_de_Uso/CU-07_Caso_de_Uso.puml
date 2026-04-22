@@ -1,0 +1,29 @@
+@startuml CU-07: Cancelar Reserva
+!theme plain
+left to right direction
+
+actor "Cliente" as Cliente
+actor "Recepcionista" as Recepcionista
+
+rectangle "Sistema de Reservas" {
+    usecase "Cancelar\nReserva" as CU07
+    usecase "Buscar reserva\npor codigo o CI" as UC1
+    usecase "Verificar que no\ntenga check-in" as UC2
+    usecase "Confirmar cancelacion\ny liberar habitacion" as UC3
+    usecase "Reserva no\nencontrada" as UC4
+    usecase "Reserva ya tiene\ncheck-in realizado" as UC5
+}
+
+Cliente --> CU07
+Recepcionista --> CU07
+
+' Pasos obligatorios (Inclusión)
+CU07 ..> UC1 : <<include>>
+CU07 ..> UC2 : <<include>>
+CU07 ..> UC3 : <<include>>
+
+' Casos alternativos (Extensión)
+UC4 ..> CU07 : <<extend>>
+UC5 ..> CU07 : <<extend>>
+
+@enduml

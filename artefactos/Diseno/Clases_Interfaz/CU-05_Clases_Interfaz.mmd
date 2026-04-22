@@ -1,0 +1,73 @@
+classDiagram
+    class ICheckout {
+        <<interface>>
+        +buscarReservaActiva(codigoOci)
+        +calcularLiquidacion(reserva)
+        +confirmarCheckout(reserva)
+    }
+
+    class IReserva {
+        <<interface>>
+        +obtenerDatosEstadia(reserva)
+        +actualizarEstado(reserva, estado)
+        +registrarHoraSalida(reserva)
+    }
+
+    class IHabitacion {
+        <<interface>>
+        +actualizarEstado(habitacion, estado)
+    }
+
+    class IVistaCheckout {
+        <<interface>>
+        +mostrarDatosEstadia(reserva)
+        +mostrarLiquidacion(resumen)
+        +mostrarConfirmacion(checkout)
+        +mostrarError(mensaje)
+    }
+
+    class CheckoutController {
+        +buscarReservaActiva(codigoOci)
+        +calcularLiquidacion(reserva)
+        +confirmarCheckout(reserva)
+    }
+
+    class Reserva {
+        +codigo
+        +estado
+        +horaEntrada
+        +horaSalida
+        +obtenerDatosEstadia(reserva)
+        +actualizarEstado(reserva, estado)
+        +registrarHoraSalida(reserva)
+    }
+
+    class Habitacion {
+        +numero
+        +tipo
+        +estado
+        +actualizarEstado(habitacion, estado)
+    }
+
+    class Pago {
+        +montoBase
+        +recargo
+        +montoFinal
+        +metodoPago
+    }
+
+    class PantallaCheckout {
+        +mostrarDatosEstadia(reserva)
+        +mostrarLiquidacion(resumen)
+        +mostrarConfirmacion(checkout)
+        +mostrarError(mensaje)
+    }
+
+    ICheckout <|.. CheckoutController
+    IReserva <|.. Reserva
+    IHabitacion <|.. Habitacion
+    IVistaCheckout <|.. PantallaCheckout
+    CheckoutController --> Reserva : consulta
+    CheckoutController --> Habitacion : actualiza
+    CheckoutController --> Pago : calcula
+    PantallaCheckout --> CheckoutController : solicita

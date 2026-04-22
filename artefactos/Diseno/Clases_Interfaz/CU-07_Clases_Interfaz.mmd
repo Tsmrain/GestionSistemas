@@ -1,0 +1,59 @@
+classDiagram
+    class ICancelacion {
+        <<interface>>
+        +buscarReserva(codigoOci)
+        +verificarCheckin(reserva)
+        +cancelarReserva(reserva, motivo)
+    }
+
+    class IReserva {
+        <<interface>>
+        +buscarPorCodigoOCi(codigoOci)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class IHabitacion {
+        <<interface>>
+        +liberarHabitacion(habitacion)
+    }
+
+    class IVistaCancelacion {
+        <<interface>>
+        +mostrarDetallesReserva(reserva)
+        +mostrarConfirmacion(cancelacion)
+        +mostrarError(mensaje)
+    }
+
+    class CancelacionController {
+        +buscarReserva(codigoOci)
+        +verificarCheckin(reserva)
+        +cancelarReserva(reserva, motivo)
+    }
+
+    class Reserva {
+        +codigo
+        +estado
+        +motivo
+        +buscarPorCodigoOCi(codigoOci)
+        +actualizarEstado(reserva, estado)
+    }
+
+    class Habitacion {
+        +numero
+        +estado
+        +liberarHabitacion(habitacion)
+    }
+
+    class PantallaCancelacion {
+        +mostrarDetallesReserva(reserva)
+        +mostrarConfirmacion(cancelacion)
+        +mostrarError(mensaje)
+    }
+
+    ICancelacion <|.. CancelacionController
+    IReserva <|.. Reserva
+    IHabitacion <|.. Habitacion
+    IVistaCancelacion <|.. PantallaCancelacion
+    CancelacionController --> Reserva : consulta
+    CancelacionController --> Habitacion : libera
+    PantallaCancelacion --> CancelacionController : solicita

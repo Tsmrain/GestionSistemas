@@ -1,0 +1,42 @@
+@startuml CU-11_Secuencia
+title CU-11 — Diagrama de Secuencia: Generar Reporte Consolidado
+
+actor Dueno as actor
+boundary "PantallaReporteConsolidado"      as boundary
+control  "ReporteConsolidadoController"    as control
+entity   "ReporteConsolidado"              as reporte
+
+actor    ->  boundary : solicita generacion de reporte consolidado
+boundary ->  control  : mostrarFiltros()
+control  --> boundary : muestra panel de filtros (fechas, tipo, turno)
+boundary --> actor    : muestra filtros disponibles
+
+actor    ->  boundary : selecciona rango de fechas y aplica filtros
+boundary ->  control  : validarRangoFechas(fechaInicio, fechaFin)
+
+alt rango de fechas invalido (3a)
+    control  --> boundary : fecha inicio mayor a fecha fin
+    boundary --> actor    : informa error de validacion
+else rango valido
+    boundary ->  control  : consolidarDatos(filtros)
+    control  ->  reporte  : consolidarDatos(filtros)
+
+    alt sin datos para filtros seleccionados (4a)
+        reporte  --> control  : sin datos disponibles
+        control  --> boundary : no hay informacion para ese periodo
+        boundary --> actor    : solicita modificar filtros
+    else datos disponibles
+        reporte  --> control  : datos consolidados
+        control  ->  reporte  : generarReporte(datos)
+        reporte  --> control  : reporte con graficos de rendimiento
+        control  --> boundary : mostrarReporte(reporte, graficos)
+        boundary --> actor    : muestra desglose por metodo, tipo y turno
+
+        actor    ->  boundary : exporta reporte en PDF
+        boundary ->  control  : exportarPDF(reporte)
+        control  --> boundary : reporte en formato PDF
+        boundary --> actor    : entrega reporte PDF
+    end
+end
+
+@enduml
