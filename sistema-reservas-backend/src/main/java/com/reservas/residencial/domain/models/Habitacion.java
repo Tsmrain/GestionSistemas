@@ -20,4 +20,7 @@ public class Habitacion {
     private String tipo;
     private String estado;
     private Double precioBase;
+
+    @Version
+    private Long version;
 }
