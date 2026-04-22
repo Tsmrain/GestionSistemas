@@ -27,7 +27,7 @@ public class ReservaService {
         }
 
         // 1. Buscar la habitación asociada (Experto en Información)
-        Long habitacionId = reserva.getHabitacion().getId();
+        Long habitacionId = java.util.Objects.requireNonNull(reserva.getHabitacion().getId());
         Habitacion habitacion = habitacionRepository.findById(habitacionId).orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada"));
 
         // 2. Validar Precondición: Estado debe ser 'Disponible' (Mannino - Última línea de defensa)

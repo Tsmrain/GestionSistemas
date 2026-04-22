@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("null")
 class ReservaControllerIntegrationTest {
 
     @Autowired
@@ -46,9 +47,12 @@ class ReservaControllerIntegrationTest {
         request.setFechaSalida(LocalDate.now().plusDays(1));
         request.setTotal(100.0);
 
+        MediaType mediaType = java.util.Objects.requireNonNull(MediaType.APPLICATION_JSON);
+        String jsonContent = java.util.Objects.requireNonNull(objectMapper.writeValueAsString(request));
+
         mockMvc.perform(post("/api/reservas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .contentType(mediaType)
+                .content(jsonContent))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clienteNombre").value("Prueba Integracion"))
                 .andExpect(jsonPath("$.habitacion.estado").value("Ocupada"));
