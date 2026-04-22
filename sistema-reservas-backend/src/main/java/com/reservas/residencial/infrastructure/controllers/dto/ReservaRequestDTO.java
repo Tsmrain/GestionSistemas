@@ -7,7 +7,7 @@ import java.time.LocalDate;
 public class ReservaRequestDTO {
     private String clienteNombre;
     private Long habitacionId;
-    private LocalDate fechaInicio;
-    private LocalDate fechaFin;
-    private Double montoTotal;
+    private LocalDate fechaEntrada;
+    private LocalDate fechaSalida;
+    private Double total;
 }

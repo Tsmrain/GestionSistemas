@@ -42,9 +42,9 @@ class ReservaControllerIntegrationTest {
         ReservaRequestDTO request = new ReservaRequestDTO();
         request.setClienteNombre("Prueba Integracion");
         request.setHabitacionId(h.getId());
-        request.setFechaInicio(LocalDate.now());
-        request.setFechaFin(LocalDate.now().plusDays(1));
-        request.setMontoTotal(100.0);
+        request.setFechaEntrada(LocalDate.now());
+        request.setFechaSalida(LocalDate.now().plusDays(1));
+        request.setTotal(100.0);
 
         mockMvc.perform(post("/api/reservas")
                 .contentType(MediaType.APPLICATION_JSON)

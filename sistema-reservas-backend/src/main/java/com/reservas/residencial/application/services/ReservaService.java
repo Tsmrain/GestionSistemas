@@ -21,6 +21,11 @@ public class ReservaService {
      */
     @Transactional
     public Reserva crearReserva(Reserva reserva) {
+        // Validación defensiva (Null Safety)
+        if (reserva == null || reserva.getHabitacion() == null || reserva.getHabitacion().getId() == null) {
+            throw new IllegalArgumentException("La reserva y la habitación asociada son obligatorias.");
+        }
+
         // 1. Buscar la habitación asociada (Experto en Información)
         Habitacion habitacion = habitacionRepository.findById(reserva.getHabitacion().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada"));

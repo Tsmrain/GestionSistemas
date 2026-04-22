@@ -40,7 +40,7 @@ class ReservaServiceTest {
         r.setClienteNombre("Santiago");
 
         when(habitacionRepository.findById(1L)).thenReturn(Optional.of(h));
-        when(reservaRepository.save(any(Reserva.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(reservaRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         // Act
         Reserva resultado = reservaService.crearReserva(r);
@@ -67,8 +67,8 @@ class ReservaServiceTest {
         });
 
         // Verificar que NO se guardó la reserva ni se alteró el estado nuevamente
-        verify(reservaRepository, never()).save(any(Reserva.class));
+        verify(reservaRepository, never()).save(any());
         // El estado se mantiene como estaba (Ocupada), no hubo cambios que guardar
-        verify(habitacionRepository, never()).save(any(Habitacion.class));
+        verify(habitacionRepository, never()).save(any());
     }
 }

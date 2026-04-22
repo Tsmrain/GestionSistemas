@@ -22,13 +22,13 @@ public class Reserva {
     private String clienteNombre;
 
     @Column(nullable = false)
-    private LocalDate fechaInicio;
+    private LocalDate fechaEntrada;
 
     @Column(nullable = false)
-    private LocalDate fechaFin;
+    private LocalDate fechaSalida;
 
     @Column(nullable = false)
-    private Double montoTotal;
+    private Double total;
 
     @ManyToOne
     @JoinColumn(name = "habitacion_id", nullable = false)

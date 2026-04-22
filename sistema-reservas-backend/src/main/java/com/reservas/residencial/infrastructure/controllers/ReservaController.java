@@ -21,9 +21,9 @@ public class ReservaController {
         try {
             Reserva nuevaReserva = new Reserva();
             nuevaReserva.setClienteNombre(request.getClienteNombre());
-            nuevaReserva.setFechaInicio(request.getFechaInicio());
-            nuevaReserva.setFechaFin(request.getFechaFin());
-            nuevaReserva.setMontoTotal(request.getMontoTotal());
+            nuevaReserva.setFechaEntrada(request.getFechaEntrada());
+            nuevaReserva.setFechaSalida(request.getFechaSalida());
+            nuevaReserva.setTotal(request.getTotal());
             
             Habitacion h = new Habitacion();
             h.setId(request.getHabitacionId());
