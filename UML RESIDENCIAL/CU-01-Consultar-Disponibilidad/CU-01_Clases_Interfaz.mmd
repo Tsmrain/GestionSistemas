@@ -1,13 +1,13 @@
 classDiagram
     class IDisponibilidad {
         <<interface>>
-        +consultarDisponibilidad(tipo, fecha)
+        +consultarDisponibilidad(tipoHabitacion, fechaConsulta)
         +validarFecha(fecha)
     }
 
     class IHabitacion {
         <<interface>>
-        +obtenerHabitacionesDisponibles(tipo, fecha)
+        +obtenerHabitacionesDisponibles(tipoHabitacion, fechaConsulta)
         +estaDisponible()
     }
 
@@ -19,7 +19,7 @@ classDiagram
     }
 
     class DisponibilidadController {
-        +consultarDisponibilidad(tipo, fecha)
+        +consultarDisponibilidad(tipoHabitacion, fechaConsulta)
         +validarFecha(fecha)
     }
 
@@ -28,7 +28,7 @@ classDiagram
         +tipo
         +estado
         +precio
-        +obtenerHabitacionesDisponibles(tipo, fecha)
+        +obtenerHabitacionesDisponibles(tipoHabitacion, fechaConsulta)
         +estaDisponible()
     }
 

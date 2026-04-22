@@ -10,9 +10,9 @@ class DisponibilidadController {
         });
     }
 
-    async consultarDisponibilidad(tipo, fecha) {
+    async consultarDisponibilidad(tipoHabitacion, fechaConsulta) {
         // 1. Validar la fecha (Regla de negocio simple delegada al controlador de aplicación)
-        if (!this.validarFecha(fecha)) {
+        if (!this.validarFecha(fechaConsulta)) {
             return;
         }
 
@@ -21,7 +21,7 @@ class DisponibilidadController {
 
         // 3. Consultar al sistema (Backend) - Operación del Sistema
         try {
-            const url = `http://localhost:8081/api/habitaciones/disponibles?tipo=${tipo}&fecha=${fecha}`;
+            const url = `http://localhost:8081/api/habitaciones/disponibles?tipoHabitacion=${tipoHabitacion}&fechaConsulta=${fechaConsulta}`;
             const response = await fetch(url);
 
             if (!response.ok) {
@@ -50,13 +50,13 @@ class DisponibilidadController {
         }
     }
 
-    validarFecha(fecha) {
+    validarFecha(fechaConsulta) {
         const hoy = new Date().toISOString().split('T')[0];
-        if (!fecha) {
+        if (!fechaConsulta) {
             this.view.mostrarError("Por favor selecciona una fecha");
             return false;
         }
-        if (fecha < hoy) {
+        if (fechaConsulta < hoy) {
             this.view.mostrarError("La fecha no puede ser menor a hoy.");
             return false;
         }

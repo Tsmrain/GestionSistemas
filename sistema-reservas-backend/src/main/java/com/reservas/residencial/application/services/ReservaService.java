@@ -17,7 +17,8 @@ public class ReservaService {
 
     /**
      * Implementación del Contrato de Operación: registrarReserva
-     * Sigue los principios de Larman (Expert) y Mannino (Integridad/Transaccionalidad)
+     * Sigue los principios de Larman (Expert) y Mannino
+     * (Integridad/Transaccionalidad)
      */
     @Transactional
     public Reserva crearReserva(Reserva reserva) {
@@ -28,14 +29,18 @@ public class ReservaService {
 
         // 1. Buscar la habitación asociada (Experto en Información)
         Long habitacionId = java.util.Objects.requireNonNull(reserva.getHabitacion().getId());
-        Habitacion habitacion = habitacionRepository.findById(habitacionId).orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada"));
+        Habitacion habitacion = habitacionRepository.findById(habitacionId)
+                .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada"));
 
-        // 2. Validar Precondición: Estado debe ser 'Disponible' (Mannino - Última línea de defensa)
+        // 2. Validar Precondición: Estado debe ser 'Disponible' (Mannino - Última línea
+        // de defensa)
         if (!"Disponible".equals(habitacion.getEstado())) {
-            throw new IllegalStateException("La habitación " + habitacion.getNumero() + " no está disponible para reserva.");
+            throw new IllegalStateException(
+                    "La habitación " + habitacion.getNumero() + " no está disponible para reserva.");
         }
 
-        // 3. Modificación de Atributo: Cambiar estado a 'Ocupada' (Postcondición Larman)
+        // 3. Modificación de Atributo: Cambiar estado a 'Ocupada' (Postcondición
+        // Larman)
         habitacion.setEstado("Ocupada");
         habitacionRepository.save(habitacion);
 

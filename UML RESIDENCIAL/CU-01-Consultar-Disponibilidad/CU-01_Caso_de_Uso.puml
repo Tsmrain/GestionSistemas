@@ -9,7 +9,7 @@ actor "Recepcionista" as Recepcionista
 rectangle "Sistema de Reservas" {
     usecase "Consultar\nDisponibilidad" as CU01
     usecase "Seleccionar tipo\nde habitación" as UC1
-    usecase "Ingresar fecha y hora" as UC2
+    usecase "Ingresar fecha" as UC2
     usecase "Verificar\ndisponibilidad" as UC3
     usecase "Mostrar habitaciones\ndisponibles" as UC4
     usecase "Mostrar mensaje\nsin disponibilidad" as UC5

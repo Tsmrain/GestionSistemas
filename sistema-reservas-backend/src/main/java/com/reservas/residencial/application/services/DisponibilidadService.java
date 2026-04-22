@@ -13,10 +13,10 @@ public class DisponibilidadService {
     @Autowired
     private HabitacionRepository habitacionRepository;
 
-    public List<Habitacion> obtenerHabitacionesDisponibles(String tipo, String fecha) {
-        if (tipo == null || tipo.equals("Todo")) {
+    public List<Habitacion> obtenerHabitacionesDisponibles(String tipoHabitacion, String fechaConsulta) {
+        if (tipoHabitacion == null || tipoHabitacion.equals("Todo")) {
             return habitacionRepository.findByEstado("Disponible");
         }
-        return habitacionRepository.findByTipoAndEstado(tipo, "Disponible");
+        return habitacionRepository.findByTipoAndEstado(tipoHabitacion, "Disponible");
     }
 }

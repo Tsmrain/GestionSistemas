@@ -10,9 +10,9 @@ class DisponibilidadView {
     // El controlador llama a este método para saber cuando se hace click
     onBuscar(callback) {
         this.btnBuscar.addEventListener("click", (e) => {
-            const tipo = this.tipoSelect.value;
-            const fecha = this.fechaInput.value;
-            callback(tipo, fecha); // le avisa al controlador
+            const tipoHabitacion = this.tipoSelect.value;
+            const fechaConsulta = this.fechaInput.value;
+            callback(tipoHabitacion, fechaConsulta); // le avisa al controlador
         });
     }
 
@@ -36,7 +36,6 @@ class DisponibilidadView {
         <span class="badge">Disponible</span>
         <div class="precio">
             <p class="precio-monto">Bs ${h.precioBase}</p>
-            <p class="precio-label">${h.tipo.toLowerCase() === "super vip" ? "6 hrs" : "12 hrs"}</p>
         </div>
         <button class="btn-reservar" data-id="${h.id}" data-numero="${h.numero}" data-tipo="${h.tipo}" data-precio="${h.precioBase}">Reservar</button>
     </div>
