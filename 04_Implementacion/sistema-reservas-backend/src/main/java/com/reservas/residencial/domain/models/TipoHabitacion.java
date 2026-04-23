@@ -24,6 +24,9 @@ public class TipoHabitacion {
     @Column(name = "precio_base")
     private Double precioBase;
 
+    @Column(name = "duracion_horas")
+    private Integer duracionHoras;
+
     private String descripcion;
 
     public Double getPrecio() {

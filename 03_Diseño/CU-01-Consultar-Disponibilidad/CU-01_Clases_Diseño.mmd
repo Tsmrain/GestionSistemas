@@ -1,17 +1,23 @@
 classDiagram
     direction TB
-    
+
     class DisponibilidadController {
-        +getHabitacionesDisponibles(LocalDate, String) List
+        +consultarDisponibilidad(ConsultaDisponibilidadRequest) List
     }
 
     class DisponibilidadService {
-        +consultarDisponibilidad(LocalDate, String) List
+        +consultarDisponibilidad(ConsultarDisponibilidadQuery) List
     }
 
-    class HabitacionRepository {
-        <<interface>>
-        +findByTipo_NombreTipoAndEstadoActual(String, String) List
+    class HabitacionRepositoryPort {
+        <<port>>
+        +findDisponibles(LocalDate, String) List
+    }
+
+    class HabitacionDisponibleResponse {
+        +id
+        +numero
+        +estadoActual
     }
 
     class Habitacion {
@@ -23,11 +29,13 @@ classDiagram
     class TipoHabitacion {
         -String nombreTipo
         -Double precioBase
+        -Integer duracionHoras
         -String descripcion
         +getPrecio() Double
     }
 
     DisponibilidadController --> DisponibilidadService : usa
-    DisponibilidadService --> HabitacionRepository : consulta
-    HabitacionRepository ..> Habitacion : retorna
+    DisponibilidadService --> HabitacionRepositoryPort : consulta
+    DisponibilidadService --> HabitacionDisponibleResponse : construye
+    HabitacionRepositoryPort ..> Habitacion : retorna
     Habitacion "*" --> "1" TipoHabitacion : clasificada-por

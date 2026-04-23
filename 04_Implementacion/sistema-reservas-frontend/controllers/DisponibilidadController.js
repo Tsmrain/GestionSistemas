@@ -40,12 +40,15 @@ class DisponibilidadController {
                 return;
             }
 
+            window.fechaBusquedaActual = fecha;
+
             // Mapeo seguro del JSON del backend al modelo del frontend
             const habitaciones = data.map(function(h) {
                 var tipoNombre = (h.tipo && h.tipo.nombreTipo) ? h.tipo.nombreTipo : "Sin Tipo";
                 var estadoActual = h.estadoActual || "Disponible";
                 var precio = (h.tipo && h.tipo.precioBase) ? h.tipo.precioBase : 0;
-                return new Habitacion(h.id, h.numero, tipoNombre, estadoActual, precio);
+                var duracionHoras = (h.tipo && h.tipo.duracionHoras) ? h.tipo.duracionHoras : 12;
+                return new Habitacion(h.id, h.numero, tipoNombre, estadoActual, precio, duracionHoras);
             });
 
             this.view.renderizarHabitaciones(habitaciones);

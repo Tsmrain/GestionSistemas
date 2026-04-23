@@ -1,7 +1,7 @@
-package com.reservas.residencial.application.services;
+package com.reservas.residencial.application.ports.out;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public interface FileStorageService {
+public interface FileStoragePort {
     String guardar(MultipartFile file);
 }

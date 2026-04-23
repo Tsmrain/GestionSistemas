@@ -14,7 +14,9 @@ class ReservaController {
                     id: btn.getAttribute("data-id"),
                     numero: btn.getAttribute("data-numero"),
                     tipo: btn.getAttribute("data-tipo"),
-                    precio: btn.getAttribute("data-precio")
+                    precio: btn.getAttribute("data-precio"),
+                    duracionHoras: btn.getAttribute("data-duracion"),
+                    fechaIngreso: window.fechaBusquedaActual || ""
                 };
                 self._abrirFormulario(habitacion);
             }

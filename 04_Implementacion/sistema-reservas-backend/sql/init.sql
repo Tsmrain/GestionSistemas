@@ -1,23 +1,21 @@
--- TABLA DE TIPOS DE HABITACIÓN
-CREATE TABLE tipos_habitacion (
-    id SERIAL PRIMARY KEY,
-    nombre_tipo VARCHAR(50) NOT NULL,
+CREATE TABLE IF NOT EXISTS tipos_habitacion (
+    id BIGSERIAL PRIMARY KEY,
+    nombre_tipo VARCHAR(50) NOT NULL UNIQUE,
     precio_base DOUBLE PRECISION NOT NULL,
-    descripcion TEXT
+    duracion_horas INTEGER NOT NULL,
+    descripcion VARCHAR(255)
 );
 
--- TABLA DE HABITACIONES
-CREATE TABLE habitaciones (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS habitaciones (
+    id BIGSERIAL PRIMARY KEY,
     numero VARCHAR(10) NOT NULL UNIQUE,
-    tipo_id INTEGER REFERENCES tipos_habitacion(id),
-    estado_actual VARCHAR(20) DEFAULT 'Disponible',
-    version BIGINT DEFAULT 0
+    tipo_id BIGINT NOT NULL REFERENCES tipos_habitacion(id),
+    estado_actual VARCHAR(20) NOT NULL DEFAULT 'Disponible',
+    version BIGINT NOT NULL DEFAULT 0
 );
 
--- TABLA DE HUÉSPEDES
-CREATE TABLE huespedes (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS huespedes (
+    id BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     ci VARCHAR(20),
     celular VARCHAR(20),
@@ -25,31 +23,39 @@ CREATE TABLE huespedes (
     url_foto_reverso TEXT
 );
 
--- TABLA DE RESERVAS
-CREATE TABLE reservas (
-    id SERIAL PRIMARY KEY,
-    huesped_id INTEGER REFERENCES huespedes(id),
-    habitacion_id INTEGER REFERENCES habitaciones(id),
+CREATE TABLE IF NOT EXISTS reservas (
+    id BIGSERIAL PRIMARY KEY,
+    huesped_id BIGINT NOT NULL REFERENCES huespedes(id),
+    habitacion_id BIGINT NOT NULL REFERENCES habitaciones(id),
     monto_total DOUBLE PRECISION NOT NULL,
-    fecha_creacion DATE DEFAULT CURRENT_DATE,
+    fecha_creacion DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_ingreso DATE NOT NULL,
     cantidad_bloques INTEGER NOT NULL,
-    estado VARCHAR(20) DEFAULT 'PENDIENTE_PAGO'
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE_PAGO'
 );
 
--- DATOS INICIALES
-INSERT INTO tipos_habitacion (nombre_tipo, precio_base, descripcion) VALUES
-('Sencilla', 100.0, 'Habitación con cama individual'),
-('Doble', 150.0, 'Habitación con dos camas individuales'),
-('VIP', 300.0, 'Suite de lujo con vista al mar');
+INSERT INTO tipos_habitacion (nombre_tipo, precio_base, duracion_horas, descripcion)
+VALUES
+    ('Estandar', 150.0, 12, 'Habitacion estandar para estadias de 12 horas'),
+    ('VIP', 180.0, 12, 'Habitacion VIP para estadias de 12 horas'),
+    ('SUPERVIP', 250.0, 6, 'Habitacion SUPERVIP para estadias de 6 horas')
+ON CONFLICT (nombre_tipo) DO UPDATE
+SET precio_base = EXCLUDED.precio_base,
+    duracion_horas = EXCLUDED.duracion_horas,
+    descripcion = EXCLUDED.descripcion;
 
-INSERT INTO habitaciones (numero, tipo_id, estado_actual) VALUES
-('101', 1, 'Disponible'),
-('102', 1, 'Disponible'),
-('103', 1, 'Disponible'),
-('104', 1, 'Disponible'),
-('201', 2, 'Disponible'),
-('202', 2, 'Disponible'),
-('203', 2, 'Disponible'),
-('301', 3, 'Disponible'),
-('302', 3, 'Disponible');
+INSERT INTO habitaciones (numero, tipo_id, estado_actual, version)
+VALUES
+    ('101', 1, 'Disponible', 0),
+    ('102', 1, 'Disponible', 0),
+    ('103', 1, 'Disponible', 0),
+    ('104', 1, 'Disponible', 0),
+    ('201', 2, 'Disponible', 0),
+    ('202', 2, 'Disponible', 0),
+    ('203', 2, 'Disponible', 0),
+    ('301', 3, 'Disponible', 0),
+    ('302', 3, 'Disponible', 0)
+ON CONFLICT (numero) DO UPDATE
+SET tipo_id = EXCLUDED.tipo_id,
+    estado_actual = EXCLUDED.estado_actual,
+    version = EXCLUDED.version;

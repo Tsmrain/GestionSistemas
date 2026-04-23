@@ -112,9 +112,9 @@ button:hover { background: #534AB7; }
     flex-shrink: 0;
 }
 
-.vip      { background: #EEEDFE; color: #3C3489; }
-.sencilla { background: #E1F5EE; color: #085041; }
-.doble    { background: #FAECE7; color: #712B13; }
+.vip       { background: #EEEDFE; color: #3C3489; }
+.estandar  { background: #E1F5EE; color: #085041; }
+.supervip  { background: #FAECE7; color: #712B13; }
 
 .info { display: flex; flex-direction: column; gap: 3px; }
 

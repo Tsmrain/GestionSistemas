@@ -31,11 +31,11 @@ public class Habitacion {
     @Version
     private Long version;
 
-    public void bloquear() {
-        this.estadoActual = "Ocupada";
-    }
-
     public Double getPrecioBase() {
         return this.tipo.getPrecioBase();
+    }
+
+    public boolean estaDisponible() {
+        return "Disponible".equalsIgnoreCase(this.estadoActual);
     }
 }

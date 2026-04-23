@@ -1,14 +1,23 @@
 classDiagram
     direction TB
     class ReservaController {
-        +registrarReserva(dto, fotoAnverso, fotoReverso)
+        +registrarReserva(RegistroReservaRequest, fotoAnverso, fotoReverso)
     }
     class ReservaService {
-        +registrarReserva(dto, fotoAnverso, fotoReverso)
-        -validarDisponibilidad(habitacionId)
+        +registrarReserva(RegistroReservaCommand, fotoAnverso, fotoReverso)
+        -validarDisponibilidad(habitacionId, fechaIngreso)
     }
-    class FileStorageService {
+    class FileStoragePort {
         +guardar(MultipartFile) String
+    }
+    class HabitacionRepositoryPort {
+        <<port>>
+        +findById(Long) Optional
+    }
+    class ReservaRepositoryPort {
+        <<port>>
+        +existsActiveByHabitacionAndFecha(Long, LocalDate, String) boolean
+        +save(Reserva) Reserva
     }
     class Huesped {
         -String nombre
@@ -27,16 +36,19 @@ classDiagram
     class Habitacion {
         -String numero
         -String estadoActual
-        +bloquear()
+        +estaDisponible() boolean
     }
     class TipoHabitacion {
         -String nombreTipo
         -Double precioBase
+        -Integer duracionHoras
         -String descripcion
     }
 
     ReservaController --> ReservaService
-    ReservaService --> FileStorageService : Fabricación Pura
+    ReservaService --> FileStoragePort : Fabricación Pura
+    ReservaService --> HabitacionRepositoryPort : consulta
+    ReservaService --> ReservaRepositoryPort : valida y guarda
     ReservaService --> Huesped : Experto
     ReservaService --> Reserva : Creador
     Reserva "1" --> "1" Habitacion : se asigna a

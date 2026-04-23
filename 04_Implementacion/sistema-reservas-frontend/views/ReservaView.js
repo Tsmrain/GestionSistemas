@@ -20,11 +20,11 @@ class ReservaView {
                     '<div>' +
                         '<p class="hab-num">Habitacion ' + habitacion.numero + '</p>' +
                         '<p class="hab-tipo">' + habitacion.tipo + ' - Bs ' + habitacion.precio + '</p>' +
+                        '<p class="hab-horario">' + habitacion.duracionHoras + ' horas</p>' +
                     '</div>' +
                 '</div>' +
                 '<form id="form-reserva" class="form-reserva">' +
                     '<input type="hidden" name="habitacionId" value="' + habitacion.id + '">' +
-                    '<input type="hidden" name="montoTotal" value="' + habitacion.precio + '">' +
                     '<input type="hidden" name="cantidadBloques" value="1">' +
                     '<div class="form-group">' +
                         '<label for="nombre">Nombre completo</label>' +
@@ -89,7 +89,7 @@ class ReservaView {
         // Setear fecha de hoy como mínimo
         var hoy = new Date().toISOString().split('T')[0];
         document.getElementById("fechaIngreso").setAttribute("min", hoy);
-        document.getElementById("fechaIngreso").value = hoy;
+        document.getElementById("fechaIngreso").value = habitacion.fechaIngreso || hoy;
     }
 
     _configurarPreview(inputId, previewId, labelId) {
@@ -155,6 +155,7 @@ class ReservaView {
                 '<h2>¡Reserva Registrada!</h2>' +
                 '<p class="exito-detalle">Habitacion <strong>' + (reserva.habitacion ? reserva.habitacion.numero : '') + '</strong></p>' +
                 '<p class="exito-detalle">Huesped: <strong>' + (reserva.huesped ? reserva.huesped.nombre : '') + '</strong></p>' +
+                '<p class="exito-detalle">Monto total: <strong>Bs ' + reserva.montoTotal + '</strong></p>' +
                 '<p class="exito-detalle">Estado: <strong>' + reserva.estado + '</strong></p>' +
                 '<button class="btn-confirmar" id="btn-cerrar-exito">Aceptar</button>' +
             '</div>';
