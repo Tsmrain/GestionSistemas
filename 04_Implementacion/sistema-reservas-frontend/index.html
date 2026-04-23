@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva Residencial</title>
+    <link rel="stylesheet" href="css/styless.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h1>Reserva Residencial</h1>
+<h2>Consultar Disponibilidad</h2>
+
+<!-- FORMULARIO DE BUSQUEDA -->
+<div class="busqueda-container">
+    <select id="tipo-select">
+        <option value="Todo">Todos</option>
+        <option value="Sencilla">Sencilla</option>
+        <option value="Doble">Doble</option>
+        <option value="VIP">VIP</option>
+    </select>
+
+    <input type="date" id="fecha-input">
+
+    <button id="btn-buscar">Buscar</button>
+</div>
+
+<!--AQUI LA VISTA VA A DIBUJAR LAS TARJETAS-->
+<div id="resultado-container"></div>
+
+<!--SE CARGAN EN ESTE ORDEN EXACTO-->
+<script src="models/Habitacion.js"></script>
+<script src="views/DisponibilidadView.js"></script>
+<script src="views/ReservaView.js"></script>
+<script src="controllers/DisponibilidadController.js"></script>
+<script src="controllers/ReservaController.js"></script>
+
+</body>
+</html>

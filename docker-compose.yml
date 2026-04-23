@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ----------------------------------------
   # CAPA DE DATOS (PostgreSQL)
@@ -60,9 +58,7 @@ services:
     networks:
       - reservas-network
     volumes:
-      - ./04_Implementacion/sistema-reservas-frontend/src/presentation:/usr/share/nginx/html
-      - ./04_Implementacion/sistema-reservas-frontend/src/application/controllers:/usr/share/nginx/html/controllers
-      - ./04_Implementacion/sistema-reservas-frontend/src/domain/models:/usr/share/nginx/html/models
+      - ./04_Implementacion/sistema-reservas-frontend:/usr/share/nginx/html
 
 volumes:
   postgres_data:

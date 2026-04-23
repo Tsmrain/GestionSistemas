@@ -18,10 +18,10 @@ public class TipoHabitacion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nombreTipo")
+    @Column(name = "nombre_tipo")
     private String nombreTipo;
 
-    @Column(name = "precioBase")
+    @Column(name = "precio_base")
     private Double precioBase;
 
     private String descripcion;

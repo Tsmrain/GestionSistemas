@@ -35,6 +35,7 @@ public class ReservaService {
         // @patron: Fabricación Pura (Manejo de archivos)
         Huesped huesped = new Huesped();
         huesped.setNombre(dto.getNombre());
+        huesped.setCi(dto.getCi());
         huesped.setCelular(dto.getCelular());
         
         if (fotoAnverso != null && !fotoAnverso.isEmpty()) {

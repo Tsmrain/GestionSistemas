@@ -14,6 +14,8 @@ public class RegistroReservaRequest {
     @NotBlank(message = "El nombre del huésped es obligatorio")
     private String nombre;
 
+    private String ci;
+
     private String celular;
 
     @NotNull(message = "La fecha de ingreso es obligatoria")

@@ -25,7 +25,7 @@ public class Habitacion {
     @JoinColumn(name = "tipo_id")
     private TipoHabitacion tipo;
 
-    @Column(name = "estadoActual")
+    @Column(name = "estado_actual")
     private String estadoActual; // Disponible, Ocupada, Limpieza
 
     @Version

@@ -28,16 +28,16 @@ public class Reserva {
     @JoinColumn(name = "habitacion_id", nullable = false)
     private Habitacion habitacion;
 
-    @Column(name = "montoTotal")
+    @Column(name = "monto_total")
     private Double montoTotal;
 
-    @Column(name = "fechaCreacion")
+    @Column(name = "fecha_creacion")
     private LocalDate fechaCreacion = LocalDate.now();
     
-    @Column(name = "fechaIngreso")
+    @Column(name = "fecha_ingreso")
     private LocalDate fechaIngreso;
     
-    @Column(name = "cantidadBloques")
+    @Column(name = "cantidad_bloques")
     private Integer cantidadBloques;
 
     private String estado; // PENDIENTE_PAGO, PAGADA, CANCELADA

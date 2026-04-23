@@ -19,12 +19,14 @@ public class Huesped {
     private Long id;
 
     private String nombre;
+
+    private String ci;
     
     private String celular;
 
-    @Column(name = "urlFotoAnverso")
+    @Column(name = "url_foto_anverso")
     private String urlFotoAnverso;
 
-    @Column(name = "urlFotoReverso")
+    @Column(name = "url_foto_reverso")
     private String urlFotoReverso;
 }
