@@ -2,16 +2,16 @@ classDiagram
     direction TB
     
     class DisponibilidadController {
-        +onSearch(fecha, tipoNombre)
+        +getHabitacionesDisponibles(LocalDate, String) List
     }
 
     class DisponibilidadService {
-        +buscarDisponibles(LocalDate, String) List
+        +consultarDisponibilidad(LocalDate, String) List
     }
 
     class HabitacionRepository {
         <<interface>>
-        +findByEstadoAndTipo(String, String) List
+        +findByTipo_NombreTipoAndEstadoActual(String, String) List
     }
 
     class Habitacion {

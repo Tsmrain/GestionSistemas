@@ -7,12 +7,12 @@ sequenceDiagram
     participant RepoR as :ReservaRepository
     participant Hab as :Habitacion
 
-    UI->>Ctrl: onConfirmar(datos, fotos)
+    UI->>Ctrl: _enviarReserva(formData)
     activate Ctrl
-    Ctrl->>Serv: registrarReserva(datos, fotos)
+    Ctrl->>Serv: registrarReserva(dto, fotoAnverso, fotoReverso)
     activate Serv
     
-    Serv->>Storage: guardar(fotos)
+    Serv->>Storage: guardar(fotoAnverso) & guardar(fotoReverso)
     Storage-->>Serv: urlsFotos
     
     Serv->>RepoH: save(huesped)

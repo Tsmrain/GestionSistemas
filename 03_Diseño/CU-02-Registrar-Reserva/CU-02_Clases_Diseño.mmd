@@ -1,23 +1,26 @@
 classDiagram
     direction TB
     class ReservaController {
-        +registrarReserva(dto, files)
+        +registrarReserva(dto, fotoAnverso, fotoReverso)
     }
     class ReservaService {
-        +registrarReserva(dto, files)
+        +registrarReserva(dto, fotoAnverso, fotoReverso)
         -validarDisponibilidad(habitacionId)
     }
     class FileStorageService {
-        +guardar(files) String[]
+        +guardar(MultipartFile) String
     }
     class Huesped {
         -String nombre
+        -String ci
         -String celular
         -String urlFotoAnverso
         -String urlFotoReverso
     }
     class Reserva {
         -LocalDate fechaCreacion
+        -LocalDate fechaIngreso
+        -Integer cantidadBloques
         -Double montoTotal
         -String estado
     }
