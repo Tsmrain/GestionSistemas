@@ -1,0 +1,23 @@
+usecaseDiagram
+    actor Cliente
+    actor Recepcionista
+    actor "Sistema Externo BNB API" as BNB
+
+    package "CU-03 Procesar Pago" {
+        usecase "Procesar Pago" as UC3
+        usecase "Generar QR BNB" as UC3_1
+        usecase "Pagar en Efectivo" as UC3_2
+        usecase "Verificar Pago (Polling)" as UC3_3
+        usecase "Actualizar Reserva" as UC3_4
+        usecase "Emitir Comprobante" as UC3_5
+    }
+
+    Cliente --> UC3
+    Recepcionista --> UC3
+    UC3 ..> UC3_1 : <<include>>
+    UC3 ..> UC3_2 : <<include>>
+    UC3 ..> UC3_3 : <<include>>
+    UC3 ..> UC3_4 : <<include>>
+    UC3 ..> UC3_5 : <<include>>
+    UC3_1 -- BNB
+    UC3_3 -- BNB

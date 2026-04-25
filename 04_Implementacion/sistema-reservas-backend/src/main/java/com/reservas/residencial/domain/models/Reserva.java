@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @referencia: 01_Modelado_Negocio/ModeloDominio.mmd
@@ -41,4 +42,11 @@ public class Reserva {
     private Integer cantidadBloques;
 
     private String estado; // PENDIENTE_PAGO, PAGADA, CANCELADA
+
+    @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
+    private List<Pago> pagos;
+
+    public void confirmarPago() {
+        this.estado = "PAGADA";
+    }
 }

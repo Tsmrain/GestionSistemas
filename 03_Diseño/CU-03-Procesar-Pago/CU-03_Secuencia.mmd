@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant C as PagoController
+    participant S as ProcesarPagoService
+    participant R as ReservaRepositoryPort
+    participant P as PagoRepositoryPort
+    participant B as BnbPaymentPort
+
+    C->>S: iniciarProcesoPago(reservaId, "QR_BNB")
+    S->>R: findById(reservaId)
+    R-->>S: Reserva
+    S->>B: generarQR(monto, glosa, reservaId)
+    B-->>S: qrData
+    S->>P: save(nuevoPago)
+    S-->>C: PagoStatusResponse(qrData, "PENDIENTE")
+
+    Note over C, B: Proceso de Polling
+    C->>S: verificarEstadoPago(reservaId)
+    S->>B: consultarEstado(qrId)
+    B-->>S: "COMPLETADO"
+    S->>R: updateEstado(PAGADA)
+    S->>P: updateEstado(COMPLETADO)
+    S-->>C: PagoStatusResponse("COMPLETADO", comprobanteId)

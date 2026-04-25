@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    actor Actor as Cliente/Recepcionista
+    participant Sistema
+
+    Actor->>Sistema: solicitarPagarReserva(reservaId)
+    Sistema-->>Actor: mostrarSaldoYMetodos(monto, metodos)
+    
+    alt Pago QR BNB
+        Actor->>Sistema: seleccionarMetodo("QR_BNB")
+        Sistema->>Sistema: invocarBNB(monto, glosa, reservaId)
+        Sistema-->>Actor: mostrarQR(qrData)
+        
+        loop Polling cada N segundos
+            Sistema->>Sistema: verificarTransaccion()
+        end
+        
+        Sistema-->>Actor: confirmarPagoExitoso()
+    else Pago Efectivo
+        Actor->>Sistema: seleccionarMetodo("EFECTIVO")
+        Sistema-->>Actor: confirmarPagoManual()
+    end
+
+    Sistema->>Sistema: actualizarReserva()
+    Sistema->>Sistema: registrarTransaccion()
+    Sistema-->>Actor: emitirComprobanteDigital()

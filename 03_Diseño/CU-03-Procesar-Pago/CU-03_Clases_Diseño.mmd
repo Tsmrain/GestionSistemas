@@ -1,0 +1,56 @@
+classDiagram
+    class PagoController {
+        -ProcesarPagoService pagoService
+        +iniciarPago(IniciarPagoRequest) PagoStatusResponse
+        +verificarEstado(reservaId) PagoStatusResponse
+    }
+
+    class ProcesarPagoService {
+        -ReservaRepositoryPort reservaRepository
+        -PagoRepositoryPort pagoRepository
+        -BnbPaymentPort bnbPort
+        +iniciarProcesoPago(reservaId, metodo)
+        +confirmarPagoEfectivo(reservaId)
+        +verificarEstadoPago(reservaId)
+    }
+
+    class PagoRepositoryPort {
+        <<interface>>
+        +save(Pago)
+        +findByReservaId(reservaId)
+    }
+
+    class BnbPaymentPort {
+        <<interface>>
+        +generarQR(monto, glosa, reservaId)
+        +consultarEstado(qrId)
+    }
+
+    class Pago {
+        +Long id
+        +Reserva reserva
+        +Double monto
+        +String metodo
+        +String estado
+        +LocalDateTime fecha
+    }
+
+    class Comprobante {
+        +Long id
+        +Pago pago
+        +String nroComprobante
+        +LocalDateTime fechaEmision
+    }
+
+    class Reserva {
+        +Long id
+        +String estado
+        +actualizarEstado(nuevoEstado)
+    }
+
+    PagoController --> ProcesarPagoService
+    ProcesarPagoService --> PagoRepositoryPort
+    ProcesarPagoService --> BnbPaymentPort
+    ProcesarPagoService --> ReservaRepositoryPort
+    Pago "1" -- "1" Reserva
+    Comprobante "1" -- "1" Pago
