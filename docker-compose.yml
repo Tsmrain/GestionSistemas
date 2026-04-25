@@ -39,7 +39,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/sistema_reservas
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=adminpassword
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     networks:
       - reservas-network
 

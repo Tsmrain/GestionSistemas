@@ -26,6 +26,7 @@ public class Pago {
 
     @ManyToOne
     @JoinColumn(name = "reserva_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Reserva reserva;
 
     private Double monto;

@@ -39,6 +39,10 @@ public class ProcesarPagoService {
         Reserva reserva = reservaRepository.findById(request.reservaId())
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada: " + request.reservaId()));
 
+        if (!"PENDIENTE_PAGO".equals(reserva.getEstado())) {
+            throw new IllegalStateException("La reserva no esta en estado PENDIENTE_PAGO");
+        }
+
         return switch (request.metodo()) {
             case "QR_BNB"  -> iniciarPagoQR(reserva);
             case "EFECTIVO" -> procesarPagoEfectivo(reserva);
