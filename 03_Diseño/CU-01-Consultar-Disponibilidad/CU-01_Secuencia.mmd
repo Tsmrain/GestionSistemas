@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant UI as :DisponibilidadView
+    participant Ctrl as :DisponibilidadController
+    participant Serv as :DisponibilidadService
+    participant Repo as :HabitacionRepositoryPort
+    participant Hab as :Habitacion
+
+    UI->>Ctrl: consultarDisponibilidad(fecha, tipoNombre)
+    activate Ctrl
+    Ctrl->>Serv: consultarDisponibilidad(consulta)
+    activate Serv
+
+    Serv->>Repo: findDisponibles(fecha, tipoNombre)
+    activate Repo
+    Repo-->>Serv: listaHabitaciones
+    deactivate Repo
+
+    loop Para cada Habitación
+        Serv->>Hab: getPrecioBase()
+        Note right of Hab: Patrón de Descripción: <br/>Delega a TipoHabitacion
+    end
+
+    Serv-->>Ctrl: listaHabitacionesDisponibles
+    deactivate Serv
+    Ctrl-->>UI: render(listaDTO)
+    deactivate Ctrl

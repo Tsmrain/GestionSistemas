@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ----------------------------------------
   # CAPA DE DATOS (PostgreSQL)
@@ -15,7 +13,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./sistema-reservas-backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./04_Implementacion/sistema-reservas-backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d sistema_reservas"]
       interval: 5s
@@ -29,7 +27,7 @@ services:
   # ----------------------------------------
   backend:
     build: 
-      context: ./sistema-reservas-backend
+      context: ./04_Implementacion/sistema-reservas-backend
       dockerfile: Dockerfile
     container_name: reservas-backend
     ports:
@@ -41,7 +39,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/sistema_reservas
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=adminpassword
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
     networks:
       - reservas-network
 
@@ -50,7 +48,7 @@ services:
   # ----------------------------------------
   frontend:
     build:
-      context: ./sistema-reservas-frontend
+      context: ./04_Implementacion/sistema-reservas-frontend
       dockerfile: Dockerfile
     container_name: reservas-frontend
     ports:
@@ -59,10 +57,6 @@ services:
       - backend
     networks:
       - reservas-network
-    volumes:
-      - ./sistema-reservas-frontend/src/presentation:/usr/share/nginx/html
-      - ./sistema-reservas-frontend/src/application/controllers:/usr/share/nginx/html/controllers
-      - ./sistema-reservas-frontend/src/domain/models:/usr/share/nginx/html/models
 
 volumes:
   postgres_data:

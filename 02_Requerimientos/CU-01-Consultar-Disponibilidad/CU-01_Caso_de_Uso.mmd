@@ -1,0 +1,17 @@
+flowchart TD
+    Title[<b>CU-01: Consultar Disponibilidad</b>]
+    
+    subgraph Contexto
+        Actores[Actores: Cliente Autoservicio]
+        Proposito[Propósito: Verificar habitaciones libres en una fecha específica]
+    end
+
+    subgraph FlujoPrincipal[Flujo Principal]
+        S1[1. El cliente ingresa al portal]
+        S2[2. Selecciona tipo de habitación y fecha]
+        S3[3. El sistema busca habitaciones 'Disponibles']
+        S4[4. El sistema muestra lista de resultados]
+    end
+
+    Title --> Contexto
+    Contexto --> FlujoPrincipal

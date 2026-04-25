@@ -1,0 +1,10 @@
+sequenceDiagram
+    actor Cliente
+    participant Sistema as :Sistema
+    
+    Cliente->>Sistema: iniciarReserva(habitacionId)
+    Sistema-->>Cliente: solicitarDatos(nombre, celular, fotosCarnet)
+    Cliente->>Sistema: enviarDatos(nombre, celular, fotos)
+    Sistema-->>Cliente: mostrarResumenYConfirmar()
+    Cliente->>Sistema: confirmar()
+    Sistema-->>Cliente: reservaRegistrada(idReserva)

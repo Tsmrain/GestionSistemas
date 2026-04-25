@@ -1,0 +1,27 @@
+classDiagram
+    direction TB
+    class Huesped {
+        nombre
+        celular
+        fotosDocumento
+    }
+    class Reserva {
+        fechaCreacion
+        fechaIngreso
+        cantidadBloques
+        montoTotal
+        estado
+    }
+    class Habitacion {
+        numero
+        estadoActual
+    }
+    class TipoHabitacion {
+        nombreTipo
+        precioBase
+        duracionHoras
+        descripcion
+    }
+    Huesped "1" -- "*" Reserva : Realiza >
+    Reserva "*" -- "1" Habitacion : Asignada-a >
+    Habitacion "*" -- "1" TipoHabitacion : Clasificada-como >

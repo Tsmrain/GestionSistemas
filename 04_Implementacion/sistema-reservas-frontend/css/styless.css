@@ -1,0 +1,447 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: #f5f5f5;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+h2 {
+    font-size: 16px;
+    font-weight: 400;
+    color: #888;
+    margin-bottom: 30px;
+}
+
+.busqueda-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+select, input[type="date"] {
+    height: 44px;
+    padding: 0 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    outline: none;
+}
+
+select { width: 160px; }
+input[type="date"] { width: 180px; }
+
+select:focus, input[type="date"]:focus {
+    border-color: #7F77DD;
+}
+
+button {
+    height: 44px;
+    padding: 0 24px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    background: #7F77DD;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover { background: #534AB7; }
+
+/* LISTA DE HABITACIONES */
+.lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    transition: box-shadow 0.2s, border-color 0.2s;
+    text-align: left;
+}
+
+.card:hover {
+    border-color: #c0c0c0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.card-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.numero-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.vip       { background: #EEEDFE; color: #3C3489; }
+.estandar  { background: #E1F5EE; color: #085041; }
+.supervip  { background: #FAECE7; color: #712B13; }
+
+.info { display: flex; flex-direction: column; gap: 3px; }
+
+.hab-num {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.hab-tipo {
+    font-size: 12px;
+    color: #888;
+}
+
+.card-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #eaf3de;
+    color: #3b6d11;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.precio { text-align: right; }
+
+.precio-monto {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.precio-label {
+    font-size: 11px;
+    color: #aaa;
+}
+
+.error {
+    color: #c0392b;
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+.hab-horario {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 2px;
+}
+
+.btn-reservar {
+    height: 36px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: #7F77DD;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-reservar:hover { background: #534AB7; }
+
+/* ================================ */
+/* MODAL DE RESERVA                 */
+/* ================================ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    height: auto;
+    width: auto;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #333;
+    background: none;
+}
+
+.modal-titulo {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.modal-habitacion-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+/* FORMULARIO */
+.form-reserva {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.form-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="date"] {
+    height: 44px;
+    padding: 0 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: #7F77DD;
+    box-shadow: 0 0 0 3px rgba(127, 119, 221, 0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-group-half {
+    flex: 1;
+}
+
+/* UPLOAD DE FOTOS */
+.file-upload {
+    position: relative;
+    border: 2px dashed #d0d0d0;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.file-upload:hover {
+    border-color: #7F77DD;
+    background: #fafaff;
+}
+
+.file-upload input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #999;
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.file-icon {
+    font-size: 28px;
+}
+
+.file-preview {
+    max-width: 100%;
+    max-height: 120px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+/* ERROR */
+.form-error {
+    background: #fff0f0;
+    color: #c0392b;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    border: 1px solid #f5c6cb;
+}
+
+/* BOTÓN CONFIRMAR */
+.btn-confirmar {
+    width: 100%;
+    height: 48px;
+    padding: 0 24px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background: #7F77DD;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 6px;
+}
+
+.btn-confirmar:hover {
+    background: #534AB7;
+    transform: translateY(-1px);
+}
+
+.btn-confirmar:disabled {
+    background: #b0aaee;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* MODAL ÉXITO */
+.modal-exito {
+    text-align: center;
+    max-width: 400px;
+}
+
+.exito-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.modal-exito h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+}
+
+.exito-detalle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+.exito-detalle strong {
+    color: #1a1a1a;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .form-row {
+        flex-direction: column;
+    }
+    .modal {
+        padding: 1.25rem;
+        margin: 10px;
+    }
+}

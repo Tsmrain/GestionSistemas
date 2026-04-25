@@ -1,0 +1,55 @@
+classDiagram
+    direction TB
+    class ReservaController {
+        +registrarReserva(RegistroReservaRequest, fotoAnverso, fotoReverso)
+    }
+    class ReservaService {
+        +registrarReserva(RegistroReservaCommand, fotoAnverso, fotoReverso)
+        -validarDisponibilidad(habitacionId, fechaIngreso)
+    }
+    class FileStoragePort {
+        +guardar(MultipartFile) String
+    }
+    class HabitacionRepositoryPort {
+        <<port>>
+        +findById(Long) Optional
+    }
+    class ReservaRepositoryPort {
+        <<port>>
+        +existsActiveByHabitacionAndFecha(Long, LocalDate, String) boolean
+        +save(Reserva) Reserva
+    }
+    class Huesped {
+        -String nombre
+        -String ci
+        -String celular
+        -String urlFotoAnverso
+        -String urlFotoReverso
+    }
+    class Reserva {
+        -LocalDate fechaCreacion
+        -LocalDate fechaIngreso
+        -Integer cantidadBloques
+        -Double montoTotal
+        -String estado
+    }
+    class Habitacion {
+        -String numero
+        -String estadoActual
+        +estaDisponible() boolean
+    }
+    class TipoHabitacion {
+        -String nombreTipo
+        -Double precioBase
+        -Integer duracionHoras
+        -String descripcion
+    }
+
+    ReservaController --> ReservaService
+    ReservaService --> FileStoragePort : Fabricación Pura
+    ReservaService --> HabitacionRepositoryPort : consulta
+    ReservaService --> ReservaRepositoryPort : valida y guarda
+    ReservaService --> Huesped : Experto
+    ReservaService --> Reserva : Creador
+    Reserva "1" --> "1" Habitacion : se asigna a
+    Habitacion "*" --> "1" TipoHabitacion : Patrón de Descripción

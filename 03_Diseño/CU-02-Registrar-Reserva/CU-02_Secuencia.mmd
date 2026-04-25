@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant UI as :ReservaView
+    participant Ctrl as :ReservaController
+    participant Serv as :ReservaService
+    participant Storage as :FileStoragePort
+    participant RepoH as :HuespedRepository
+    participant RepoR as :ReservaRepository
+    participant Hab as :Habitacion
+
+    UI->>Ctrl: _enviarReserva(formData)
+    activate Ctrl
+    Ctrl->>Serv: registrarReserva(command, fotoAnverso, fotoReverso)
+    activate Serv
+
+    Serv->>RepoR: existsActiveByHabitacionAndFecha(habitacionId, fechaIngreso, "CANCELADA")
+    RepoR-->>Serv: disponible
+
+    Serv->>Storage: guardar(fotoAnverso) & guardar(fotoReverso)
+    Storage-->>Serv: urlsFotos
+
+    Serv->>RepoH: save(huesped)
+    RepoH-->>Serv: huespedId
+
+    Serv->>Hab: estaDisponible()
+    Note right of Hab: La disponibilidad operativa <br/>se separa del calendario de reservas
+
+    Serv->>RepoR: save(nuevaReserva)
+    RepoR-->>Serv: reservaOk
+
+    Serv-->>Ctrl: dtoResumen
+    deactivate Serv
+    Ctrl-->>UI: mostrarResumen()
+    deactivate Ctrl

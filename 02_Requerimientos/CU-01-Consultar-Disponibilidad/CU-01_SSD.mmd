@@ -1,0 +1,7 @@
+sequenceDiagram
+    actor Actor as Cliente/Recepcionista
+    participant Sistema as :Sistema
+
+    Actor->>Sistema: consultarDisponibilidad(fecha, tipoNombre)
+    Note over Sistema: El sistema verifica validez de fecha <br/>y busca en inventario.
+    Sistema-->>Actor: mostrarHabitacionesDisponibles(lista)
