@@ -2,60 +2,55 @@ classDiagram
     direction TB
 
     %% ── Conceptual Domain Model (Larman Cap. 9) ────────────────────────────────
-    %% Fuente autoritativa: codigo en domain/models/
-    %% Baja Brecha de Representación: cada clase, atributo y relación aquí
-    %% tiene su equivalente exacto en el código Java.
+    %% Modelo de cosas en el mundo real, sin operaciones ni navegabilidad de software.
 
     class Huesped {
-        nombre : String
-        ci : String
-        celular : String
-        urlFotoAnverso : String
-        urlFotoReverso : String
+        nombre
+        ci
+        celular
+        urlFotoAnverso
+        urlFotoReverso
     }
 
     class Reserva {
-        fechaCreacion : LocalDate
-        fechaIngreso : LocalDate
-        cantidadBloques : Integer
-        montoTotal : Double
-        estado : String
-        fechaPago : LocalDateTime
-        ventanaCheckIn : LocalDateTime
-        confirmarPago()
+        fechaCreacion
+        fechaIngreso
+        cantidadBloques
+        montoTotal
+        estado
+        fechaPago
+        ventanaCheckIn
     }
 
     class Habitacion {
-        numero : String
-        estadoActual : String
-        estaDisponible() : boolean
+        numero
+        estadoActual
     }
 
     class TipoHabitacion {
-        nombreTipo : String
-        precioBase : Double
-        duracionHoras : Integer
-        descripcion : String
+        nombreTipo
+        precioBase
+        duracionHoras
+        descripcion
     }
 
     class Pago {
-        monto : Double
-        metodo : String
-        estado : String
-        externalId : String
-        fechaCreacion : LocalDateTime
-        fechaExpiracion : LocalDateTime
-        estaExpirado() : boolean
+        monto
+        metodo
+        estado
+        externalId
+        fechaCreacion
+        fechaExpiracion
     }
 
     class Comprobante {
-        nroComprobante : String
-        fechaEmision : LocalDateTime
+        nroComprobante
+        fechaEmision
     }
 
-    %% ── Relaciones ────────────────────────────────────────────────────────────
-    Huesped       "1"  --> "*"  Reserva      : Realiza >
-    Reserva       "*"  --> "1"  Habitacion   : Asignada-a >
-    Habitacion    "*"  --> "1"  TipoHabitacion : Clasificada-como >
-    Reserva       "1"  *--  "*"  Pago         : Origina >
-    Pago          "1"  *--  "1"  Comprobante  : Genera >
+    %% ── Relaciones (Sin flechas de navegabilidad, líneas simples) ────────────
+    Huesped       "1" -- "*"  Reserva      : Realiza >
+    Reserva       "*" -- "1"  Habitacion   : Asignada-a >
+    Habitacion    "*" -- "1"  TipoHabitacion : Clasificada-como >
+    Reserva       "1" -- "*"  Pago         : Origina >
+    Pago          "1" -- "1"  Comprobante  : Genera >
