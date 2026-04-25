@@ -17,7 +17,7 @@ import java.util.List;
  * @referencia: 03_Diseño/CU-01-Consultar-Disponibilidad/CU-01_Clases_Diseño.mmd
  */
 @RestController
-@RequestMapping("/api/habitaciones")
+@RequestMapping("/api/v1/habitaciones")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class DisponibilidadController {

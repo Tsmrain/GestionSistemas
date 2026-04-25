@@ -1,19 +1,26 @@
 # Contrato de API: CU-01 Consultar Disponibilidad
 
-**Base URL:** `/api/v1/disponibilidad`
+> **Versión:** 2.0 — Sincronizado con rama `develop`
+>
+> **Base URL:** `http://localhost:8080/api/v1/habitaciones`
+>
+> **Content-Type:** `application/json`
 
 ---
 
 ## 1. Consultar Habitaciones Disponibles
 **Propósito:** Permite obtener un listado de habitaciones disponibles para una fecha específica, opcionalmente filtrando por tipo de habitación.
 
-- **Ruta:** `/`
+- **Ruta:** `/disponibles`
 - **Método HTTP:** `GET`
 - **Parámetros de Consulta (Query Params):**
-    - `fecha` (obligatorio): Fecha de ingreso en formato `YYYY-MM-DD`.
-    - `tipoNombre` (opcional): Filtro por tipo de habitación (ej: "Sencilla", "Doble").
+    - `fechaIngreso` (obligatorio): Fecha de ingreso en formato `YYYY-MM-DD`.
+    - `cantidadBloques` (obligatorio): Número de horas/bloques a reservar (entero).
+    - `tipoHabitacionId` (opcional): Filtro por ID de tipo de habitación.
+
 - **Cuerpo de la Petición:** No requiere.
-- **Cuerpo de la Respuesta (Response Body):**
+
+- **Cuerpo de la Respuesta (Response Body) - 200 OK:**
 ```json
 [
   {
@@ -30,6 +37,20 @@
   }
 ]
 ```
-- **Códigos de Estado:**
-    - `200 OK`: Lista recuperada exitosamente (puede estar vacía si no hay disponibilidad).
-    - `400 Bad Request`: Formato de fecha incorrecto o falta de parámetro obligatorio.
+
+## Formato de Errores (GlobalExceptionHandler)
+
+Si ocurre una validación fallida (ej: falta de parámetros o error de base de datos), el sistema siempre retornará JSON estructurado.
+
+- **Cuerpo de la Respuesta (Response Body) - 400 Bad Request:**
+```json
+{
+  "status": 400,
+  "mensaje": "fechaIngreso: La fecha de ingreso es obligatoria",
+  "timestamp": "2025-04-25T19:25:00"
+}
+```
+
+- **Códigos HTTP de Error Esperados:**
+    - `400 Bad Request`: Faltan parámetros obligatorios (`@Valid`).
+    - `503 Service Unavailable`: Problema grave en el servidor.
