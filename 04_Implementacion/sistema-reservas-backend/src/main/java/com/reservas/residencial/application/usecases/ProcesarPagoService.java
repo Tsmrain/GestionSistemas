@@ -25,6 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ProcesarPagoService {
 
+    private static final String ESTADO_RESERVA_PAGADA = "PAGADA";
+    private static final String ESTADO_PAGO_PENDIENTE = "PENDIENTE";
+    private static final String ESTADO_PAGO_COMPLETADO = "COMPLETADO";
+    private static final String ESTADO_PAGO_FALLIDO = "FALLIDO";
+    private static final String METODO_QR_BNB = "QR_BNB";
+    private static final String METODO_EFECTIVO = "EFECTIVO";
+
     private final ReservaRepositoryPort reservaRepository;
     private final PagoRepositoryPort pagoRepository;
     private final ComprobanteRepositoryPort comprobanteRepository;
@@ -39,9 +46,11 @@ public class ProcesarPagoService {
         Reserva reserva = reservaRepository.findById(request.reservaId())
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada: " + request.reservaId()));
 
+        validarReservaPendientePago(reserva);
+
         return switch (request.metodo()) {
-            case "QR_BNB"  -> iniciarPagoQR(reserva);
-            case "EFECTIVO" -> procesarPagoEfectivo(reserva);
+            case METODO_QR_BNB  -> iniciarPagoQR(reserva);
+            case METODO_EFECTIVO -> procesarPagoEfectivo(reserva);
             default -> throw new IllegalArgumentException("Método de pago no soportado: " + request.metodo());
         };
     }
@@ -51,17 +60,27 @@ public class ProcesarPagoService {
      * Camino 4a: si BNB lanza excepción, se propaga para que el Controller informe al frontend.
      */
     private PagoStatusResponse iniciarPagoQR(Reserva reserva) {
+        var pagoPendiente = pagoRepository.findPendingByReservaId(reserva.getId());
+        if (pagoPendiente.isPresent()) {
+            Pago pago = pagoPendiente.get();
+            if (!pago.estaExpirado()) {
+                return toResponse(reserva, ESTADO_PAGO_PENDIENTE, pago.getExternalId(), null);
+            }
+            pago.setEstado(ESTADO_PAGO_FALLIDO);
+            pagoRepository.save(pago);
+        }
+
         String qrData = bnbPort.generarQR(
                 reserva.getMontoTotal(),
                 "Pago reserva " + reserva.getId(),
                 reserva.getId()
         );
 
-        Pago pago = new Pago(reserva, reserva.getMontoTotal(), "QR_BNB", "PENDIENTE");
+        Pago pago = new Pago(reserva, reserva.getMontoTotal(), METODO_QR_BNB, ESTADO_PAGO_PENDIENTE);
         pago.setExternalId(qrData);
         pagoRepository.save(pago);
 
-        return new PagoStatusResponse(reserva.getId(), "PENDIENTE", qrData, null, null, null);
+        return new PagoStatusResponse(reserva.getId(), ESTADO_PAGO_PENDIENTE, qrData, null, null, null);
     }
 
     /**
@@ -70,24 +89,24 @@ public class ProcesarPagoService {
      */
     @Transactional
     public PagoStatusResponse verificarEstadoPago(Long reservaId) {
-        Pago pago = pagoRepository.findByReservaId(reservaId)
+        Pago pago = pagoRepository.findLatestByReservaId(reservaId)
                 .orElseThrow(() -> new IllegalArgumentException("No existe pago iniciado para la reserva: " + reservaId));
 
-        if (!"PENDIENTE".equals(pago.getEstado())) {
+        if (!ESTADO_PAGO_PENDIENTE.equals(pago.getEstado())) {
             return toResponse(pago.getReserva(), pago.getEstado(), null, null);
         }
 
         // Camino 7a: QR expirado (5 minutos)
         if (pago.estaExpirado()) {
-            pago.setEstado("FALLIDO");
+            pago.setEstado(ESTADO_PAGO_FALLIDO);
             pagoRepository.save(pago);
             return toResponse(pago.getReserva(), "QR_EXPIRADO", null, null);
         }
 
         String estadoBnb = bnbPort.consultarEstado(pago.getExternalId());
 
-        if ("COMPLETADO".equals(estadoBnb)) {
-            pago.setEstado("COMPLETADO");
+        if (ESTADO_PAGO_COMPLETADO.equals(estadoBnb)) {
+            pago.setEstado(ESTADO_PAGO_COMPLETADO);
             pagoRepository.save(pago);
 
             Reserva reserva = pago.getReserva();
@@ -95,13 +114,13 @@ public class ProcesarPagoService {
             reservaRepository.save(reserva);
 
             Comprobante comprobante = new Comprobante(pago);
-            comprobanteRepository.save(comprobante);
+            comprobante = comprobanteRepository.save(comprobante);
 
-            return toResponse(reserva, "COMPLETADO", null, comprobante);
+            return toResponse(reserva, ESTADO_PAGO_COMPLETADO, null, comprobante);
         }
 
         // Pago aún PENDIENTE
-        return toResponse(pago.getReserva(), "PENDIENTE", pago.getExternalId(), null);
+        return toResponse(pago.getReserva(), ESTADO_PAGO_PENDIENTE, pago.getExternalId(), null);
     }
 
     /**
@@ -113,20 +132,32 @@ public class ProcesarPagoService {
     public PagoStatusResponse procesarPagoEfectivo(Long reservaId) {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada: " + reservaId));
+        validarReservaPendientePago(reserva);
         return procesarPagoEfectivo(reserva);
     }
 
     private PagoStatusResponse procesarPagoEfectivo(Reserva reserva) {
-        Pago pago = new Pago(reserva, reserva.getMontoTotal(), "EFECTIVO", "COMPLETADO");
+        pagoRepository.findPendingByReservaId(reserva.getId()).ifPresent(pagoPendiente -> {
+            pagoPendiente.setEstado(ESTADO_PAGO_FALLIDO);
+            pagoRepository.save(pagoPendiente);
+        });
+
+        Pago pago = new Pago(reserva, reserva.getMontoTotal(), METODO_EFECTIVO, ESTADO_PAGO_COMPLETADO);
         pagoRepository.save(pago);
 
         reserva.confirmarPago();               // Experto en Información
         reservaRepository.save(reserva);
 
         Comprobante comprobante = new Comprobante(pago);
-        comprobanteRepository.save(comprobante);
+        comprobante = comprobanteRepository.save(comprobante);
 
-        return toResponse(reserva, "COMPLETADO", null, comprobante);
+        return toResponse(reserva, ESTADO_PAGO_COMPLETADO, null, comprobante);
+    }
+
+    private void validarReservaPendientePago(Reserva reserva) {
+        if (ESTADO_RESERVA_PAGADA.equals(reserva.getEstado())) {
+            throw new IllegalStateException("La reserva ya fue pagada: " + reserva.getId());
+        }
     }
 
     private PagoStatusResponse toResponse(Reserva reserva, String estado, String qrData, Comprobante comprobante) {

@@ -7,5 +7,6 @@ import java.util.Optional;
 
 @Repository
 public interface JpaPagoRepository extends JpaRepository<Pago, Long> {
-    Optional<Pago> findByReservaId(Long reservaId);
+    Optional<Pago> findFirstByReservaIdOrderByFechaCreacionDesc(Long reservaId);
+    Optional<Pago> findFirstByReservaIdAndEstadoOrderByFechaCreacionDesc(Long reservaId, String estado);
 }

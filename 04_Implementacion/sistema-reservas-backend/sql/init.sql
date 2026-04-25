@@ -80,3 +80,11 @@ CREATE TABLE IF NOT EXISTS comprobantes (
     nro_comprobante VARCHAR(50) NOT NULL UNIQUE,
     fecha_emision TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_reserva_pendiente
+ON pagos(reserva_id)
+WHERE estado = 'PENDIENTE';
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_reserva_completado
+ON pagos(reserva_id)
+WHERE estado = 'COMPLETADO';

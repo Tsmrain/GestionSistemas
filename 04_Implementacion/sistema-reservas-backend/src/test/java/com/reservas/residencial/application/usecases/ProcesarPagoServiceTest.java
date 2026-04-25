@@ -49,6 +49,7 @@ class ProcesarPagoServiceTest {
         Reserva reserva = reservaConId(reservaId, 100.0);
 
         when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+        when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.empty());
         when(bnbPort.generarQR(100.0, "Pago reserva 1", reservaId)).thenReturn("base64_simulado");
 
         IniciarPagoRequest request = new IniciarPagoRequest(reservaId, "QR_BNB");
@@ -64,6 +65,31 @@ class ProcesarPagoServiceTest {
         assertNull(response.ventanaCheckIn());
         verify(pagoRepository).save(any(Pago.class));
         verify(bnbPort).generarQR(anyDouble(), anyString(), anyLong());
+        verifyNoInteractions(comprobanteRepository);
+    }
+
+    @Test
+    @DisplayName("Paso 4-5 CU-03 | QR pendiente vigente: reutiliza el pago existente y no duplica")
+    void flujoBasico_GenerarPagoQR_ReutilizaPagoPendiente() {
+        // Given
+        Long reservaId = 1L;
+        Reserva reserva = reservaConId(reservaId, 100.0);
+        Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
+        pagoPendiente.setExternalId("qr_vigente");
+
+        when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+        when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
+
+        IniciarPagoRequest request = new IniciarPagoRequest(reservaId, "QR_BNB");
+
+        // When
+        PagoStatusResponse response = procesarPagoService.iniciarProcesoPago(request);
+
+        // Then
+        assertEquals("PENDIENTE", response.estado());
+        assertEquals("qr_vigente", response.qrData());
+        verify(pagoRepository, never()).save(any(Pago.class));
+        verifyNoInteractions(bnbPort);
         verifyNoInteractions(comprobanteRepository);
     }
 
@@ -83,7 +109,7 @@ class ProcesarPagoServiceTest {
         comprobante.setId(10L);
         comprobante.setNroComprobante("COMP-ABCD1234");
 
-        when(pagoRepository.findByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
+        when(pagoRepository.findLatestByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
         when(bnbPort.consultarEstado("qr_id_123")).thenReturn("COMPLETADO");
         when(comprobanteRepository.save(any(Comprobante.class))).thenReturn(comprobante);
 
@@ -114,6 +140,7 @@ class ProcesarPagoServiceTest {
         comprobante.setNroComprobante("COMP-EF123456");
 
         when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+        when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.empty());
         when(comprobanteRepository.save(any(Comprobante.class))).thenReturn(comprobante);
 
         IniciarPagoRequest request = new IniciarPagoRequest(reservaId, "EFECTIVO");
@@ -132,6 +159,53 @@ class ProcesarPagoServiceTest {
         verifyNoInteractions(bnbPort);
     }
 
+    @Test
+    @DisplayName("Camino 3a CU-03 | Pago efectivo con QR pendiente: cancela el QR anterior y no deja pago ambiguo")
+    void caminoAlternativo3a_PagoEfectivo_CancelaQrPendiente() {
+        // Given
+        Long reservaId = 1L;
+        Reserva reserva = reservaConId(reservaId, 100.0);
+        Pago qrPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
+        qrPendiente.setExternalId("qr_pendiente");
+        Comprobante comprobante = new Comprobante(new Pago());
+        comprobante.setId(5L);
+        comprobante.setNroComprobante("COMP-EF123456");
+
+        when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+        when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.of(qrPendiente));
+        when(comprobanteRepository.save(any(Comprobante.class))).thenReturn(comprobante);
+
+        // When
+        PagoStatusResponse response = procesarPagoService.procesarPagoEfectivo(reservaId);
+
+        // Then
+        assertEquals("COMPLETADO", response.estado());
+        assertEquals("FALLIDO", qrPendiente.getEstado());
+        verify(pagoRepository).save(qrPendiente);
+        verify(pagoRepository).save(argThat(pago -> "EFECTIVO".equals(pago.getMetodo())
+                && "COMPLETADO".equals(pago.getEstado())));
+        verify(reservaRepository).save(reserva);
+    }
+
+    @Test
+    @DisplayName("CU-03 | Reserva ya PAGADA: no permite crear otro pago")
+    void reservaPagada_NoPermiteOtroPago() {
+        // Given
+        Long reservaId = 1L;
+        Reserva reserva = reservaConId(reservaId, 100.0);
+        reserva.setEstado("PAGADA");
+
+        when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+
+        IniciarPagoRequest request = new IniciarPagoRequest(reservaId, "QR_BNB");
+
+        // When & Then
+        assertThrows(IllegalStateException.class, () -> procesarPagoService.iniciarProcesoPago(request));
+        verifyNoInteractions(pagoRepository);
+        verifyNoInteractions(bnbPort);
+        verifyNoInteractions(comprobanteRepository);
+    }
+
     // ─────────────────────────────────────────────────────────
     // Camino 4a CU-03: Error de comunicación BNB
     // ─────────────────────────────────────────────────────────
@@ -143,6 +217,7 @@ class ProcesarPagoServiceTest {
         Reserva reserva = reservaConId(reservaId, 100.0);
 
         when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+        when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.empty());
         when(bnbPort.generarQR(anyDouble(), anyString(), anyLong()))
                 .thenThrow(new RuntimeException("BNB API Down"));
 
@@ -168,7 +243,7 @@ class ProcesarPagoServiceTest {
         // Forzar expiración a hace 1 segundo
         pagoExpirado.setFechaExpiracion(java.time.LocalDateTime.now().minusSeconds(1));
 
-        when(pagoRepository.findByReservaId(reservaId)).thenReturn(Optional.of(pagoExpirado));
+        when(pagoRepository.findLatestByReservaId(reservaId)).thenReturn(Optional.of(pagoExpirado));
 
         // When
         PagoStatusResponse response = procesarPagoService.verificarEstadoPago(reservaId);
