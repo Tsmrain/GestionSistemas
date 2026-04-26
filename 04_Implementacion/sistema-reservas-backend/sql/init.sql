@@ -52,11 +52,20 @@ VALUES
     ('102', 1, 'Disponible', 0),
     ('103', 1, 'Disponible', 0),
     ('104', 1, 'Disponible', 0),
+    ('105', 1, 'Disponible', 0),
+    ('106', 1, 'Disponible', 0),
+    ('107', 1, 'Disponible', 0),
     ('201', 2, 'Disponible', 0),
     ('202', 2, 'Disponible', 0),
     ('203', 2, 'Disponible', 0),
+    ('204', 2, 'Disponible', 0),
+    ('205', 2, 'Disponible', 0),
+    ('206', 2, 'Disponible', 0),
     ('301', 3, 'Disponible', 0),
-    ('302', 3, 'Disponible', 0)
+    ('302', 3, 'Disponible', 0),
+    ('303', 3, 'Disponible', 0),
+    ('304', 3, 'Disponible', 0),
+    ('305', 3, 'Disponible', 0)
 ON CONFLICT (numero) DO UPDATE
 SET tipo_id = EXCLUDED.tipo_id,
     estado_actual = EXCLUDED.estado_actual,

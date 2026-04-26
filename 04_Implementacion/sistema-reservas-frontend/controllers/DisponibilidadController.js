@@ -8,7 +8,8 @@ class DisponibilidadController {
     }
 
     async buscar(tipo, fecha) {
-        const hoy = new Date().toISOString().split('T')[0];
+        const d = new Date();
+        const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         if (!fecha) {
             this.view.mostrarError("Por favor selecciona una fecha");
             return;
@@ -59,5 +60,16 @@ class DisponibilidadController {
         }
     }
 }
+
+// Inicializar fecha de hoy por defecto en el input
+(function() {
+    const d = new Date();
+    const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const input = document.getElementById("fecha-input");
+    if (input) {
+        input.value = hoy;
+        input.setAttribute("min", hoy);
+    }
+})();
 
 const app = new DisponibilidadController();

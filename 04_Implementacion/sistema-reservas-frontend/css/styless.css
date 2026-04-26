@@ -410,29 +410,97 @@ button:hover { background: #534AB7; }
 /* MODAL ÉXITO */
 .modal-exito {
     text-align: center;
-    max-width: 400px;
+    max-width: 440px;
+    padding: 2.5rem;
 }
 
 .exito-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
+    font-size: 56px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
 }
 
 .modal-exito h2 {
-    font-size: 22px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
     color: #1a1a1a;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .exito-detalle {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 6px;
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
 }
 
 .exito-detalle strong {
     color: #1a1a1a;
+    font-weight: 600;
+}
+
+.comprobante-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.grid-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.grid-item:last-child {
+    border-bottom: none;
+}
+
+.grid-item .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.grid-item .valor {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* CAJA DE ALERTA */
+.pago-alerta {
+    background: #FFF9E6;
+    border: 1px solid #FFE48E;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    text-align: left;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.pago-alerta .alerta-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.pago-alerta .alerta-texto {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #7A5B00;
+}
+
+.pago-alerta strong {
+    color: #5C4500;
 }
 
 /* MODAL DE PAGO */

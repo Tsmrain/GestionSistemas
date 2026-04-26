@@ -86,8 +86,9 @@ class ReservaView {
             if (e.target === overlay) overlay.remove();
         });
 
-        // Setear fecha de hoy como mínimo
-        var hoy = new Date().toISOString().split('T')[0];
+        // Setear fecha de hoy como mínimo (Local Time)
+        const d = new Date();
+        const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         document.getElementById("fechaIngreso").setAttribute("min", hoy);
         document.getElementById("fechaIngreso").value = habitacion.fechaIngreso || hoy;
     }
@@ -158,16 +159,10 @@ class ReservaView {
             '<p class="exito-detalle">Monto total: <strong>Bs ' + reserva.montoTotal + '</strong></p>' +
             '<p class="exito-detalle">Estado: <strong>' + reserva.estado + '</strong></p>' +
             '<button class="btn-confirmar btn-pagar" data-reserva=\'' + JSON.stringify(reserva) + '\'>Proceder al Pago</button>' +
-
-            '<button class="btn-confirmar" id="btn-cerrar-exito">Aceptar</button>' +
             '</div>';
 
         document.body.appendChild(exito);
 
-        document.getElementById("btn-cerrar-exito").addEventListener("click", function () {
-            exito.remove();
-            window.location.reload();
-        });
         exito.addEventListener("click", function (e) {
             if (e.target === exito) {
                 exito.remove();

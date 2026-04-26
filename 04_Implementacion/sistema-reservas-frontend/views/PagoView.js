@@ -24,9 +24,10 @@ class PagoView {
             '<p class="hab-horario">' + duracionHoras + ' horas</p>' +
             '</div>' +
             '</div>' +
-            '<p class="pago-instruccion">Confirma el pago de la reserva con QR BNB.</p>' +
+            '<p class="pago-instruccion">Confirma el pago de la reserva con QR BNB o Efectivo.</p>' +
             '<div class="pago-botones">' +
             '<button class="btn-pago-qr" id="btn-qr">Generar QR de pago</button>' +
+            '<button class="btn-pago-efectivo" id="btn-efectivo">Pago en Efectivo</button>' +
             '</div>' +
             '<div id="pago-contenido"></div>' +
             '<div id="pago-error" class="form-error" style="display:none"></div>' +
@@ -39,6 +40,11 @@ class PagoView {
     // Publico — escucha cuando el usuario elige QR
     onElegirQR(callback) {
         document.getElementById("btn-qr").addEventListener("click", callback);
+    }
+
+    // Publico — escucha cuando el usuario elige Efectivo
+    onElegirEfectivo(callback) {
+        document.getElementById("btn-efectivo").addEventListener("click", callback);
     }
 
     // Publico — muestra el QR en pantalla
@@ -60,18 +66,53 @@ class PagoView {
     }
 
     // Publico — muestra comprobante final
-    mostrarComprobante(pago) {
+    mostrarComprobante(pago, metodo) {
         if (this.modal) this.modal.remove();
+
+        var esEfectivo = (metodo === "EFECTIVO");
+        var titulo = esEfectivo ? "¡RESERVA REGISTRADA!" : "¡PAGO CONFIRMADO!";
+        var icon = esEfectivo ? "🏨" : "✅";
+        
+        var avisoHTML = "";
+        if (esEfectivo) {
+            avisoHTML = 
+                '<div class="pago-alerta">' +
+                    '<span class="alerta-icon">⚠️</span>' +
+                    '<div class="alerta-texto">' +
+                        '<strong>AVISO:</strong> Debes pagar en recepción. Tienes 30 minutos para llegar; de lo contrario, la habitación se liberará automáticamente.' +
+                    '</div>' +
+                '</div>';
+        } else {
+            avisoHTML = 
+                '<div class="pago-alerta">' +
+                    '<span class="alerta-icon">🕒</span>' +
+                    '<div class="alerta-texto">' +
+                        '<strong>AVISO:</strong> Tienes 30 minutos para llegar al residencial. Si no te presentas, la reserva se cancelará sin derecho a reembolso.' +
+                    '</div>' +
+                '</div>';
+        }
 
         var exito = document.createElement("div");
         exito.className = "modal-overlay";
         exito.innerHTML =
             '<div class="modal modal-exito">' +
-            '<div class="exito-icon">✅</div>' +
-            '<h2>Pago Confirmado</h2>' +
-            '<p class="exito-detalle">Comprobante N°: <strong>' + pago.nroComprobante + '</strong></p>' +
-            '<p class="exito-detalle">Tienes hasta las <strong>' + pago.obtenerHoraLimiteCheckIn() + '</strong> para llegar al residencial.</p>' +
-            '<button class="btn-confirmar" id="btn-cerrar-comprobante">Aceptar</button>' +
+            '<div class="exito-icon">' + icon + '</div>' +
+            '<h2 style="text-transform: uppercase; letter-spacing: 1px;">' + titulo + '</h2>' +
+            
+            '<div class="comprobante-grid">' +
+                '<div class="grid-item">' +
+                    '<span class="label">Nro. Comprobante</span>' +
+                    '<span class="valor">#' + pago.nroComprobante + '</span>' +
+                '</div>' +
+                '<div class="grid-item">' +
+                    '<span class="label">Tiempo Límite de Llegada</span>' +
+                    '<span class="valor" style="color: #7F77DD;">' + pago.obtenerHoraLimiteCheckIn() + '</span>' +
+                '</div>' +
+            '</div>' +
+
+            avisoHTML +
+
+            '<button class="btn-confirmar" id="btn-cerrar-comprobante">ACEPTAR</button>' +
             '</div>';
 
         document.body.appendChild(exito);
