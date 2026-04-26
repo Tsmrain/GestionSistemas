@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -104,6 +105,7 @@ class ProcesarPagoServiceTest {
         Reserva reserva = reservaConId(reservaId, 100.0);
         Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
         pagoPendiente.setExternalId("qr_id_123");
+        pagoPendiente.setFechaCreacion(LocalDateTime.now().minusSeconds(13));
 
         Comprobante comprobante = new Comprobante(pagoPendiente);
         comprobante.setId(10L);
@@ -124,6 +126,57 @@ class ProcesarPagoServiceTest {
         verify(pagoRepository).save(pagoPendiente);
         verify(reservaRepository).save(reserva);
         verify(comprobanteRepository).save(any(Comprobante.class));
+    }
+
+    @Test
+    @DisplayName("Paso 7 CU-03 | Polling pendiente: BNB retorna PENDIENTE y no emite comprobante")
+    void flujoBasico_PollingQR_RecienteSiguePendiente() {
+        // Given
+        Long reservaId = 1L;
+        Reserva reserva = reservaConId(reservaId, 100.0);
+        Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
+        pagoPendiente.setExternalId("qr_id_123");
+
+        when(pagoRepository.findLatestByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
+        when(bnbPort.consultarEstado("qr_id_123")).thenReturn("PENDIENTE");
+
+        // When
+        PagoStatusResponse response = procesarPagoService.verificarEstadoPago(reservaId);
+
+        // Then
+        assertEquals("PENDIENTE", response.estado());
+        assertEquals("qr_id_123", response.qrData());
+        assertEquals("PENDIENTE_PAGO", reserva.getEstado());
+        verify(bnbPort).consultarEstado("qr_id_123");
+        verifyNoInteractions(comprobanteRepository);
+    }
+
+    @Test
+    @DisplayName("CU-03 Demo | Confirmacion QR simulada: emite comprobante al solicitarlo")
+    void demo_ConfirmacionQRSimulada_EmiteComprobante() {
+        // Given
+        Long reservaId = 1L;
+        Reserva reserva = reservaConId(reservaId, 100.0);
+        Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
+        pagoPendiente.setExternalId("qr_id_123");
+
+        Comprobante comprobante = new Comprobante(pagoPendiente);
+        comprobante.setId(10L);
+        comprobante.setNroComprobante("COMP-ABCD1234");
+
+        when(pagoRepository.findLatestByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
+        when(comprobanteRepository.save(any(Comprobante.class))).thenReturn(comprobante);
+
+        // When
+        PagoStatusResponse response = procesarPagoService.confirmarPagoQRSimulado(reservaId);
+
+        // Then
+        assertEquals("COMPLETADO", response.estado());
+        assertEquals("PAGADA", reserva.getEstado());
+        assertEquals("COMP-ABCD1234", response.nroComprobante());
+        verify(pagoRepository).save(pagoPendiente);
+        verify(reservaRepository).save(reserva);
+        verifyNoInteractions(bnbPort);
     }
 
     // ─────────────────────────────────────────────────────────

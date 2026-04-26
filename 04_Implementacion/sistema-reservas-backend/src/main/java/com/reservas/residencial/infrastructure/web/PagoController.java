@@ -45,4 +45,13 @@ public class PagoController {
     public ResponseEntity<PagoStatusResponse> confirmarEfectivo(@PathVariable Long reservaId) {
         return ResponseEntity.ok(pagoService.procesarPagoEfectivo(reservaId));
     }
+
+    /**
+     * Apoyo para demo del sandbox — simula que el banco notifico el pago QR.
+     * POST /api/v1/pagos/simular-confirmacion/{reservaId}
+     */
+    @PostMapping("/simular-confirmacion/{reservaId}")
+    public ResponseEntity<PagoStatusResponse> simularConfirmacionQR(@PathVariable Long reservaId) {
+        return ResponseEntity.ok(pagoService.confirmarPagoQRSimulado(reservaId));
+    }
 }

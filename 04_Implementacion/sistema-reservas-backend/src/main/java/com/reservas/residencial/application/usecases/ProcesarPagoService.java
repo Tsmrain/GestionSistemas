@@ -106,21 +106,32 @@ public class ProcesarPagoService {
         String estadoBnb = bnbPort.consultarEstado(pago.getExternalId());
 
         if (ESTADO_PAGO_COMPLETADO.equals(estadoBnb)) {
-            pago.setEstado(ESTADO_PAGO_COMPLETADO);
-            pagoRepository.save(pago);
-
-            Reserva reserva = pago.getReserva();
-            reserva.confirmarPago();           // Experto en Información
-            reservaRepository.save(reserva);
-
-            Comprobante comprobante = new Comprobante(pago);
-            comprobante = comprobanteRepository.save(comprobante);
-
-            return toResponse(reserva, ESTADO_PAGO_COMPLETADO, null, comprobante);
+            return completarPagoQR(pago);
         }
 
         // Pago aún PENDIENTE
         return toResponse(pago.getReserva(), ESTADO_PAGO_PENDIENTE, pago.getExternalId(), null);
+    }
+
+    /**
+     * Endpoint de apoyo para la demo: simula que el banco notificó el pago del QR.
+     */
+    @Transactional
+    public PagoStatusResponse confirmarPagoQRSimulado(Long reservaId) {
+        Pago pago = pagoRepository.findLatestByReservaId(reservaId)
+                .orElseThrow(() -> new IllegalArgumentException("No existe pago iniciado para la reserva: " + reservaId));
+
+        if (!ESTADO_PAGO_PENDIENTE.equals(pago.getEstado())) {
+            return toResponse(pago.getReserva(), pago.getEstado(), null, null);
+        }
+
+        if (pago.estaExpirado()) {
+            pago.setEstado(ESTADO_PAGO_FALLIDO);
+            pagoRepository.save(pago);
+            return toResponse(pago.getReserva(), "QR_EXPIRADO", null, null);
+        }
+
+        return completarPagoQR(pago);
     }
 
     /**
@@ -158,6 +169,20 @@ public class ProcesarPagoService {
         if (ESTADO_RESERVA_PAGADA.equals(reserva.getEstado())) {
             throw new IllegalStateException("La reserva ya fue pagada: " + reserva.getId());
         }
+    }
+
+    private PagoStatusResponse completarPagoQR(Pago pago) {
+        pago.setEstado(ESTADO_PAGO_COMPLETADO);
+        pagoRepository.save(pago);
+
+        Reserva reserva = pago.getReserva();
+        reserva.confirmarPago();               // Experto en Información
+        reservaRepository.save(reserva);
+
+        Comprobante comprobante = new Comprobante(pago);
+        comprobante = comprobanteRepository.save(comprobante);
+
+        return toResponse(reserva, ESTADO_PAGO_COMPLETADO, null, comprobante);
     }
 
     private PagoStatusResponse toResponse(Reserva reserva, String estado, String qrData, Comprobante comprobante) {

@@ -12,6 +12,8 @@ class PagoController {
         document.addEventListener("click", function (e) {
             if (e.target.classList.contains("btn-pagar")) {
                 var reserva = JSON.parse(e.target.getAttribute("data-reserva"));
+                var modalActual = e.target.closest(".modal-overlay");
+                if (modalActual) modalActual.remove();
                 self._abrirPago(reserva);
             }
         });
@@ -24,10 +26,6 @@ class PagoController {
 
         this.view.onElegirQR(function () {
             self._iniciarPagoQR(reserva.id);
-        });
-
-        this.view.onElegirEfectivo(function () {
-            self._iniciarPagoEfectivo(reserva.id);
         });
     }
 
@@ -60,6 +58,9 @@ class PagoController {
 
             // Mostrar el QR en pantalla
             this.view.mostrarQR(pago.qrData);
+            this.view.onSimularPago(function () {
+                self._simularPagoQR(reservaId);
+            });
 
             // Iniciar polling cada 3 segundos
             this._iniciarPolling(reservaId);
@@ -102,7 +103,7 @@ class PagoController {
 
                 if (pago.estado === "QR_EXPIRADO" || pago.estado === "FALLIDO") {
                     self._detenerPolling();
-                    self.view.mostrarError("El QR expiro o el pago fallo. Intenta generar otro QR o paga en efectivo.");
+                    self.view.mostrarError("El QR expiro o el pago fallo. Intenta generar otro QR.");
                     return;
                 }
 
@@ -127,39 +128,37 @@ class PagoController {
         }
     }
 
-    // Privado — inicia el pago en efectivo
-    async _iniciarPagoEfectivo(reservaId) {
-        var self = this;
-        this.view.mostrarFormularioEfectivo();
+    // Privado — simula la notificacion del banco para la demo
+    async _simularPagoQR(reservaId) {
+        try {
+            var response = await fetch("/api/v1/pagos/simular-confirmacion/" + reservaId, {
+                method: "POST"
+            });
 
-        this.view.onConfirmarEfectivo(async function () {
-            try {
-                var response = await fetch("/api/v1/pagos/efectivo/" + reservaId, {
-                    method: "POST"
-                });
-
-                if (!response.ok) {
-                    self.view.mostrarError("Error al registrar el pago en efectivo.");
-                    return;
-                }
-
-                var data = await response.json();
-                var pago = new Pago(
-                    data.reservaId,
-                    data.estado,
-                    data.qrData,
-                    data.comprobanteId,
-                    data.nroComprobante,
-                    data.ventanaCheckIn
-                );
-
-                self.view.mostrarComprobante(pago);
-
-            } catch (error) {
-                self.view.mostrarError("No se pudo conectar con el servidor.");
+            if (!response.ok) {
+                this.view.mostrarError("No se pudo simular la confirmacion del pago.");
+                return;
             }
-        });
+
+            var data = await response.json();
+            var pago = new Pago(
+                data.reservaId,
+                data.estado,
+                data.qrData,
+                data.comprobanteId,
+                data.nroComprobante,
+                data.ventanaCheckIn
+            );
+
+            if (pago.estaCompletado()) {
+                this._detenerPolling();
+                this.view.mostrarComprobante(pago);
+            }
+        } catch (error) {
+            this.view.mostrarError("No se pudo conectar con el servidor.");
+        }
     }
+
 }
 
 // Inicializar el controlador

@@ -10,6 +10,8 @@ class PagoView {
         var overlay = document.createElement("div");
         overlay.className = "modal-overlay";
         overlay.id = "modal-pago";
+        var tipoHabitacion = this.#obtenerNombreTipo(reserva);
+        var duracionHoras = this.#obtenerDuracionHoras(reserva);
 
         overlay.innerHTML =
             '<div class="modal">' +
@@ -18,13 +20,13 @@ class PagoView {
             '<div class="numero-box">' + reserva.habitacion.numero + '</div>' +
             '<div>' +
             '<p class="hab-num">Habitacion ' + reserva.habitacion.numero + '</p>' +
-            '<p class="hab-tipo">' + reserva.habitacion.tipo + ' - Bs ' + reserva.montoTotal + '</p>' +
+            '<p class="hab-tipo">' + tipoHabitacion + ' - Bs ' + reserva.montoTotal + '</p>' +
+            '<p class="hab-horario">' + duracionHoras + ' horas</p>' +
             '</div>' +
             '</div>' +
-            '<p class="pago-instruccion">Selecciona el metodo de pago:</p>' +
+            '<p class="pago-instruccion">Confirma el pago de la reserva con QR BNB.</p>' +
             '<div class="pago-botones">' +
-            '<button class="btn-pago-qr" id="btn-qr">Pagar con QR (BNB)</button>' +
-            '<button class="btn-pago-efectivo" id="btn-efectivo">Pagar en Efectivo</button>' +
+            '<button class="btn-pago-qr" id="btn-qr">Generar QR de pago</button>' +
             '</div>' +
             '<div id="pago-contenido"></div>' +
             '<div id="pago-error" class="form-error" style="display:none"></div>' +
@@ -39,11 +41,6 @@ class PagoView {
         document.getElementById("btn-qr").addEventListener("click", callback);
     }
 
-    // Publico — escucha cuando el recepcionista elige efectivo
-    onElegirEfectivo(callback) {
-        document.getElementById("btn-efectivo").addEventListener("click", callback);
-    }
-
     // Publico — muestra el QR en pantalla
     mostrarQR(qrData) {
         var contenido = document.getElementById("pago-contenido");
@@ -53,22 +50,13 @@ class PagoView {
             '<img class="qr-imagen" src="data:image/png;base64,' + qrData + '" alt="QR de pago BNB">' +
             '<p class="qr-espera">Esperando confirmacion del pago...</p>' +
             '<div class="qr-spinner"></div>' +
+            '<button class="btn-confirmar btn-simular-pago" id="btn-simular-pago">Simular pago recibido</button>' +
             '</div>';
     }
 
-    // Publico — muestra formulario de efectivo
-    mostrarFormularioEfectivo() {
-        var contenido = document.getElementById("pago-contenido");
-        contenido.innerHTML =
-            '<div class="efectivo-container">' +
-            '<p class="efectivo-instruccion">El recepcionista confirma la recepcion del monto:</p>' +
-            '<button class="btn-confirmar" id="btn-confirmar-efectivo">Confirmar pago en efectivo</button>' +
-            '</div>';
-    }
-
-    // Publico — escucha confirmacion de efectivo
-    onConfirmarEfectivo(callback) {
-        document.getElementById("btn-confirmar-efectivo").addEventListener("click", callback);
+    // Publico — escucha la confirmacion simulada del QR
+    onSimularPago(callback) {
+        document.getElementById("btn-simular-pago").addEventListener("click", callback);
     }
 
     // Publico — muestra comprobante final
@@ -113,5 +101,16 @@ class PagoView {
     cerrarModal() {
         this.#limpiarContenido();
         if (this.modal) this.modal.remove();
+    }
+
+    #obtenerNombreTipo(reserva) {
+        if (!reserva.habitacion || !reserva.habitacion.tipo) return "Sin tipo";
+        if (typeof reserva.habitacion.tipo === "string") return reserva.habitacion.tipo;
+        return reserva.habitacion.tipo.nombreTipo || "Sin tipo";
+    }
+
+    #obtenerDuracionHoras(reserva) {
+        if (!reserva.habitacion || !reserva.habitacion.tipo) return "";
+        return reserva.habitacion.tipo.duracionHoras || "";
     }
 }
