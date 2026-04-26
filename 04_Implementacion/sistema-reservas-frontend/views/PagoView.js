@@ -15,6 +15,7 @@ class PagoView {
 
         overlay.innerHTML =
             '<div class="modal">' +
+            '<button class="modal-close" id="btn-cerrar-pago" type="button">&times;</button>' +
             '<h2 class="modal-titulo">Procesar Pago</h2>' +
             '<div class="modal-habitacion-info">' +
             '<div class="numero-box">' + reserva.habitacion.numero + '</div>' +
@@ -37,6 +38,20 @@ class PagoView {
         this.modal = overlay;
     }
 
+    // Publico — cancela el flujo de pago y cierra el modal
+    onCancelarPago(callback) {
+        var botonCerrar = document.getElementById("btn-cerrar-pago");
+        if (botonCerrar) {
+            botonCerrar.addEventListener("click", callback);
+        }
+
+        if (this.modal) {
+            this.modal.addEventListener("click", function (e) {
+                if (e.target === e.currentTarget) callback();
+            });
+        }
+    }
+
     // Publico — escucha cuando el usuario elige QR
     onElegirQR(callback) {
         document.getElementById("btn-qr").addEventListener("click", callback);
@@ -49,7 +64,13 @@ class PagoView {
 
     // Publico — muestra el QR en pantalla
     mostrarQR(qrData) {
+        var botonesPago = document.querySelector(".pago-botones");
+        var instruccion = document.querySelector(".pago-instruccion");
         var contenido = document.getElementById("pago-contenido");
+
+        if (botonesPago) botonesPago.style.display = "none";
+        if (instruccion) instruccion.textContent = "Confirma el pago de la reserva con QR BNB.";
+
         contenido.innerHTML =
             '<div class="qr-container">' +
             '<p class="qr-instruccion">Escanea el QR con tu banca movil:</p>' +
@@ -57,12 +78,34 @@ class PagoView {
             '<p class="qr-espera">Esperando confirmacion del pago...</p>' +
             '<div class="qr-spinner"></div>' +
             '<button class="btn-confirmar btn-simular-pago" id="btn-simular-pago">Simular pago recibido</button>' +
+            '<button class="btn-volver-pago" id="btn-volver-metodos" type="button">Volver a metodos de pago</button>' +
             '</div>';
     }
 
     // Publico — escucha la confirmacion simulada del QR
     onSimularPago(callback) {
         document.getElementById("btn-simular-pago").addEventListener("click", callback);
+    }
+
+    // Publico — vuelve desde QR a la seleccion de metodo de pago
+    onVolverMetodosPago(callback) {
+        document.getElementById("btn-volver-metodos").addEventListener("click", callback);
+    }
+
+    // Publico — restaura los botones QR/Efectivo
+    mostrarSeleccionMetodosPago() {
+        var botonesPago = document.querySelector(".pago-botones");
+        var instruccion = document.querySelector(".pago-instruccion");
+        var contenido = document.getElementById("pago-contenido");
+        var errorDiv = document.getElementById("pago-error");
+
+        if (botonesPago) botonesPago.style.display = "";
+        if (instruccion) instruccion.textContent = "Confirma el pago de la reserva con QR BNB o Efectivo.";
+        if (contenido) contenido.innerHTML = "";
+        if (errorDiv) {
+            errorDiv.textContent = "";
+            errorDiv.style.display = "none";
+        }
     }
 
     // Publico — muestra comprobante final
@@ -112,14 +155,15 @@ class PagoView {
 
             avisoHTML +
 
-            '<button class="btn-confirmar" id="btn-cerrar-comprobante">ACEPTAR</button>' +
+            '<button class="btn-confirmar" id="btn-cerrar-comprobante" type="button">ACEPTAR</button>' +
             '</div>';
 
         document.body.appendChild(exito);
 
         document.getElementById("btn-cerrar-comprobante").addEventListener("click", function () {
-            exito.remove();
-            window.location.reload();
+            document.querySelectorAll(".modal-overlay").forEach(function (modal) {
+                modal.remove();
+            });
         });
     }
 

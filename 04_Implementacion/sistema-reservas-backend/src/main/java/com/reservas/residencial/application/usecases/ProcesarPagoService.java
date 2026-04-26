@@ -93,7 +93,7 @@ public class ProcesarPagoService {
                 .orElseThrow(() -> new IllegalArgumentException("No existe pago iniciado para la reserva: " + reservaId));
 
         if (!ESTADO_PAGO_PENDIENTE.equals(pago.getEstado())) {
-            return toResponse(pago.getReserva(), pago.getEstado(), null, null);
+            return toResponseConComprobanteExistente(pago);
         }
 
         // Camino 7a: QR expirado (5 minutos)
@@ -122,7 +122,7 @@ public class ProcesarPagoService {
                 .orElseThrow(() -> new IllegalArgumentException("No existe pago iniciado para la reserva: " + reservaId));
 
         if (!ESTADO_PAGO_PENDIENTE.equals(pago.getEstado())) {
-            return toResponse(pago.getReserva(), pago.getEstado(), null, null);
+            return toResponseConComprobanteExistente(pago);
         }
 
         if (pago.estaExpirado()) {
@@ -183,6 +183,14 @@ public class ProcesarPagoService {
         comprobante = comprobanteRepository.save(comprobante);
 
         return toResponse(reserva, ESTADO_PAGO_COMPLETADO, null, comprobante);
+    }
+
+    private PagoStatusResponse toResponseConComprobanteExistente(Pago pago) {
+        Comprobante comprobante = null;
+        if (ESTADO_PAGO_COMPLETADO.equals(pago.getEstado()) && pago.getId() != null) {
+            comprobante = comprobanteRepository.findByPagoId(pago.getId()).orElse(null);
+        }
+        return toResponse(pago.getReserva(), pago.getEstado(), null, comprobante);
     }
 
     private PagoStatusResponse toResponse(Reserva reserva, String estado, String qrData, Comprobante comprobante) {

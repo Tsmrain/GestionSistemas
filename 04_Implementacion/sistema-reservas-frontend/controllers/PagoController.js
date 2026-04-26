@@ -24,6 +24,11 @@ class PagoController {
         var self = this;
         this.view.mostrarOpcionesPago(reserva);
 
+        this.view.onCancelarPago(function () {
+            self._detenerPolling();
+            self.view.cerrarModal();
+        });
+
         this.view.onElegirQR(function () {
             self._iniciarPagoQR(reserva.id);
         });
@@ -64,6 +69,10 @@ class PagoController {
             this.view.mostrarQR(pago.qrData);
             this.view.onSimularPago(() => {
                 this._simularPagoQR(reservaId);
+            });
+            this.view.onVolverMetodosPago(() => {
+                this._detenerPolling();
+                this.view.mostrarSeleccionMetodosPago();
             });
 
             // Iniciar polling cada 3 segundos
