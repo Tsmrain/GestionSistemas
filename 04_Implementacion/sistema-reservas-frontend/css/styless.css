@@ -201,12 +201,18 @@ button:hover { background: #534AB7; }
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: fadeIn 0.2s ease;
+    animation: overlayFadeIn 0.22s ease;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(2px);
+    }
 }
 
 .modal {
@@ -219,12 +225,18 @@ button:hover { background: #534AB7; }
     overflow-y: auto;
     position: relative;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    animation: slideUp 0.3s ease;
+    animation: modalEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+@keyframes modalEnter {
+    from {
+        transform: translateY(22px) scale(0.97);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
 }
 
 .modal-close {
@@ -253,6 +265,7 @@ button:hover { background: #534AB7; }
     color: #1a1a1a;
     margin-bottom: 16px;
     text-align: left;
+    animation: contentRise 0.32s ease both;
 }
 
 .modal-habitacion-info {
@@ -263,6 +276,18 @@ button:hover { background: #534AB7; }
     background: #f9f9f9;
     border-radius: 10px;
     margin-bottom: 20px;
+    animation: contentRise 0.34s ease 0.04s both;
+}
+
+@keyframes contentRise {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* FORMULARIO */
@@ -270,6 +295,7 @@ button:hover { background: #534AB7; }
     display: flex;
     flex-direction: column;
     gap: 14px;
+    animation: contentRise 0.34s ease 0.08s both;
 }
 
 .form-group {
@@ -392,13 +418,14 @@ button:hover { background: #534AB7; }
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: background 0.2s, transform 0.16s, box-shadow 0.2s;
     margin-top: 6px;
 }
 
 .btn-confirmar:hover {
     background: #534AB7;
     transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(83, 74, 183, 0.22);
 }
 
 .btn-confirmar:disabled {
@@ -418,6 +445,7 @@ button:hover { background: #534AB7; }
     font-size: 56px;
     margin-bottom: 16px;
     filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
+    animation: iconPop 0.34s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
 }
 
 .modal-exito h2 {
@@ -447,6 +475,7 @@ button:hover { background: #534AB7; }
     gap: 16px;
     margin-bottom: 24px;
     text-align: left;
+    animation: contentRise 0.34s ease 0.12s both;
 }
 
 .grid-item {
@@ -486,6 +515,7 @@ button:hover { background: #534AB7; }
     display: flex;
     gap: 14px;
     align-items: flex-start;
+    animation: contentRise 0.34s ease 0.16s both;
 }
 
 .pago-alerta .alerta-icon {
@@ -511,12 +541,14 @@ button:hover { background: #534AB7; }
     font-size: 14px;
     color: #666;
     margin-bottom: 14px;
+    animation: contentRise 0.32s ease 0.08s both;
 }
 
 .pago-botones {
     display: flex;
     gap: 10px;
     margin-bottom: 16px;
+    animation: contentRise 0.34s ease 0.12s both;
 }
 
 .btn-pago-qr,
@@ -540,6 +572,7 @@ button:hover { background: #534AB7; }
     border-radius: 10px;
     background: #fafafa;
     margin-top: 12px;
+    animation: panelReveal 0.26s ease both;
 }
 
 .qr-imagen {
@@ -552,6 +585,7 @@ button:hover { background: #534AB7; }
     border-radius: 8px;
     background: #fff;
     padding: 10px;
+    animation: qrReveal 0.3s ease 0.08s both;
 }
 
 .qr-spinner {
@@ -574,14 +608,64 @@ button:hover { background: #534AB7; }
     color: #555;
     font-weight: 700;
     cursor: pointer;
+    transition: background 0.2s, transform 0.16s;
 }
 
 .btn-volver-pago:hover {
     background: #f2f2f2;
+    transform: translateY(-1px);
+}
+
+@keyframes panelReveal {
+    from {
+        transform: translateY(8px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes qrReveal {
+    from {
+        transform: scale(0.96);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes iconPop {
+    0% {
+        transform: scale(0.72);
+        opacity: 0;
+    }
+    70% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* Responsive */
