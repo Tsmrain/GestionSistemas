@@ -15,10 +15,11 @@ sequenceDiagram
             Sistema->>Sistema: verificarTransaccion()
         end
         
-        Sistema-->>Actor: confirmarPagoExitoso()
+        Sistema-->>Actor: confirmarPagoExitoso(comprobante, horaLimite, avisoNoReembolso)
     else Pago Efectivo
         Actor->>Sistema: seleccionarMetodo("EFECTIVO")
-        Sistema-->>Actor: confirmarPagoManual()
+        Sistema->>Sistema: registrarCompromisoPago()
+        Sistema-->>Actor: confirmarReservaPendiente(comprobante, horaLimite, avisoLiberacion)
     end
 
     Sistema->>Sistema: actualizarReserva()

@@ -4,6 +4,7 @@ classDiagram
         +iniciarPago(IniciarPagoRequest) PagoStatusResponse
         +verificarEstado(reservaId) PagoStatusResponse
         +confirmarEfectivo(reservaId) PagoStatusResponse
+        +simularConfirmacionQR(reservaId) PagoStatusResponse
     }
 
     class ProcesarPagoService {
@@ -14,6 +15,7 @@ classDiagram
         +iniciarProcesoPago(IniciarPagoRequest) PagoStatusResponse
         +verificarEstadoPago(reservaId) PagoStatusResponse
         +procesarPagoEfectivo(reservaId) PagoStatusResponse
+        +confirmarPagoQRSimulado(reservaId) PagoStatusResponse
         -iniciarPagoQR(Reserva) PagoStatusResponse
         -procesarPagoEfectivo(Reserva) PagoStatusResponse
         -toResponse(Reserva, estado, qrData, Comprobante) PagoStatusResponse

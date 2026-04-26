@@ -8,8 +8,9 @@ usecaseDiagram
         usecase "Generar QR BNB" as UC3_1
         usecase "Pagar en Efectivo" as UC3_2
         usecase "Verificar Pago (Polling)" as UC3_3
-        usecase "Actualizar Reserva" as UC3_4
-        usecase "Emitir Comprobante" as UC3_5
+        usecase "Actualizar Reserva y Ventana Check-in" as UC3_4
+        usecase "Emitir Comprobante con Advertencia" as UC3_5
+        usecase "Controlar Tiempo de Llegada (30 min)" as UC3_6
     }
 
     Cliente --> UC3
@@ -19,5 +20,6 @@ usecaseDiagram
     UC3 ..> UC3_3 : <<include>>
     UC3 ..> UC3_4 : <<include>>
     UC3 ..> UC3_5 : <<include>>
+    UC3 ..> UC3_6 : <<include>>
     UC3_1 -- BNB
     UC3_3 -- BNB
