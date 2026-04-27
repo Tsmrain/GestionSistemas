@@ -26,6 +26,7 @@ public class Pago {
 
     @ManyToOne
     @JoinColumn(name = "reserva_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Reserva reserva;
 
     private Double monto;
@@ -39,6 +40,10 @@ public class Pago {
     /** ID externo retornado por el API del BNB (externalId del QR) */
     @Column(name = "external_id")
     private String externalId;
+
+    /** Imagen QR en Base64. Puede superar 255 caracteres. */
+    @Column(name = "qr_data", columnDefinition = "TEXT")
+    private String qrData;
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;

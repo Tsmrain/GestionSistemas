@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @referencia: 03_Diseño/CU-02-Registrar-Reserva/CU-02_Clases_Diseño.mmd
  */
 @RestController
-@RequestMapping("/api/reservas")
+@RequestMapping("/api/v1/reservas")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class ReservaController {

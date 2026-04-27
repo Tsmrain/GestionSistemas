@@ -1,61 +1,61 @@
 classDiagram
-    direction TB
-
-    %% ── Conceptual Domain Model (Larman Cap. 9) ────────────────────────────────
-    %% Fuente autoritativa: codigo en domain/models/
-    %% Baja Brecha de Representación: cada clase, atributo y relación aquí
-    %% tiene su equivalente exacto en el código Java.
-
-    class Huesped {
-        nombre : String
-        ci : String
-        celular : String
-        urlFotoAnverso : String
-        urlFotoReverso : String
+    class Reserva {
+        id
+        montoTotal
+        fechaCreacion
+        fechaIngreso
+        cantidadBloques
+        estado
+        fechaPago
+        ventanaCheckIn
+        horaIngreso
+        horaSalidaEstimada
+        recepcionista
     }
 
-    class Reserva {
-        fechaCreacion : LocalDate
-        fechaIngreso : LocalDate
-        cantidadBloques : Integer
-        montoTotal : Double
-        estado : String
-        fechaPago : LocalDateTime
-        ventanaCheckIn : LocalDateTime
-        confirmarPago()
+    class Huesped {
+        id
+        nombre
+        ci
+        celular
+        urlFotoAnverso
+        urlFotoReverso
     }
 
     class Habitacion {
-        numero : String
-        estadoActual : String
-        estaDisponible() : boolean
+        id
+        numero
+        estadoActual
+        version
     }
 
     class TipoHabitacion {
-        nombreTipo : String
-        precioBase : Double
-        duracionHoras : Integer
-        descripcion : String
+        id
+        nombreTipo
+        precioBase
+        duracionHoras
+        descripcion
     }
 
     class Pago {
-        monto : Double
-        metodo : String
-        estado : String
-        externalId : String
-        fechaCreacion : LocalDateTime
-        fechaExpiracion : LocalDateTime
-        estaExpirado() : boolean
+        id
+        monto
+        metodo
+        estado
+        externalId
+        fechaCreacion
+        fechaExpiracion
     }
 
     class Comprobante {
-        nroComprobante : String
-        fechaEmision : LocalDateTime
+        id
+        nroComprobante
+        fechaEmision
     }
 
-    %% ── Relaciones ────────────────────────────────────────────────────────────
-    Huesped       "1"  --> "*"  Reserva      : Realiza >
-    Reserva       "*"  --> "1"  Habitacion   : Asignada-a >
-    Habitacion    "*"  --> "1"  TipoHabitacion : Clasificada-como >
-    Reserva       "1"  *--  "*"  Pago         : Origina >
-    Pago          "1"  *--  "1"  Comprobante  : Genera >
+    Huesped "1" -- "*" Reserva : Realiza
+    Huesped "0..1" -- "*" Reserva : Acompaña en
+    Habitacion "1" -- "*" Reserva : Asignada a
+    Reserva "1" -- "*" Pago : Registra
+    TipoHabitacion "1" -- "*" Habitacion : Categoriza
+    Pago "1" -- "1" Comprobante : Respalda

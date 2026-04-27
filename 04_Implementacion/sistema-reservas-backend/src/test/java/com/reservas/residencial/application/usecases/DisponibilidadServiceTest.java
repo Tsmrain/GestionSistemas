@@ -3,6 +3,7 @@ package com.reservas.residencial.application.usecases;
 import com.reservas.residencial.application.dto.ConsultarDisponibilidadQuery;
 import com.reservas.residencial.application.dto.HabitacionDisponibleResponse;
 import com.reservas.residencial.application.ports.out.HabitacionRepositoryPort;
+import com.reservas.residencial.application.ports.out.ReservaRepositoryPort;
 import com.reservas.residencial.domain.models.Habitacion;
 import com.reservas.residencial.domain.models.TipoHabitacion;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,9 @@ class DisponibilidadServiceTest {
 
     @Mock
     private HabitacionRepositoryPort habitacionRepository;
+
+    @Mock
+    private ReservaRepositoryPort reservaRepository;
 
     @InjectMocks
     private DisponibilidadService disponibilidadService;

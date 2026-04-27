@@ -3,6 +3,7 @@ package com.reservas.residencial.infrastructure.web;
 import com.reservas.residencial.application.dto.IniciarPagoRequest;
 import com.reservas.residencial.application.dto.PagoStatusResponse;
 import com.reservas.residencial.application.usecases.ProcesarPagoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/v1/pagos")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class PagoController {
 
@@ -24,7 +26,7 @@ public class PagoController {
      * POST /api/v1/pagos/iniciar
      */
     @PostMapping("/iniciar")
-    public ResponseEntity<PagoStatusResponse> iniciarPago(@RequestBody IniciarPagoRequest request) {
+    public ResponseEntity<PagoStatusResponse> iniciarPago(@Valid @RequestBody IniciarPagoRequest request) {
         return ResponseEntity.ok(pagoService.iniciarProcesoPago(request));
     }
 

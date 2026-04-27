@@ -22,7 +22,7 @@ public interface JpaHabitacionRepository extends JpaRepository<Habitacion, Long>
                   from Reserva r
                   where r.habitacion = h
                     and r.fechaIngreso = :fecha
-                    and upper(r.estado) <> 'CANCELADA'
+                    and upper(r.estado) in ('PENDIENTE_PAGO', 'PAGADA', 'ACTIVA')
               )
             order by h.numero
             """)
@@ -39,7 +39,7 @@ public interface JpaHabitacionRepository extends JpaRepository<Habitacion, Long>
                   from Reserva r
                   where r.habitacion = h
                     and r.fechaIngreso = :fecha
-                    and upper(r.estado) <> 'CANCELADA'
+                    and upper(r.estado) in ('PENDIENTE_PAGO', 'PAGADA', 'ACTIVA')
               )
             order by h.numero
             """)

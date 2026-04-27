@@ -46,7 +46,7 @@ public class Reserva {
     @Column(name = "cantidad_bloques")
     private Integer cantidadBloques;
 
-    /** PENDIENTE_PAGO | PAGADA | CANCELADA */
+    /** PENDIENTE_PAGO | PAGADA | ACTIVA | FINALIZADA | CANCELADA */
     private String estado;
 
     /** Registra la hora exacta del pago — Postcondición CU-03 */
@@ -56,6 +56,19 @@ public class Reserva {
     /** Límite para hacer check-in: fechaPago + 30 min — Postcondición CU-03 */
     @Column(name = "ventana_check_in")
     private LocalDateTime ventanaCheckIn;
+
+    @ManyToOne
+    @JoinColumn(name = "acompanante_id")
+    private Huesped acompanante;
+
+    @Column(name = "hora_ingreso")
+    private LocalDateTime horaIngreso;
+
+    @Column(name = "hora_salida_estimada")
+    private LocalDateTime horaSalidaEstimada;
+
+    @Column(name = "recepcionista")
+    private String recepcionista;
 
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
     private List<Pago> pagos;
@@ -68,5 +81,29 @@ public class Reserva {
         this.estado = "PAGADA";
         this.fechaPago = LocalDateTime.now();
         this.ventanaCheckIn = this.fechaPago.plusMinutes(30);
+    }
+
+    public void realizarCheckIn(Huesped acompanante, String recepcionista) {
+        String estadoAnterior = this.estado;
+        this.estado = "ACTIVA";
+        this.horaIngreso = LocalDateTime.now();
+        this.recepcionista = recepcionista;
+        if (acompanante != null) {
+            this.acompanante = acompanante;
+        }
+        
+        Integer duracionHoras = this.habitacion.getTipo().getDuracionHoras();
+        Integer totalHoras = duracionHoras * this.cantidadBloques;
+        
+        // Si el pago fue QR y llegó tarde, el conteo empezó desde ventanaCheckIn (fechaPago + 30m)
+        if ("PAGADA".equals(estadoAnterior) && this.ventanaCheckIn != null && this.horaIngreso.isAfter(this.ventanaCheckIn)) {
+            this.horaSalidaEstimada = this.ventanaCheckIn.plusHours(totalHoras);
+        } else {
+            this.horaSalidaEstimada = this.horaIngreso.plusHours(totalHoras);
+        }
+    }
+
+    public void finalizarEstadia() {
+        this.estado = "FINALIZADA";
     }
 }

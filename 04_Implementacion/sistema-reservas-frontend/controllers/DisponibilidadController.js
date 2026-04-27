@@ -22,7 +22,7 @@ class DisponibilidadController {
         this.view.limpiar();
 
         try {
-            const url = "/api/habitaciones/disponibles?fecha=" + fecha + "&tipoNombre=" + tipo;
+            const url = "/api/v1/habitaciones/disponibles?fecha=" + fecha + "&tipoNombre=" + tipo;
             console.log("[DEBUG] Fetching:", url);
 
             const response = await fetch(url);

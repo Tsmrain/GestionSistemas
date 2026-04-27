@@ -48,7 +48,7 @@ class ReservaServiceTest {
     void deberiaCalcularElMontoTotalEnServidor() {
         TipoHabitacion tipo = new TipoHabitacion(1L, "SUPERVIP", 250.0, 6, "Habitacion premium");
         Habitacion habitacion = new Habitacion(9L, "302", tipo, "Disponible", 0L);
-        Huesped huesped = new Huesped(7L, "Ana Perez", "123", "70000000", null, null);
+        Huesped huesped = new Huesped(7L, "Ana Perez", "123", null, "70000000", null, null);
         Reserva reservaGuardada = new Reserva();
         reservaGuardada.setId(88L);
         reservaGuardada.setEstado("PENDIENTE_PAGO");
