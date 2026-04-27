@@ -10,4 +10,6 @@ public interface ReservaRepositoryPort {
     boolean existsActiveByHabitacionAndFecha(Long habitacionId, LocalDate fechaIngreso, String estadoExcluido);
 
     java.util.Optional<Reserva> findById(Long id);
+
+    java.util.List<Reserva> findByHuespedCi(String ci);
 }

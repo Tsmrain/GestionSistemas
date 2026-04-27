@@ -1,10 +1,20 @@
 classDiagram
-    direction TB
-
-    %% ── Conceptual Domain Model (Larman Cap. 9) ────────────────────────────────
-    %% Modelo de cosas en el mundo real, sin operaciones ni navegabilidad de software.
+    class Reserva {
+        id
+        montoTotal
+        fechaCreacion
+        fechaIngreso
+        cantidadBloques
+        estado
+        fechaPago
+        ventanaCheckIn
+        horaIngreso
+        horaSalidaEstimada
+        recepcionista
+    }
 
     class Huesped {
+        id
         nombre
         ci
         celular
@@ -12,22 +22,15 @@ classDiagram
         urlFotoReverso
     }
 
-    class Reserva {
-        fechaCreacion
-        fechaIngreso
-        cantidadBloques
-        montoTotal
-        estado
-        fechaPago
-        ventanaCheckIn
-    }
-
     class Habitacion {
+        id
         numero
         estadoActual
+        version
     }
 
     class TipoHabitacion {
+        id
         nombreTipo
         precioBase
         duracionHoras
@@ -35,6 +38,7 @@ classDiagram
     }
 
     class Pago {
+        id
         monto
         metodo
         estado
@@ -44,13 +48,14 @@ classDiagram
     }
 
     class Comprobante {
+        id
         nroComprobante
         fechaEmision
     }
 
-    %% ── Relaciones (Sin flechas de navegabilidad, líneas simples) ────────────
-    Huesped       "1" -- "*"  Reserva      : Realiza >
-    Reserva       "*" -- "1"  Habitacion   : Asignada-a >
-    Habitacion    "*" -- "1"  TipoHabitacion : Clasificada-como >
-    Reserva       "1" -- "*"  Pago         : Origina >
-    Pago          "1" -- "1"  Comprobante  : Genera >
+    Huesped "1" -- "*" Reserva : Realiza
+    Huesped "0..1" -- "*" Reserva : Acompaña en
+    Habitacion "1" -- "*" Reserva : Asignada a
+    Reserva "1" -- "*" Pago : Registra
+    TipoHabitacion "1" -- "*" Habitacion : Categoriza
+    Pago "1" -- "1" Comprobante : Respalda

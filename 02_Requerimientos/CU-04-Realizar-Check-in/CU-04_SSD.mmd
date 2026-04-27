@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor Recepcionista
+    participant Sistema
+
+    Recepcionista->>Sistema: buscarReservasPorCi(ci)
+    Sistema-->>Recepcionista: listaReservas (id, estado, huesped, habitacion)
+
+    alt Identidad no coincide (3a)
+        Recepcionista->>Sistema: cancelarCheckIn(reservaId)
+        Sistema-->>Recepcionista: Confirmación (Reserva Cancelada, Habitación Disponible)
+    else Identidad OK
+        opt Registro de acompañante (4)
+            Recepcionista->>Sistema: realizarCheckIn(reservaId, datosAcompanante, fotos)
+        else Sin acompañante (4a)
+            Recepcionista->>Sistema: realizarCheckIn(reservaId, null, null)
+        end
+        Sistema-->>Recepcionista: resumenCheckIn (horaIngreso, horaSalida, estado: ACTIVA)
+    end

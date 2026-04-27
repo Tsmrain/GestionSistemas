@@ -1,0 +1,49 @@
+classDiagram
+    class CheckInController {
+        -CheckInService checkInService
+        +buscarPorCi(String ci) ResponseEntity
+        +realizarCheckIn(Long reservaId, ...) ResponseEntity
+        +cancelarCheckIn(Long reservaId) ResponseEntity
+    }
+
+    class CheckInService {
+        -ReservaRepositoryPort reservaRepository
+        -HabitacionRepositoryPort habitacionRepository
+        -HuespedRepositoryPort huespedRepository
+        -FileStoragePort fileStoragePort
+        +buscarReservasPorCi(String ci) List~ReservaResponse~
+        +realizarCheckIn(Long reservaId, ...) ReservaResponse
+        +cancelarPorInconsistenciaIdentidad(Long reservaId) void
+    }
+
+    class Reserva {
+        -Long id
+        -Huesped huesped
+        -Habitacion habitacion
+        -String estado
+        -Huesped acompanante
+        -LocalDateTime horaIngreso
+        -LocalDateTime horaSalidaEstimada
+        -String recepcionista
+        +realizarCheckIn(Huesped acompanante, String recepcionista) void
+    }
+
+    class Habitacion {
+        -Long id
+        -String numero
+        -String estadoActual
+        +setEstadoActual(String estado) void
+    }
+
+    class Huesped {
+        -Long id
+        -String nombre
+        -String ci
+    }
+
+    CheckInController --> CheckInService : delega a
+    CheckInService --> Reserva : manipula
+    CheckInService --> Habitacion : actualiza estado
+    Reserva "1" --> "1" Huesped : titular
+    Reserva "1" --> "0..1" Huesped : acompanante
+    Reserva "1" --> "1" Habitacion : asignada

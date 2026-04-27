@@ -9,6 +9,9 @@ public record ReservaResponse(
         Integer cantidadBloques,
         Double montoTotal,
         HuespedResumenResponse huesped,
-        HabitacionResumenResponse habitacion
+        HabitacionResumenResponse habitacion,
+        HuespedResumenResponse acompanante,
+        java.time.LocalDateTime horaIngreso,
+        java.time.LocalDateTime horaSalidaEstimada
 ) {
 }

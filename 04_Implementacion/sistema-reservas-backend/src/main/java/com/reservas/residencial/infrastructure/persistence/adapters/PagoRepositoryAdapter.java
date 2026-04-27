@@ -19,7 +19,12 @@ public class PagoRepositoryAdapter implements PagoRepositoryPort {
     }
 
     @Override
-    public Optional<Pago> findByReservaId(Long reservaId) {
-        return jpaPagoRepository.findByReservaId(reservaId);
+    public Optional<Pago> findLatestByReservaId(Long reservaId) {
+        return jpaPagoRepository.findFirstByReservaIdOrderByFechaCreacionDesc(reservaId);
+    }
+
+    @Override
+    public Optional<Pago> findPendingByReservaId(Long reservaId) {
+        return jpaPagoRepository.findFirstByReservaIdAndEstadoOrderByFechaCreacionDesc(reservaId, "PENDIENTE");
     }
 }

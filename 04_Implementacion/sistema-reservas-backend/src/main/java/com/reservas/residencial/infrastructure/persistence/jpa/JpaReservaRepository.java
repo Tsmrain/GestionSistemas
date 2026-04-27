@@ -14,4 +14,6 @@ public interface JpaReservaRepository extends JpaRepository<Reserva, Long> {
             LocalDate fechaIngreso,
             String estado
     );
+
+    java.util.List<Reserva> findByHuespedCi(String ci);
 }

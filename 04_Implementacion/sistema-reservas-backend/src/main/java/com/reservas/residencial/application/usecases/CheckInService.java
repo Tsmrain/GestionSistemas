@@ -1,15 +1,13 @@
 package com.reservas.residencial.application.usecases;
 
 import com.reservas.residencial.application.dto.HabitacionResumenResponse;
-import com.reservas.residencial.application.dto.RegistroReservaCommand;
+import com.reservas.residencial.application.dto.HuespedResumenResponse;
 import com.reservas.residencial.application.dto.ReservaResponse;
 import com.reservas.residencial.application.dto.TipoHabitacionResponse;
-import com.reservas.residencial.application.dto.HuespedResumenResponse;
 import com.reservas.residencial.application.ports.out.FileStoragePort;
 import com.reservas.residencial.application.ports.out.HabitacionRepositoryPort;
 import com.reservas.residencial.application.ports.out.HuespedRepositoryPort;
 import com.reservas.residencial.application.ports.out.ReservaRepositoryPort;
-import com.reservas.residencial.domain.models.Habitacion;
 import com.reservas.residencial.domain.models.Huesped;
 import com.reservas.residencial.domain.models.Reserva;
 import lombok.RequiredArgsConstructor;
@@ -17,60 +15,71 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
- * @referencia: 03_Diseño/CU-02-Registrar-Reserva/CU-02_Clases_Diseño.mmd
+ * @referencia: CU-04 Realizar Check-in
  */
 @Service
 @RequiredArgsConstructor
-public class ReservaService {
-
-    private static final String ESTADO_CANCELADA = "CANCELADA";
-    private static final String ESTADO_PENDIENTE_PAGO = "PENDIENTE_PAGO";
+public class CheckInService {
 
     private final ReservaRepositoryPort reservaRepository;
     private final HabitacionRepositoryPort habitacionRepository;
     private final HuespedRepositoryPort huespedRepository;
     private final FileStoragePort fileStoragePort;
 
+    @Transactional(readOnly = true)
+    public List<ReservaResponse> buscarReservasPorCi(String ci) {
+        return reservaRepository.findByHuespedCi(ci).stream()
+                .filter(r -> "PENDIENTE_PAGO".equals(r.getEstado()) || "PAGADA".equals(r.getEstado()) || "ACTIVA".equals(r.getEstado()))
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
-    public ReservaResponse registrarReserva(RegistroReservaCommand command,
-                                            MultipartFile fotoAnverso,
-                                            MultipartFile fotoReverso) {
-        Habitacion habitacion = habitacionRepository.findById(command.habitacionId())
-                .orElseThrow(() -> new IllegalArgumentException("Habitacion no encontrada"));
+    public ReservaResponse realizarCheckIn(Long reservaId, String acompananteNombre, String acompananteCi, 
+                                           MultipartFile fotoAnverso, MultipartFile fotoReverso, String recepcionista) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
 
-        if (!habitacion.estaDisponible()) {
-            throw new IllegalStateException("La habitacion no esta disponible para reservas.");
+        if (!"PAGADA".equals(reserva.getEstado())) {
+            throw new IllegalStateException("La reserva debe estar PAGADA antes de realizar el check-in. Estado actual: " + reserva.getEstado());
         }
 
-        if (reservaRepository.existsActiveByHabitacionAndFecha(command.habitacionId(),
-                command.fechaIngreso(), ESTADO_CANCELADA)) {
-            throw new IllegalStateException("La habitacion ya esta reservada para la fecha seleccionada.");
+        Huesped acompananteGuardado = null;
+        if (acompananteNombre != null && !acompananteNombre.trim().isEmpty() && acompananteCi != null && !acompananteCi.trim().isEmpty()) {
+            Huesped acompanante = new Huesped();
+            acompanante.setNombre(acompananteNombre);
+            acompanante.setCi(acompananteCi);
+
+            if (fotoAnverso != null && !fotoAnverso.isEmpty()) {
+                acompanante.setUrlFotoAnverso(fileStoragePort.guardar(fotoAnverso));
+            }
+            if (fotoReverso != null && !fotoReverso.isEmpty()) {
+                acompanante.setUrlFotoReverso(fileStoragePort.guardar(fotoReverso));
+            }
+            acompananteGuardado = huespedRepository.save(acompanante);
         }
 
-        Huesped huesped = new Huesped();
-        huesped.setNombre(command.nombre());
-        huesped.setCi(command.ci());
-        huesped.setCelular(command.celular());
-
-        if (fotoAnverso != null && !fotoAnverso.isEmpty()) {
-            huesped.setUrlFotoAnverso(fileStoragePort.guardar(fotoAnverso));
-        }
-        if (fotoReverso != null && !fotoReverso.isEmpty()) {
-            huesped.setUrlFotoReverso(fileStoragePort.guardar(fotoReverso));
-        }
-
-        Huesped huespedGuardado = huespedRepository.save(huesped);
-
-        Reserva reserva = new Reserva();
-        reserva.setHuesped(huespedGuardado);
-        reserva.setHabitacion(habitacion);
-        reserva.setFechaIngreso(command.fechaIngreso());
-        reserva.setCantidadBloques(command.cantidadBloques());
-        reserva.setMontoTotal(habitacion.getPrecioBase() * command.cantidadBloques());
-        reserva.setEstado(ESTADO_PENDIENTE_PAGO);
-
+        reserva.realizarCheckIn(acompananteGuardado, recepcionista);
+        reserva.getHabitacion().setEstadoActual("Ocupada");
+        
+        habitacionRepository.save(reserva.getHabitacion());
         return toResponse(reservaRepository.save(reserva));
+    }
+
+    @Transactional
+    public void cancelarPorInconsistenciaIdentidad(Long reservaId) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada"));
+                
+        reserva.setEstado("CANCELADA");
+        reserva.getHabitacion().setEstadoActual("Disponible");
+        
+        habitacionRepository.save(reserva.getHabitacion());
+        reservaRepository.save(reserva);
     }
 
     private ReservaResponse toResponse(Reserva reserva) {

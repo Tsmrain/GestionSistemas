@@ -9,6 +9,7 @@ services:
       POSTGRES_DB: sistema_reservas
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: adminpassword
+      TZ: America/La_Paz
     ports:
       - "5433:5432"
     volumes:
@@ -40,6 +41,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=adminpassword
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - TZ=America/La_Paz
     networks:
       - reservas-network
 

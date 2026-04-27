@@ -33,7 +33,11 @@ CREATE TABLE IF NOT EXISTS reservas (
     cantidad_bloques INTEGER NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE_PAGO',
     fecha_pago TIMESTAMP,
-    ventana_check_in TIMESTAMP
+    ventana_check_in TIMESTAMP,
+    acompanante_id BIGINT REFERENCES huespedes(id),
+    hora_ingreso TIMESTAMP,
+    hora_salida_estimada TIMESTAMP,
+    recepcionista VARCHAR(100)
 );
 
 INSERT INTO tipos_habitacion (nombre_tipo, precio_base, duracion_horas, descripcion)
@@ -52,11 +56,20 @@ VALUES
     ('102', 1, 'Disponible', 0),
     ('103', 1, 'Disponible', 0),
     ('104', 1, 'Disponible', 0),
+    ('105', 1, 'Disponible', 0),
+    ('106', 1, 'Disponible', 0),
+    ('107', 1, 'Disponible', 0),
     ('201', 2, 'Disponible', 0),
     ('202', 2, 'Disponible', 0),
     ('203', 2, 'Disponible', 0),
+    ('204', 2, 'Disponible', 0),
+    ('205', 2, 'Disponible', 0),
+    ('206', 2, 'Disponible', 0),
     ('301', 3, 'Disponible', 0),
-    ('302', 3, 'Disponible', 0)
+    ('302', 3, 'Disponible', 0),
+    ('303', 3, 'Disponible', 0),
+    ('304', 3, 'Disponible', 0),
+    ('305', 3, 'Disponible', 0)
 ON CONFLICT (numero) DO UPDATE
 SET tipo_id = EXCLUDED.tipo_id,
     estado_actual = EXCLUDED.estado_actual,
@@ -80,3 +93,11 @@ CREATE TABLE IF NOT EXISTS comprobantes (
     nro_comprobante VARCHAR(50) NOT NULL UNIQUE,
     fecha_emision TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_reserva_pendiente
+ON pagos(reserva_id)
+WHERE estado = 'PENDIENTE';
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_reserva_completado
+ON pagos(reserva_id)
+WHERE estado = 'COMPLETADO';

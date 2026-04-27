@@ -49,7 +49,7 @@ sequenceDiagram
                 S->>R: save(Reserva.confirmarPago() → estado=PAGADA, fechaPago, ventanaCheckIn)
                 S->>K: save(Comprobante{nroComprobante, fechaEmision})
                 S-->>C: PagoStatusResponse{COMPLETADO, nroComprobante, ventanaCheckIn}
-                C-->>Actor: pago confirmado + comprobante + ventana check-in
+                C-->>Actor: "PAGO CONFIRMADO" + Aviso 30 min (No Reembolso)
             else Aún PENDIENTE
                 S-->>C: PagoStatusResponse{estado=PENDIENTE, qrData}
                 C-->>Actor: sigue esperando…
@@ -59,12 +59,12 @@ sequenceDiagram
 
     Note over Actor,B: ── Camino 3a: Pago en efectivo ──────────────────────────────────
 
-    Actor->>C: POST /api/v1/pagos/efectivo/{reservaId}
-    C->>S: procesarPagoEfectivo(reservaId)
+    Actor->>C: POST /api/v1/pagos/iniciar {reservaId, metodo:"EFECTIVO"}
+    C->>S: iniciarProcesoPago(request)
     S->>R: findById(reservaId)
     R-->>S: Reserva
     S->>P: save(Pago{metodo=EFECTIVO, estado=COMPLETADO})
     S->>R: save(Reserva.confirmarPago() → estado=PAGADA, fechaPago, ventanaCheckIn)
     S->>K: save(Comprobante)
     S-->>C: PagoStatusResponse{COMPLETADO, nroComprobante, ventanaCheckIn}
-    C-->>Actor: pago en efectivo confirmado + comprobante
+    C-->>Actor: "RESERVA REGISTRADA" + Aviso 30 min (Pago en Recepción)
