@@ -32,4 +32,9 @@ public class ReservaRepositoryAdapter implements ReservaRepositoryPort {
     public java.util.Optional<Reserva> findById(Long id) {
         return repository.findById(id);
     }
+
+    @Override
+    public java.util.List<Reserva> findByHuespedCi(String ci) {
+        return repository.findByHuespedCi(ci);
+    }
 }

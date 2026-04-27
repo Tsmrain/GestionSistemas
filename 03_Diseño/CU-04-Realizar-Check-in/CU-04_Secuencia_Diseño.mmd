@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant C as CheckInController
+    participant S as CheckInService
+    participant R_Repo as ReservaRepository
+    participant H_Repo as HuespedRepository
+    participant Hab_Repo as HabitacionRepository
+    participant Res as Reserva:Entity
+    participant Hab as Habitacion:Entity
+
+    C->>S: realizarCheckIn(reservaId, acompananteNombre, ci, fotos, recepcionista)
+    activate S
+    S->>R_Repo: findById(reservaId)
+    R_Repo-->>S: reserva
+
+    opt Datos Acompañante presentes
+        create participant A as Huesped:Entity
+        S->>A: setNombre, setCi, setFotos
+        S->>H_Repo: save(acompanante)
+        H_Repo-->>S: acompananteGuardado
+    end
+
+    S->>Res: realizarCheckIn(acompananteGuardado, recepcionista)
+    activate Res
+    Note over Res: Calcula horaSalidaEstimada<br/>(RN-01 / RN-07.B)
+    Res-->>S: void
+    deactivate Res
+
+    S->>Res: getHabitacion()
+    Res-->>S: habitacion
+    S->>Hab: setEstadoActual("Ocupada")
+    
+    S->>Hab_Repo: save(habitacion)
+    S->>R_Repo: save(reserva)
+    R_Repo-->>S: reservaActualizada
+    
+    S-->>C: ReservaResponse
+    deactivate S

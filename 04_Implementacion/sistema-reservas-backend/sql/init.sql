@@ -33,7 +33,11 @@ CREATE TABLE IF NOT EXISTS reservas (
     cantidad_bloques INTEGER NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE_PAGO',
     fecha_pago TIMESTAMP,
-    ventana_check_in TIMESTAMP
+    ventana_check_in TIMESTAMP,
+    acompanante_id BIGINT REFERENCES huespedes(id),
+    hora_ingreso TIMESTAMP,
+    hora_salida_estimada TIMESTAMP,
+    recepcionista VARCHAR(100)
 );
 
 INSERT INTO tipos_habitacion (nombre_tipo, precio_base, duracion_horas, descripcion)

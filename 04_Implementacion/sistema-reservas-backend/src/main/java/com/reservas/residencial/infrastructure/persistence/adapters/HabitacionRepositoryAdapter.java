@@ -30,4 +30,9 @@ public class HabitacionRepositoryAdapter implements HabitacionRepositoryPort {
     public Optional<Habitacion> findById(Long id) {
         return repository.findById(id);
     }
+
+    @Override
+    public Habitacion save(Habitacion habitacion) {
+        return repository.save(habitacion);
+    }
 }
