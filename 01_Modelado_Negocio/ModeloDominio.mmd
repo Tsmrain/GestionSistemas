@@ -1,27 +1,61 @@
 classDiagram
     direction TB
+
+    %% ── Conceptual Domain Model (Larman Cap. 9) ────────────────────────────────
+    %% Fuente autoritativa: codigo en domain/models/
+    %% Baja Brecha de Representación: cada clase, atributo y relación aquí
+    %% tiene su equivalente exacto en el código Java.
+
     class Huesped {
-        nombre
-        celular
-        fotosDocumento
+        nombre : String
+        ci : String
+        celular : String
+        urlFotoAnverso : String
+        urlFotoReverso : String
     }
+
     class Reserva {
-        fechaCreacion
-        fechaIngreso
-        cantidadBloques
-        montoTotal
-        estado
+        fechaCreacion : LocalDate
+        fechaIngreso : LocalDate
+        cantidadBloques : Integer
+        montoTotal : Double
+        estado : String
+        fechaPago : LocalDateTime
+        ventanaCheckIn : LocalDateTime
+        confirmarPago()
     }
+
     class Habitacion {
-        numero
-        estadoActual
+        numero : String
+        estadoActual : String
+        estaDisponible() : boolean
     }
+
     class TipoHabitacion {
-        nombreTipo
-        precioBase
-        duracionHoras
-        descripcion
+        nombreTipo : String
+        precioBase : Double
+        duracionHoras : Integer
+        descripcion : String
     }
-    Huesped "1" -- "*" Reserva : Realiza >
-    Reserva "*" -- "1" Habitacion : Asignada-a >
-    Habitacion "*" -- "1" TipoHabitacion : Clasificada-como >
+
+    class Pago {
+        monto : Double
+        metodo : String
+        estado : String
+        externalId : String
+        fechaCreacion : LocalDateTime
+        fechaExpiracion : LocalDateTime
+        estaExpirado() : boolean
+    }
+
+    class Comprobante {
+        nroComprobante : String
+        fechaEmision : LocalDateTime
+    }
+
+    %% ── Relaciones ────────────────────────────────────────────────────────────
+    Huesped       "1"  --> "*"  Reserva      : Realiza >
+    Reserva       "*"  --> "1"  Habitacion   : Asignada-a >
+    Habitacion    "*"  --> "1"  TipoHabitacion : Clasificada-como >
+    Reserva       "1"  *--  "*"  Pago         : Origina >
+    Pago          "1"  *--  "1"  Comprobante  : Genera >

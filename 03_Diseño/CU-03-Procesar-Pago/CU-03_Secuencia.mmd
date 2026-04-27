@@ -1,0 +1,70 @@
+sequenceDiagram
+    autonumber
+    actor Actor as Cliente / Recepcionista
+    participant C  as PagoController
+    participant S  as ProcesarPagoService
+    participant R  as ReservaRepositoryPort
+    participant P  as PagoRepositoryPort
+    participant K  as ComprobanteRepositoryPort
+    participant B  as BnbPaymentPort
+
+    Note over Actor,B: ── Flujo básico: Pago QR (Pasos 1–8 CU-03) ──────────────────────
+
+    Actor->>C: POST /api/v1/pagos/iniciar {reservaId, metodo:"QR_BNB"}
+    C->>S: iniciarProcesoPago(request)
+    S->>R: findById(reservaId)
+    R-->>S: Reserva (estado=PENDIENTE_PAGO)
+
+    S->>B: generarQR(monto, glosa, reservaId)
+
+    alt Camino 4a: BNB no responde
+        B-->>S: RuntimeException
+        S-->>C: 500 / RuntimeException
+        C-->>Actor: error — sugerir efectivo o reintentar
+    else BNB responde OK
+        B-->>S: qrData (Base64)
+        S->>P: save(Pago{estado=PENDIENTE, externalId=qrData, expira+5min})
+        S-->>C: PagoStatusResponse{estado=PENDIENTE, qrData}
+        C-->>Actor: muestra QR en pantalla
+    end
+
+    Note over Actor,B: ── Paso 6-7: El cliente paga y el sistema hace polling ──────────
+
+    loop Polling cada 5 s (máx 5 min)
+        Actor->>C: GET /api/v1/pagos/verificar/{reservaId}
+        C->>S: verificarEstadoPago(reservaId)
+        S->>P: findByReservaId(reservaId)
+        P-->>S: Pago{estado=PENDIENTE}
+
+        alt Camino 7a: QR expirado (now > fechaExpiracion)
+            S->>P: save(Pago{estado=FALLIDO})
+            S-->>C: PagoStatusResponse{estado=QR_EXPIRADO}
+            C-->>Actor: QR vencido — regenerar o cambiar a efectivo
+        else QR vigente
+            S->>B: consultarEstado(externalId)
+            B-->>S: "PENDIENTE" | "COMPLETADO"
+
+            alt Pago COMPLETADO
+                S->>P: save(Pago{estado=COMPLETADO})
+                S->>R: save(Reserva.confirmarPago() → estado=PAGADA, fechaPago, ventanaCheckIn)
+                S->>K: save(Comprobante{nroComprobante, fechaEmision})
+                S-->>C: PagoStatusResponse{COMPLETADO, nroComprobante, ventanaCheckIn}
+                C-->>Actor: "PAGO CONFIRMADO" + Aviso 30 min (No Reembolso)
+            else Aún PENDIENTE
+                S-->>C: PagoStatusResponse{estado=PENDIENTE, qrData}
+                C-->>Actor: sigue esperando…
+            end
+        end
+    end
+
+    Note over Actor,B: ── Camino 3a: Pago en efectivo ──────────────────────────────────
+
+    Actor->>C: POST /api/v1/pagos/iniciar {reservaId, metodo:"EFECTIVO"}
+    C->>S: iniciarProcesoPago(request)
+    S->>R: findById(reservaId)
+    R-->>S: Reserva
+    S->>P: save(Pago{metodo=EFECTIVO, estado=COMPLETADO})
+    S->>R: save(Reserva.confirmarPago() → estado=PAGADA, fechaPago, ventanaCheckIn)
+    S->>K: save(Comprobante)
+    S-->>C: PagoStatusResponse{COMPLETADO, nroComprobante, ventanaCheckIn}
+    C-->>Actor: "RESERVA REGISTRADA" + Aviso 30 min (Pago en Recepción)

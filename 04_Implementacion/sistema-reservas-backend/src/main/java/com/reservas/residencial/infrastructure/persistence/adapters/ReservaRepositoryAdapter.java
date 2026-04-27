@@ -27,4 +27,9 @@ public class ReservaRepositoryAdapter implements ReservaRepositoryPort {
                 estadoExcluido
         );
     }
+
+    @Override
+    public java.util.Optional<Reserva> findById(Long id) {
+        return repository.findById(id);
+    }
 }

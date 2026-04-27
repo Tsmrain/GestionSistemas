@@ -31,7 +31,9 @@ CREATE TABLE IF NOT EXISTS reservas (
     fecha_creacion DATE NOT NULL DEFAULT CURRENT_DATE,
     fecha_ingreso DATE NOT NULL,
     cantidad_bloques INTEGER NOT NULL,
-    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE_PAGO'
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE_PAGO',
+    fecha_pago TIMESTAMP,
+    ventana_check_in TIMESTAMP
 );
 
 INSERT INTO tipos_habitacion (nombre_tipo, precio_base, duracion_horas, descripcion)
@@ -50,12 +52,48 @@ VALUES
     ('102', 1, 'Disponible', 0),
     ('103', 1, 'Disponible', 0),
     ('104', 1, 'Disponible', 0),
+    ('105', 1, 'Disponible', 0),
+    ('106', 1, 'Disponible', 0),
+    ('107', 1, 'Disponible', 0),
     ('201', 2, 'Disponible', 0),
     ('202', 2, 'Disponible', 0),
     ('203', 2, 'Disponible', 0),
+    ('204', 2, 'Disponible', 0),
+    ('205', 2, 'Disponible', 0),
+    ('206', 2, 'Disponible', 0),
     ('301', 3, 'Disponible', 0),
-    ('302', 3, 'Disponible', 0)
+    ('302', 3, 'Disponible', 0),
+    ('303', 3, 'Disponible', 0),
+    ('304', 3, 'Disponible', 0),
+    ('305', 3, 'Disponible', 0)
 ON CONFLICT (numero) DO UPDATE
 SET tipo_id = EXCLUDED.tipo_id,
     estado_actual = EXCLUDED.estado_actual,
     version = EXCLUDED.version;
+
+-- CU-03: Tablas de pago
+CREATE TABLE IF NOT EXISTS pagos (
+    id BIGSERIAL PRIMARY KEY,
+    reserva_id BIGINT NOT NULL REFERENCES reservas(id),
+    monto DOUBLE PRECISION NOT NULL,
+    metodo VARCHAR(20) NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',
+    external_id TEXT,
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT NOW(),
+    fecha_expiracion TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS comprobantes (
+    id BIGSERIAL PRIMARY KEY,
+    pago_id BIGINT NOT NULL UNIQUE REFERENCES pagos(id),
+    nro_comprobante VARCHAR(50) NOT NULL UNIQUE,
+    fecha_emision TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_reserva_pendiente
+ON pagos(reserva_id)
+WHERE estado = 'PENDIENTE';
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_reserva_completado
+ON pagos(reserva_id)
+WHERE estado = 'COMPLETADO';

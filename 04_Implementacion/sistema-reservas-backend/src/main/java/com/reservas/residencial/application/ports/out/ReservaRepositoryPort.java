@@ -8,4 +8,6 @@ public interface ReservaRepositoryPort {
     Reserva save(Reserva reserva);
 
     boolean existsActiveByHabitacionAndFecha(Long habitacionId, LocalDate fechaIngreso, String estadoExcluido);
+
+    java.util.Optional<Reserva> findById(Long id);
 }

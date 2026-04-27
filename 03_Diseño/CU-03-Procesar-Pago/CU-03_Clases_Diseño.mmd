@@ -1,0 +1,97 @@
+classDiagram
+    class PagoController {
+        -ProcesarPagoService pagoService
+        +iniciarPago(IniciarPagoRequest) PagoStatusResponse
+        +verificarEstado(reservaId) PagoStatusResponse
+        +confirmarEfectivo(reservaId) PagoStatusResponse
+        +simularConfirmacionQR(reservaId) PagoStatusResponse
+    }
+
+    class ProcesarPagoService {
+        -ReservaRepositoryPort reservaRepository
+        -PagoRepositoryPort pagoRepository
+        -ComprobanteRepositoryPort comprobanteRepository
+        -BnbPaymentPort bnbPort
+        +iniciarProcesoPago(IniciarPagoRequest) PagoStatusResponse
+        +verificarEstadoPago(reservaId) PagoStatusResponse
+        +procesarPagoEfectivo(reservaId) PagoStatusResponse
+        +confirmarPagoQRSimulado(reservaId) PagoStatusResponse
+        -iniciarPagoQR(Reserva) PagoStatusResponse
+        -procesarPagoEfectivo(Reserva) PagoStatusResponse
+        -toResponse(Reserva, estado, qrData, Comprobante) PagoStatusResponse
+    }
+
+    class PagoRepositoryPort {
+        <<interface>>
+        +save(Pago) Pago
+        +findByReservaId(reservaId) Optional~Pago~
+    }
+
+    class ComprobanteRepositoryPort {
+        <<interface>>
+        +save(Comprobante) Comprobante
+    }
+
+    class BnbPaymentPort {
+        <<interface>>
+        +generarQR(monto, glosa, reservaId) String
+        +consultarEstado(externalId) String
+    }
+
+    class BnbSandboxAdapter {
+        +generarQR(monto, glosa, reservaId) String
+        +consultarEstado(externalId) String
+    }
+
+    class Reserva {
+        +Long id
+        +String estado
+        +Double montoTotal
+        +LocalDate fechaIngreso
+        +LocalDateTime fechaPago
+        +LocalDateTime ventanaCheckIn
+        +confirmarPago()
+    }
+
+    class Pago {
+        +Long id
+        +Reserva reserva
+        +Double monto
+        +String metodo
+        +String estado
+        +String externalId
+        +LocalDateTime fechaCreacion
+        +LocalDateTime fechaExpiracion
+        +estaExpirado() boolean
+    }
+
+    class Comprobante {
+        +Long id
+        +Pago pago
+        +String nroComprobante
+        +LocalDateTime fechaEmision
+    }
+
+    class IniciarPagoRequest {
+        +Long reservaId
+        +String metodo
+    }
+
+    class PagoStatusResponse {
+        +Long reservaId
+        +String estado
+        +String qrData
+        +Long comprobanteId
+        +String nroComprobante
+        +LocalDateTime ventanaCheckIn
+    }
+
+    PagoController --> ProcesarPagoService
+    ProcesarPagoService --> ReservaRepositoryPort
+    ProcesarPagoService --> PagoRepositoryPort
+    ProcesarPagoService --> ComprobanteRepositoryPort
+    ProcesarPagoService --> BnbPaymentPort
+    BnbSandboxAdapter ..|> BnbPaymentPort
+    Pago "n" --> "1" Reserva
+    Reserva "1" *-- "n" Pago
+    Comprobante "1" --> "1" Pago

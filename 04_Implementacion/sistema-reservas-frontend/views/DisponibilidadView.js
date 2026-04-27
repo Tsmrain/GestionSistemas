@@ -23,9 +23,10 @@ class DisponibilidadView {
         var lista = document.createElement("div");
         lista.className = "lista";
 
-        habitaciones.forEach(h => {
+        habitaciones.forEach((h, index) => {
             const card = document.createElement("div");
             card.className = "card";
+            card.style.animationDelay = (index * 0.05) + "s";
             const tipoClase = h.tipo.toLowerCase();
 
             card.innerHTML = `
