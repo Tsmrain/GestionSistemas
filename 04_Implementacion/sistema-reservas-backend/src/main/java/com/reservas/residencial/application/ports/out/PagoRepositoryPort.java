@@ -7,4 +7,5 @@ public interface PagoRepositoryPort {
     Pago save(Pago pago);
     Optional<Pago> findLatestByReservaId(Long reservaId);
     Optional<Pago> findPendingByReservaId(Long reservaId);
+    Optional<Pago> findLatestCompletedByReservaId(Long reservaId);
 }

@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * @referencia: 03_Diseño/CU-03-Procesar-Pago/CU-03_Clases_Diseño.mmd
  * @referencia: 03_Diseño/CU-03-Procesar-Pago/CU-03_Secuencia.mmd
@@ -63,21 +65,20 @@ public class ProcesarPagoService {
         var pagoPendiente = pagoRepository.findPendingByReservaId(reserva.getId());
         if (pagoPendiente.isPresent()) {
             Pago pago = pagoPendiente.get();
-            if (!pago.estaExpirado()) {
-                return toResponse(reserva, ESTADO_PAGO_PENDIENTE, pago.getExternalId(), null);
+            if (!pago.estaExpirado() && tieneQrValido(pago)) {
+                return toResponse(reserva, ESTADO_PAGO_PENDIENTE, obtenerQrData(pago), null);
             }
-            pago.setEstado(ESTADO_PAGO_FALLIDO);
+
+            refrescarPagoQr(pago, reserva);
             pagoRepository.save(pago);
+            return toResponse(reserva, ESTADO_PAGO_PENDIENTE, pago.getQrData(), null);
         }
 
-        String qrData = bnbPort.generarQR(
-                reserva.getMontoTotal(),
-                "Pago reserva " + reserva.getId(),
-                reserva.getId()
-        );
+        String qrData = generarQrReserva(reserva);
 
         Pago pago = new Pago(reserva, reserva.getMontoTotal(), METODO_QR_BNB, ESTADO_PAGO_PENDIENTE);
-        pago.setExternalId(qrData);
+        pago.setExternalId(generarExternalId(reserva));
+        pago.setQrData(qrData);
         pagoRepository.save(pago);
 
         return new PagoStatusResponse(reserva.getId(), ESTADO_PAGO_PENDIENTE, qrData, null, null, null);
@@ -110,7 +111,7 @@ public class ProcesarPagoService {
         }
 
         // Pago aún PENDIENTE
-        return toResponse(pago.getReserva(), ESTADO_PAGO_PENDIENTE, pago.getExternalId(), null);
+        return toResponse(pago.getReserva(), ESTADO_PAGO_PENDIENTE, obtenerQrData(pago), null);
     }
 
     /**
@@ -191,6 +192,36 @@ public class ProcesarPagoService {
             comprobante = comprobanteRepository.findByPagoId(pago.getId()).orElse(null);
         }
         return toResponse(pago.getReserva(), pago.getEstado(), null, comprobante);
+    }
+
+    private String obtenerQrData(Pago pago) {
+        return pago.getQrData() != null ? pago.getQrData() : pago.getExternalId();
+    }
+
+    private boolean tieneQrValido(Pago pago) {
+        String qrData = pago.getQrData();
+        return qrData != null && qrData.length() > 100 && qrData.startsWith("iVBOR");
+    }
+
+    private String generarQrReserva(Reserva reserva) {
+        return bnbPort.generarQR(
+                reserva.getMontoTotal(),
+                "Pago reserva " + reserva.getId(),
+                reserva.getId()
+        );
+    }
+
+    private String generarExternalId(Reserva reserva) {
+        return "BNB-" + reserva.getId() + "-" + System.currentTimeMillis();
+    }
+
+    private void refrescarPagoQr(Pago pago, Reserva reserva) {
+        LocalDateTime ahora = LocalDateTime.now();
+        pago.setEstado(ESTADO_PAGO_PENDIENTE);
+        pago.setExternalId(generarExternalId(reserva));
+        pago.setQrData(generarQrReserva(reserva));
+        pago.setFechaCreacion(ahora);
+        pago.setFechaExpiracion(ahora.plusMinutes(5));
     }
 
     private PagoStatusResponse toResponse(Reserva reserva, String estado, String qrData, Comprobante comprobante) {

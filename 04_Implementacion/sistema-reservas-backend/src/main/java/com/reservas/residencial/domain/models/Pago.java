@@ -41,6 +41,10 @@ public class Pago {
     @Column(name = "external_id")
     private String externalId;
 
+    /** Imagen QR en Base64. Puede superar 255 caracteres. */
+    @Column(name = "qr_data", columnDefinition = "TEXT")
+    private String qrData;
+
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 

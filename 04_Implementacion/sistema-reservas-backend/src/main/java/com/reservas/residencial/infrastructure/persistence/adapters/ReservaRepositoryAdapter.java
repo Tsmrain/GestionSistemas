@@ -21,11 +21,7 @@ public class ReservaRepositoryAdapter implements ReservaRepositoryPort {
 
     @Override
     public boolean existsActiveByHabitacionAndFecha(Long habitacionId, LocalDate fechaIngreso, String estadoExcluido) {
-        return repository.existsByHabitacionIdAndFechaIngresoAndEstadoIgnoreCaseNot(
-                habitacionId,
-                fechaIngreso,
-                estadoExcluido
-        );
+        return repository.existsReservaVigenteByHabitacionAndFecha(habitacionId, fechaIngreso);
     }
 
     @Override
@@ -36,5 +32,19 @@ public class ReservaRepositoryAdapter implements ReservaRepositoryPort {
     @Override
     public java.util.List<Reserva> findByHuespedCi(String ci) {
         return repository.findByHuespedCi(ci);
+    }
+
+    @Override
+    public java.util.List<Reserva> findByHuespedNombre(String nombre) {
+        return repository.findByHuespedNombreContainingIgnoreCase(nombre);
+    }
+
+    @Override
+    public java.util.Optional<Reserva> findActiveByHabitacionAndFecha(Long habitacionId, LocalDate fechaIngreso, String estadoExcluido) {
+        return repository.findFirstByHabitacionIdAndFechaIngresoAndEstadoIgnoreCaseNotOrderByIdDesc(
+                habitacionId,
+                fechaIngreso,
+                estadoExcluido
+        );
     }
 }

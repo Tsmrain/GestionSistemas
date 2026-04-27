@@ -38,7 +38,7 @@ class ReservaController {
         this.view.mostrarCargando();
 
         try {
-            var response = await fetch("/api/reservas", {
+            var response = await fetch("/api/v1/reservas", {
                 method: "POST",
                 body: formData
             });

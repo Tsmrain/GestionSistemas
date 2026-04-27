@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 /**
  * @referencia: 01_Modelado_Negocio/ModeloDominio.mmd
  */
@@ -21,6 +23,9 @@ public class Huesped {
     private String nombre;
 
     private String ci;
+
+    @Column(name = "fecha_nacimiento")
+    private LocalDate fechaNacimiento;
     
     private String celular;
 

@@ -55,6 +55,8 @@ services:
     container_name: reservas-frontend
     ports:
       - "80:80"
+    volumes:
+      - ./04_Implementacion/sistema-reservas-frontend:/usr/share/nginx/html
     depends_on:
       - backend
     networks:

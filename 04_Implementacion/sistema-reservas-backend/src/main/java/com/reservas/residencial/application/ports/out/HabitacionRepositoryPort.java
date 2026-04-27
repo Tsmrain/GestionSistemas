@@ -14,4 +14,7 @@ public interface HabitacionRepositoryPort {
     Optional<Habitacion> findById(Long id);
 
     Habitacion save(Habitacion habitacion);
+
+    // ✅ NUEVO
+    List<Habitacion> findAll();
 }

@@ -76,7 +76,8 @@ class ProcesarPagoServiceTest {
         Long reservaId = 1L;
         Reserva reserva = reservaConId(reservaId, 100.0);
         Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
-        pagoPendiente.setExternalId("qr_vigente");
+        pagoPendiente.setExternalId("BNB-1-123");
+        pagoPendiente.setQrData(qrBase64Valido());
 
         when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
         when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
@@ -88,9 +89,37 @@ class ProcesarPagoServiceTest {
 
         // Then
         assertEquals("PENDIENTE", response.estado());
-        assertEquals("qr_vigente", response.qrData());
+        assertEquals(qrBase64Valido(), response.qrData());
         verify(pagoRepository, never()).save(any(Pago.class));
         verifyNoInteractions(bnbPort);
+        verifyNoInteractions(comprobanteRepository);
+    }
+
+    @Test
+    @DisplayName("Paso 4-5 CU-03 | QR pendiente invalido: regenera QR sin duplicar el pago")
+    void flujoBasico_GenerarPagoQR_RegeneraQrInvalido() {
+        // Given
+        Long reservaId = 1L;
+        Reserva reserva = reservaConId(reservaId, 100.0);
+        Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
+        pagoPendiente.setExternalId("BNB-1-123");
+        pagoPendiente.setQrData("16518");
+
+        when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
+        when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
+        when(bnbPort.generarQR(100.0, "Pago reserva 1", reservaId)).thenReturn(qrBase64Valido());
+
+        IniciarPagoRequest request = new IniciarPagoRequest(reservaId, "QR_BNB");
+
+        // When
+        PagoStatusResponse response = procesarPagoService.iniciarProcesoPago(request);
+
+        // Then
+        assertEquals("PENDIENTE", response.estado());
+        assertEquals(qrBase64Valido(), response.qrData());
+        assertEquals(qrBase64Valido(), pagoPendiente.getQrData());
+        verify(pagoRepository).save(pagoPendiente);
+        verify(bnbPort).generarQR(100.0, "Pago reserva 1", reservaId);
         verifyNoInteractions(comprobanteRepository);
     }
 
@@ -105,6 +134,7 @@ class ProcesarPagoServiceTest {
         Reserva reserva = reservaConId(reservaId, 100.0);
         Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
         pagoPendiente.setExternalId("qr_id_123");
+        pagoPendiente.setQrData(qrBase64Valido());
         pagoPendiente.setFechaCreacion(LocalDateTime.now().minusSeconds(13));
 
         Comprobante comprobante = new Comprobante(pagoPendiente);
@@ -136,6 +166,7 @@ class ProcesarPagoServiceTest {
         Reserva reserva = reservaConId(reservaId, 100.0);
         Pago pagoPendiente = new Pago(reserva, 100.0, "QR_BNB", "PENDIENTE");
         pagoPendiente.setExternalId("qr_id_123");
+        pagoPendiente.setQrData(qrBase64Valido());
 
         when(pagoRepository.findLatestByReservaId(reservaId)).thenReturn(Optional.of(pagoPendiente));
         when(bnbPort.consultarEstado("qr_id_123")).thenReturn("PENDIENTE");
@@ -145,7 +176,7 @@ class ProcesarPagoServiceTest {
 
         // Then
         assertEquals("PENDIENTE", response.estado());
-        assertEquals("qr_id_123", response.qrData());
+        assertEquals(qrBase64Valido(), response.qrData());
         assertEquals("PENDIENTE_PAGO", reserva.getEstado());
         verify(bnbPort).consultarEstado("qr_id_123");
         verifyNoInteractions(comprobanteRepository);
@@ -317,5 +348,9 @@ class ProcesarPagoServiceTest {
         r.setMontoTotal(monto);
         r.setEstado("PENDIENTE_PAGO");
         return r;
+    }
+
+    private String qrBase64Valido() {
+        return "iVBOR" + "A".repeat(120);
     }
 }

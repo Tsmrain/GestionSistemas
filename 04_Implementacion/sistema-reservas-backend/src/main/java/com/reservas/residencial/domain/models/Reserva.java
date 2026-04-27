@@ -46,7 +46,7 @@ public class Reserva {
     @Column(name = "cantidad_bloques")
     private Integer cantidadBloques;
 
-    /** PENDIENTE_PAGO | PAGADA | CANCELADA */
+    /** PENDIENTE_PAGO | PAGADA | ACTIVA | FINALIZADA | CANCELADA */
     private String estado;
 
     /** Registra la hora exacta del pago — Postcondición CU-03 */
@@ -101,5 +101,9 @@ public class Reserva {
         } else {
             this.horaSalidaEstimada = this.horaIngreso.plusHours(totalHoras);
         }
+    }
+
+    public void finalizarEstadia() {
+        this.estado = "FINALIZADA";
     }
 }

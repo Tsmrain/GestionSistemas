@@ -12,6 +12,8 @@ public record ReservaResponse(
         HabitacionResumenResponse habitacion,
         HuespedResumenResponse acompanante,
         java.time.LocalDateTime horaIngreso,
-        java.time.LocalDateTime horaSalidaEstimada
+        java.time.LocalDateTime horaSalidaEstimada,
+        String metodoPago,
+        String estadoPago
 ) {
 }

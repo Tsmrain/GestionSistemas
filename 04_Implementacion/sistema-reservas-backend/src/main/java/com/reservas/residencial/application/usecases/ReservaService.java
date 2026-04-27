@@ -84,7 +84,10 @@ public class ReservaService {
                         reserva.getHuesped().getId(),
                         reserva.getHuesped().getNombre(),
                         reserva.getHuesped().getCi(),
-                        reserva.getHuesped().getCelular()
+                        reserva.getHuesped().getFechaNacimiento(),
+                        reserva.getHuesped().getCelular(),
+                        reserva.getHuesped().getUrlFotoAnverso(),
+                        reserva.getHuesped().getUrlFotoReverso()
                 ),
                 new HabitacionResumenResponse(
                         reserva.getHabitacion().getId(),
@@ -101,10 +104,15 @@ public class ReservaService {
                         reserva.getAcompanante().getId(),
                         reserva.getAcompanante().getNombre(),
                         reserva.getAcompanante().getCi(),
-                        reserva.getAcompanante().getCelular()
+                        reserva.getAcompanante().getFechaNacimiento(),
+                        reserva.getAcompanante().getCelular(),
+                        reserva.getAcompanante().getUrlFotoAnverso(),
+                        reserva.getAcompanante().getUrlFotoReverso()
                 ) : null,
                 reserva.getHoraIngreso(),
-                reserva.getHoraSalidaEstimada()
+                reserva.getHoraSalidaEstimada(),
+                null,
+                null
         );
     }
 }
