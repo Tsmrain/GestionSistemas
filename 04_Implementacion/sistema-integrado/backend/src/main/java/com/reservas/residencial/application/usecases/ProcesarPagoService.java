@@ -99,8 +99,7 @@ public class ProcesarPagoService {
 
         // Camino 7a: QR expirado (5 minutos)
         if (pago.estaExpirado()) {
-            pago.setEstado(ESTADO_PAGO_FALLIDO);
-            pagoRepository.save(pago);
+            cancelarPagoQrExpirado(pago);
             return toResponse(pago.getReserva(), "QR_EXPIRADO", null, null);
         }
 
@@ -127,8 +126,7 @@ public class ProcesarPagoService {
         }
 
         if (pago.estaExpirado()) {
-            pago.setEstado(ESTADO_PAGO_FALLIDO);
-            pagoRepository.save(pago);
+            cancelarPagoQrExpirado(pago);
             return toResponse(pago.getReserva(), "QR_EXPIRADO", null, null);
         }
 
@@ -184,6 +182,15 @@ public class ProcesarPagoService {
         comprobante = comprobanteRepository.save(comprobante);
 
         return toResponse(reserva, ESTADO_PAGO_COMPLETADO, null, comprobante);
+    }
+
+    private void cancelarPagoQrExpirado(Pago pago) {
+        pago.setEstado(ESTADO_PAGO_FALLIDO);
+        pagoRepository.save(pago);
+
+        Reserva reserva = pago.getReserva();
+        reserva.cancelar();
+        reservaRepository.save(reserva);
     }
 
     private PagoStatusResponse toResponseConComprobanteExistente(Pago pago) {

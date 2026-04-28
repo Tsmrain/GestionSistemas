@@ -2,6 +2,8 @@ class ReservaController {
     constructor() {
         this.view = new ReservaView();
         this.reservaPendienteSinPagoId = null;
+        this.habitacionEnFormulario = null;
+        this.borradorReserva = null;
         this._escucharBotonesReservar();
         this._escucharCancelarReserva();
         this._cancelarPendienteAlSalir();
@@ -28,9 +30,10 @@ class ReservaController {
     }
 
     // Abre el formulario modal y espera el submit
-    _abrirFormulario(habitacion) {
+    _abrirFormulario(habitacion, borrador) {
         var self = this;
-        this.view.mostrarFormulario(habitacion);
+        this.habitacionEnFormulario = habitacion;
+        this.view.mostrarFormulario(habitacion, borrador);
 
         this.view.onSubmit(function(formData) {
             self._enviarReserva(formData);
@@ -40,6 +43,8 @@ class ReservaController {
     // Envía la reserva al backend
     async _enviarReserva(formData) {
         this.view.mostrarCargando();
+        var metodoPago = formData.get("metodoPago") || "QR_BNB";
+        this.borradorReserva = this.view.obtenerBorradorFormulario();
 
         try {
             var response = await fetch("/api/v1/reservas", {
@@ -57,11 +62,16 @@ class ReservaController {
 
             var reserva = await response.json();
             console.log("[DEBUG] Reserva creada:", reserva);
+            reserva.metodoPagoSeleccionado = metodoPago;
             this.reservaPendienteSinPagoId = reserva.id;
             window.reservaPendienteSinPagoId = reserva.id;
-            this.view.mostrarExito(reserva);
             if (reserva.habitacion) {
                 this.view.ocultarHabitacionReservada(reserva.habitacion.id);
+            }
+            if (window.pagoApp) {
+                window.pagoApp.abrirPagoConMetodo(reserva, metodoPago);
+            } else {
+                this.view.mostrarExito(reserva);
             }
 
         } catch (error) {
@@ -99,13 +109,30 @@ class ReservaController {
         }
     }
 
+    async volverAlFormularioDesdePago(reservaId) {
+        await this._cancelarReservaPendiente(reservaId);
+        this.reservaPendienteSinPagoId = null;
+        window.reservaPendienteSinPagoId = null;
+        this.view.mostrarHabitacionesEnReserva();
+
+        if (this.habitacionEnFormulario) {
+            this.view.marcarHabitacionSeleccionada(this.habitacionEnFormulario.id);
+            this._abrirFormulario(this.habitacionEnFormulario, this.borradorReserva);
+        } else {
+            this.view.limpiarFlujo();
+        }
+    }
+
     _cancelarPendienteAlSalir() {
-        window.addEventListener("beforeunload", () => {
+        var cancelar = () => {
             var reservaId = window.reservaPendienteSinPagoId || this.reservaPendienteSinPagoId;
             if (!reservaId) return;
 
             navigator.sendBeacon("/api/v1/reservas/" + reservaId + "/cancelar-pendiente", new Blob([], { type: "text/plain" }));
-        });
+        };
+
+        window.addEventListener("beforeunload", cancelar);
+        window.addEventListener("pagehide", cancelar);
     }
 }
 

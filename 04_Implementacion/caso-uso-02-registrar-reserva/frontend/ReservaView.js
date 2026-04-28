@@ -6,7 +6,9 @@ class ReservaView {
     }
 
     // Muestra el formulario de reserva en la misma pantalla del cliente
-    mostrarFormulario(habitacion) {
+    mostrarFormulario(habitacion, borrador) {
+        borrador = borrador || {};
+        var metodoPago = borrador.metodoPago || "QR_BNB";
         this.flujoContainer.innerHTML =
             '<div class="resumen-card" id="panel-reserva">' +
             '<h3>Tu reserva</h3>' +
@@ -16,15 +18,15 @@ class ReservaView {
             '<input type="hidden" name="cantidadBloques" value="1">' +
             '<div class="form-group">' +
             '<label for="nombre">Nombre completo</label>' +
-            '<input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required>' +
+            '<input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" value="' + this._escapeAttr(borrador.nombre) + '" required>' +
             '</div>' +
             '<div class="form-group">' +
             '<label for="ci">CI</label>' +
-            '<input type="text" id="ci" name="ci" placeholder="12345678" required>' +
+            '<input type="text" id="ci" name="ci" placeholder="12345678" value="' + this._escapeAttr(borrador.ci) + '" required>' +
             '</div>' +
             '<div class="form-group">' +
             '<label for="celular">Celular</label>' +
-            '<input type="tel" id="celular" name="celular" placeholder="70012345" required>' +
+            '<input type="tel" id="celular" name="celular" placeholder="70012345" value="' + this._escapeAttr(borrador.celular) + '" required>' +
             '</div>' +
             '<div class="form-group">' +
             '<label for="fechaIngreso">Fecha de ingreso</label>' +
@@ -55,9 +57,10 @@ class ReservaView {
             '</div>' +
             '</div>' +
             '<span class="metodo-label">Método de pago</span>' +
+            '<input type="hidden" id="metodoPago" name="metodoPago" value="' + metodoPago + '">' +
             '<div class="metodos-pago">' +
-            '<button class="metodo-btn activo" type="button">▦ QR BNB</button>' +
-            '<button class="metodo-btn" type="button">Bs Efectivo</button>' +
+            '<button class="metodo-btn ' + (metodoPago === "QR_BNB" ? "activo" : "") + '" type="button" data-metodo="QR_BNB">▦ QR BNB</button>' +
+            '<button class="metodo-btn ' + (metodoPago === "EFECTIVO" ? "activo" : "") + '" type="button" data-metodo="EFECTIVO">Bs Efectivo</button>' +
             '</div>' +
             '<div class="total-row">' +
             '<span class="total-label">Total a pagar</span>' +
@@ -72,13 +75,74 @@ class ReservaView {
         // Configurar previews de fotos
         this._configurarPreview("fotoAnverso", "preview-anverso", "label-anverso");
         this._configurarPreview("fotoReverso", "preview-reverso", "label-reverso");
+        this._configurarMetodoPago();
+        this._restaurarArchivo("fotoAnverso", "preview-anverso", "label-anverso", borrador.fotoAnverso);
+        this._restaurarArchivo("fotoReverso", "preview-reverso", "label-reverso", borrador.fotoReverso);
 
         // Setear fecha de hoy como mínimo (Local Time)
         const d = new Date();
         const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         document.getElementById("fechaIngreso").setAttribute("min", hoy);
-        document.getElementById("fechaIngreso").value = habitacion.fechaIngreso || hoy;
+        document.getElementById("fechaIngreso").value = borrador.fechaIngreso || habitacion.fechaIngreso || hoy;
         this._actualizarPasos("datos");
+    }
+
+    obtenerBorradorFormulario() {
+        var form = document.getElementById("form-reserva");
+        if (!form) return null;
+        return {
+            nombre: form.nombre.value,
+            ci: form.ci.value,
+            celular: form.celular.value,
+            fechaIngreso: form.fechaIngreso.value,
+            metodoPago: form.metodoPago.value,
+            fotoAnverso: form.fotoAnverso.files[0] || null,
+            fotoReverso: form.fotoReverso.files[0] || null
+        };
+    }
+
+    _restaurarArchivo(inputId, previewId, labelId, archivo) {
+        if (!archivo) return;
+        var input = document.getElementById(inputId);
+        var preview = document.getElementById(previewId);
+        var label = document.getElementById(labelId);
+
+        if (window.DataTransfer && input) {
+            var dataTransfer = new DataTransfer();
+            dataTransfer.items.add(archivo);
+            input.files = dataTransfer.files;
+        }
+
+        if (preview && label) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.style.display = "block";
+                label.style.display = "none";
+            };
+            reader.readAsDataURL(archivo);
+        }
+    }
+
+    _escapeAttr(valor) {
+        return String(valor || "")
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    _configurarMetodoPago() {
+        var inputMetodo = document.getElementById("metodoPago");
+        document.querySelectorAll(".metodo-btn").forEach(function (boton) {
+            boton.addEventListener("click", function () {
+                document.querySelectorAll(".metodo-btn").forEach(function (item) {
+                    item.classList.remove("activo");
+                });
+                boton.classList.add("activo");
+                inputMetodo.value = boton.getAttribute("data-metodo");
+            });
+        });
     }
 
     _configurarPreview(inputId, previewId, labelId) {

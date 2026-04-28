@@ -317,7 +317,7 @@ class ProcesarPagoServiceTest {
     // Camino 7a CU-03: QR expirado
     // ─────────────────────────────────────────────────────────
     @Test
-    @DisplayName("Camino 7a CU-03 | QR expirado → estado QR_EXPIRADO, no se confirma la reserva")
+    @DisplayName("Camino 7a CU-03 | QR expirado → estado QR_EXPIRADO, cancela la reserva")
     void caminoAlternativo7a_QrExpirado_EstadoFallido() {
         // Given
         Long reservaId = 1L;
@@ -334,8 +334,9 @@ class ProcesarPagoServiceTest {
 
         // Then
         assertEquals("QR_EXPIRADO", response.estado());
-        assertEquals("PENDIENTE_PAGO", reserva.getEstado()); // Reserva NO debe cambiar
+        assertEquals("CANCELADA", reserva.getEstado());
         verify(pagoRepository).save(pagoExpirado);
+        verify(reservaRepository).save(reserva);
         assertEquals("FALLIDO", pagoExpirado.getEstado());
         verifyNoInteractions(bnbPort);
         verifyNoInteractions(comprobanteRepository);

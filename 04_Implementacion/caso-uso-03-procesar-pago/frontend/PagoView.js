@@ -68,7 +68,7 @@ class PagoView {
             '<p class="qr-espera">Esperando confirmacion del pago...</p>' +
             '<div class="qr-spinner"></div>' +
             '<button class="btn-confirmar btn-simular-pago" id="btn-simular-pago">Simular pago recibido</button>' +
-            '<button class="btn-volver-pago" id="btn-volver-metodos" type="button">Volver a metodos de pago</button>' +
+            '<button class="btn-volver-pago" id="btn-volver-metodos" type="button">Volver atras</button>' +
             '</div>';
     }
 
@@ -99,10 +99,11 @@ class PagoView {
     }
 
     // Publico — muestra comprobante final
-    mostrarComprobante(pago, metodo) {
+    mostrarComprobante(pago, metodo, reserva) {
         var esEfectivo = (metodo === "EFECTIVO");
         var titulo = esEfectivo ? "¡RESERVA REGISTRADA!" : "¡PAGO CONFIRMADO!";
         var icon = esEfectivo ? "🏨" : "✅";
+        var habitacionHTML = reserva ? this.#habitacionComprobanteHTML(reserva) : "";
         
         var avisoHTML = "";
         if (esEfectivo) {
@@ -127,6 +128,7 @@ class PagoView {
             '<div class="flujo-panel modal-exito">' +
             '<div class="exito-icon">' + icon + '</div>' +
             '<h2 style="text-transform: uppercase; letter-spacing: 1px;">' + titulo + '</h2>' +
+            habitacionHTML +
             
             '<div class="comprobante-grid">' +
                 '<div class="grid-item">' +
@@ -210,5 +212,18 @@ class PagoView {
     #obtenerDuracionHoras(reserva) {
         if (!reserva.habitacion || !reserva.habitacion.tipo) return "";
         return reserva.habitacion.tipo.duracionHoras || "";
+    }
+
+    #habitacionComprobanteHTML(reserva) {
+        var tipoHabitacion = this.#obtenerNombreTipo(reserva);
+        var duracionHoras = this.#obtenerDuracionHoras(reserva);
+        return '<div class="modal-habitacion-info">' +
+            '<div class="numero-box">' + reserva.habitacion.numero + '</div>' +
+            '<div>' +
+            '<p class="hab-num">Habitacion ' + reserva.habitacion.numero + '</p>' +
+            '<p class="hab-tipo">' + tipoHabitacion + ' - Bs ' + reserva.montoTotal + '</p>' +
+            '<p class="hab-horario">' + duracionHoras + ' horas</p>' +
+            '</div>' +
+            '</div>';
     }
 }
