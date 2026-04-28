@@ -1,7 +1,4 @@
 services:
-  # ----------------------------------------
-  # CAPA DE DATOS (PostgreSQL)
-  # ----------------------------------------
   db:
     image: postgres:15-alpine
     container_name: reservas-db
@@ -14,7 +11,7 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./04_Implementacion/sistema-integrado/backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./sistema-integrado/backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d sistema_reservas"]
       interval: 5s
@@ -23,12 +20,9 @@ services:
     networks:
       - reservas-network
 
-  # ----------------------------------------
-  # CAPA DE APLICACIÓN Y DOMINIO (Spring Boot)
-  # ----------------------------------------
   backend:
-    build: 
-      context: ./04_Implementacion/sistema-integrado/backend
+    build:
+      context: ./sistema-integrado/backend
       dockerfile: Dockerfile
     container_name: reservas-backend
     ports:
@@ -51,18 +45,15 @@ services:
     networks:
       - reservas-network
 
-  # ----------------------------------------
-  # CAPA DE PRESENTACIÓN (Frontend)
-  # ----------------------------------------
   frontend:
     build:
-      context: ./04_Implementacion/sistema-integrado/frontend
+      context: ./sistema-integrado/frontend
       dockerfile: Dockerfile
     container_name: reservas-frontend
     ports:
       - "80:80"
     volumes:
-      - ./04_Implementacion/sistema-integrado/frontend:/usr/share/nginx/html
+      - ./sistema-integrado/frontend:/usr/share/nginx/html
     depends_on:
       backend:
         condition: service_healthy

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva Residencial</title>
+    <link rel="stylesheet" href="css/styless.css?v=cliente-panel-1">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="cliente-app">
+
+    <header class="cliente-header">
+        <h1>Reserva Residencial</h1>
+        <a class="btn-recepcion" href="recepcion.html">Panel Recepción →</a>
+    </header>
+
+    <div class="steps" id="cliente-steps">
+        <div class="step activo" data-step="buscar">
+            <div class="step-num">1</div>
+            <span>Buscar</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="seleccionar">
+            <div class="step-num">2</div>
+            <span>Seleccionar</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="datos">
+            <div class="step-num">3</div>
+            <span>Mis datos</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="pagar">
+            <div class="step-num">4</div>
+            <span>Pagar</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="confirmado">
+            <div class="step-num">5</div>
+            <span>Confirmado</span>
+        </div>
+    </div>
+
+    <main class="cliente-content">
+        <section class="cliente-left">
+            <div class="panel-busqueda">
+                <h3>Consultar disponibilidad</h3>
+                <div class="busqueda-container busqueda-row">
+                    <select id="tipo-select">
+                        <option value="Todas las habitaciones">Todas las habitaciones</option>
+                        <option value="Estandar">Estandar</option>
+                        <option value="VIP">VIP</option>
+                        <option value="SUPERVIP">SUPERVIP</option>
+                    </select>
+                    <input type="date" id="fecha-input">
+                    <button id="btn-buscar">Buscar</button>
+                </div>
+            </div>
+            <div id="resultado-container"></div>
+        </section>
+
+        <aside class="panel-derecho">
+            <div id="cliente-flujo-container" class="cliente-flujo"></div>
+        </aside>
+    </main>
+
+    <!-- Modelos -->
+    <script src="models/Habitacion.js?v=api-v1-1"></script>
+    <script src="models/Pago.js?v=api-v1-1"></script>
+
+    <!-- Vistas -->
+    <script src="views/DisponibilidadView.js?v=api-v1-1"></script>
+    <script src="views/ReservaView.js?v=cliente-panel-1"></script>
+    <script src="views/PagoView.js?v=cliente-panel-1"></script>
+
+    <!-- Controladores -->
+    <script src="controllers/DisponibilidadController.js?v=api-v1-1"></script>
+    <script src="controllers/ReservaController.js?v=cliente-panel-1"></script>
+    <script src="controllers/PagoController.js?v=cliente-panel-1"></script>
+
+</body>
+
+</html>

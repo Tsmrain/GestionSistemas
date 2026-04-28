@@ -7,8 +7,9 @@ Repositorio de trabajo en la rama `develop` para el sistema de reservas del resi
 - `01_Modelado_Negocio`: modelo de dominio.
 - `02_Requerimientos`: casos de uso y SSD.
 - `03_Diseño`: diagramas de clases y secuencia.
-- `04_Implementacion/sistema-reservas-backend`: API Spring Boot.
-- `04_Implementacion/sistema-reservas-frontend`: frontend estático servido con Nginx.
+- `04_Implementacion`: implementación separada por casos de uso y sistema integrado.
+- `04_Implementacion/sistema-integrado/backend`: API Spring Boot.
+- `04_Implementacion/sistema-integrado/frontend`: frontend estático servido con Nginx.
 - `docker-compose.yml`: arranque integrado del entorno.
 
 ## Requisitos
@@ -46,6 +47,8 @@ Credenciales de base de datos:
 2. Elegir fecha y tipo de habitación.
 3. Buscar disponibilidad.
 4. Registrar la reserva desde una tarjeta.
+5. Completar el pago desde el mismo flujo del cliente, sin cambiar de pantalla.
+6. Para recepcion, abrir `http://localhost/recepcion.html` e iniciar sesion con usuario de turno.
 
 Tipos de habitación semilla:
 
@@ -58,14 +61,14 @@ Tipos de habitación semilla:
 Pruebas backend:
 
 ```bash
-cd 04_Implementacion/sistema-reservas-backend
+cd 04_Implementacion/sistema-integrado/backend
 mvn test
 ```
 
 Empaquetado backend:
 
 ```bash
-cd 04_Implementacion/sistema-reservas-backend
+cd 04_Implementacion/sistema-integrado/backend
 mvn clean package
 ```
 

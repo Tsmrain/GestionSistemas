@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Recepción</title>
+    <link rel="stylesheet" href="css/styless.css?v=recepcion-fix-1">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="recepcion-page">
+    <div id="login-recepcion" class="login-recepcion">
+        <form id="form-login-recepcion" class="login-card">
+            <h1 class="login-titulo">Acceso Recepción</h1>
+            <p class="login-subtitulo">Ingresa con tu usuario de turno</p>
+            <input id="registro-nombre" class="registro-field" type="text" placeholder="Nombre completo" style="display:none">
+            <input id="login-usuario" type="text" placeholder="Usuario" autocomplete="username">
+            <input id="login-password" type="password" placeholder="Contraseña" autocomplete="current-password">
+            <button id="btn-login-submit" type="submit">Ingresar</button>
+            <button id="btn-modo-registro" class="btn-secundario" type="button">Registrar recepcionista</button>
+            <div id="login-error" class="form-error" style="display:none"></div>
+        </form>
+    </div>
+
+    <div id="panel-recepcion" style="display:none">
+        <div class="recepcion-header">
+            <div>
+                <h1 class="recepcion-titulo">Panel de Recepción</h1>
+                <p class="recepcion-subtitulo">Vista en tiempo real · <span id="recepcionista-activa"></span></p>
+            </div>
+            <div class="recepcion-header-actions">
+                <a class="btn-volver" href="index.html">← Volver</a>
+                <button id="btn-logout-recepcion" class="btn-salir" type="button">Salir</button>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <span class="stat-num verde" id="count-disponible">0</span>
+                <span class="stat-label">Disponibles</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num amarillo" id="count-pendiente">0</span>
+                <span class="stat-label">Pend. Pago</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num azul" id="count-confirmada">0</span>
+                <span class="stat-label">Confirmadas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num rojo" id="count-ocupada">0</span>
+                <span class="stat-label">Ocupadas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num gris" id="count-limpieza">0</span>
+                <span class="stat-label">En Limpieza</span>
+            </div>
+        </div>
+
+        <div class="leyenda-container">
+            <div class="leyenda-item"><span class="dot verde"></span> Disponible</div>
+            <div class="leyenda-item"><span class="dot amarillo"></span> Pendiente de pago</div>
+            <div class="leyenda-item"><span class="dot azul"></span> Confirmada (check-in)</div>
+            <div class="leyenda-item"><span class="dot rojo"></span> Ocupada</div>
+            <div class="leyenda-item"><span class="dot gris"></span> En limpieza</div>
+        </div>
+
+        <div class="recepcion-busqueda">
+            <input id="buscar-reserva" type="text" placeholder="Buscar reserva por CI, nombre o codigo">
+            <button id="btn-buscar-reserva">Buscar</button>
+        </div>
+        <div id="resultados-reserva" class="resultados-reserva"></div>
+
+        <div id="habitaciones-grid" class="habitaciones-grid"></div>
+    </div>
+
+    <script src="views/RecepcionView.js?v=recepcion-1"></script>
+    <script src="controllers/RecepcionController.js?v=recepcion-1"></script>
+</body>
+
+</html>
