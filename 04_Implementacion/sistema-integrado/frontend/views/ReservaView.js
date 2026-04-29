@@ -66,6 +66,10 @@ class ReservaView {
             '<span class="total-label">Total a pagar</span>' +
             '<span class="total-monto">Bs ' + habitacion.precio + '</span>' +
             '</div>' +
+            '<div class="aviso-llegada">' +
+            '<strong>Importante:</strong> una vez realizado el pago tienes 30 minutos para llegar al residencial. ' +
+            'Si no llegas en ese plazo, el tiempo de la habitación empieza a correr desde la hora del pago.' +
+            '</div>' +
             '<div id="form-error" class="form-error" style="display:none"></div>' +
             '<button type="submit" class="btn-confirmar" id="btn-confirmar">Confirmar reserva</button>' +
             '<div class="nota">Al confirmar, podrás generar el QR o registrar pago en efectivo según corresponda.</div>' +
@@ -219,8 +223,7 @@ class ReservaView {
     }
 
     ocultarHabitacionReservada(habitacionId) {
-        var boton = document.querySelector('.btn-reservar[data-id="' + habitacionId + '"]');
-        var card = boton ? boton.closest(".hab-card") : null;
+        var card = document.querySelector('.cliente-hab-card[data-id="' + habitacionId + '"]');
         if (card) {
             card.classList.add("habitacion-en-reserva");
         }
@@ -240,14 +243,20 @@ class ReservaView {
                 boton.classList.remove("seleccionado");
                 boton.textContent = "Seleccionar";
             }
+            var badge = card.querySelector(".hab-badge");
+            if (badge) badge.textContent = "Disponible";
         });
 
-        var boton = document.querySelector('.btn-reservar[data-id="' + habitacionId + '"]');
-        var card = boton ? boton.closest(".hab-card") : null;
+        var card = document.querySelector('.cliente-hab-card[data-id="' + habitacionId + '"]');
         if (card) {
             card.classList.add("seleccionada");
-            boton.classList.add("seleccionado");
-            boton.textContent = "✓ Seleccionada";
+            var boton = card.querySelector(".btn-reservar");
+            if (boton) {
+                boton.classList.add("seleccionado");
+                boton.textContent = "Seleccionada";
+            }
+            var badge = card.querySelector(".hab-badge");
+            if (badge) badge.textContent = "Seleccionada";
         }
         this._actualizarPasos("seleccionar");
     }
@@ -256,9 +265,9 @@ class ReservaView {
         this.flujoContainer.innerHTML =
             '<div class="resumen-card reserva-vacia">' +
             '<h3>Tu reserva</h3>' +
-            '<p>Busca disponibilidad y selecciona una habitación para completar tus datos.</p>' +
+            '<p>Selecciona una habitación para completar tus datos.</p>' +
             '</div>';
-        this._actualizarPasos("buscar");
+        this._actualizarPasos("seleccionar");
     }
 
     _habitacionResumen(habitacion) {
@@ -272,7 +281,7 @@ class ReservaView {
     }
 
     _actualizarPasos(actual) {
-        var orden = ["buscar", "seleccionar", "datos", "pagar", "confirmado"];
+        var orden = ["seleccionar", "datos", "pagar", "confirmado"];
         var indiceActual = orden.indexOf(actual);
         document.querySelectorAll(".step").forEach(function(step) {
             var indice = orden.indexOf(step.getAttribute("data-step"));

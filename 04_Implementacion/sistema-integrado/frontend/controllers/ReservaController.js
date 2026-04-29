@@ -13,14 +13,16 @@ class ReservaController {
     _escucharBotonesReservar() {
         var self = this;
         document.addEventListener("click", function(e) {
-            if (e.target.classList.contains("btn-reservar")) {
-                var btn = e.target;
+            var card = e.target.closest(".cliente-hab-card");
+            var btn = e.target.classList.contains("btn-reservar") ? e.target : null;
+            var origen = btn || card;
+            if (origen) {
                 var habitacion = {
-                    id: btn.getAttribute("data-id"),
-                    numero: btn.getAttribute("data-numero"),
-                    tipo: btn.getAttribute("data-tipo"),
-                    precio: btn.getAttribute("data-precio"),
-                    duracionHoras: btn.getAttribute("data-duracion"),
+                    id: origen.getAttribute("data-id"),
+                    numero: origen.getAttribute("data-numero"),
+                    tipo: origen.getAttribute("data-tipo"),
+                    precio: origen.getAttribute("data-precio"),
+                    duracionHoras: origen.getAttribute("data-duracion"),
                     fechaIngreso: window.fechaBusquedaActual || ""
                 };
                 self.view.marcarHabitacionSeleccionada(habitacion.id);
@@ -92,8 +94,7 @@ class ReservaController {
             window.reservaPendienteSinPagoId = null;
             self.view.limpiarFlujo();
 
-            var buscar = document.getElementById("btn-buscar");
-            if (buscar) buscar.click();
+            if (window.disponibilidadApp) window.disponibilidadApp.cargarDisponiblesDeHoy();
         });
     }
 

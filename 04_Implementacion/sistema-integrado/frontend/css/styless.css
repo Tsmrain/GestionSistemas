@@ -113,10 +113,18 @@ body.cliente-app {
 .cliente-content {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 20px;
-    padding: 24px 32px;
-    max-width: 1200px;
+    gap: 28px;
+    padding: 24px 32px 48px;
+    max-width: 1400px;
     margin: 0 auto;
+}
+
+.grid-titulo {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 16px;
+    padding: 0 4px;
 }
 
 .panel-busqueda {
@@ -185,6 +193,97 @@ body.cliente-app {
     border-color: #7F77DD;
     border-left-color: #7F77DD;
     box-shadow: 0 0 0 2px #7F77DD;
+}
+
+.cliente-habitaciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.cliente-habitaciones-grid .cliente-hab-card {
+    display: block;
+    min-height: 156px;
+    background: #fff;
+    border: 1px solid transparent;
+    border-left: 4px solid #4CAF50;
+    border-radius: 14px;
+    padding: 18px;
+    text-align: left;
+    cursor: pointer;
+    animation: roomCardEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.cliente-habitaciones-grid .cliente-hab-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.cliente-habitaciones-grid .cliente-hab-card.seleccionada {
+    border-color: #7F77DD;
+    border-left-color: #7F77DD;
+    box-shadow: 0 0 0 2px #7F77DD;
+}
+
+.cliente-habitaciones-grid .cliente-hab-card.habitacion-en-reserva {
+    display: none;
+}
+
+.cliente-habitaciones-grid .hab-numero {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    color: #1a1a1a;
+}
+
+.cliente-habitaciones-grid .hab-tipo {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.cliente-habitaciones-grid .hab-badge {
+    font-size: 10px;
+    font-weight: 500;
+    margin-top: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.cliente-habitaciones-grid .cliente-hab-card.seleccionada .hab-badge {
+    background: #EEEDFE;
+    color: #3C3489;
+}
+
+.cliente-habitaciones-grid .hab-precio-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.cliente-habitaciones-grid .hab-precio {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.cliente-habitaciones-grid .hab-horas {
+    font-size: 11px;
+    color: #aaa;
+    white-space: nowrap;
+}
+
+.cliente-habitaciones-grid .btn-reservar {
+    display: none;
 }
 
 .hab-left {
@@ -278,6 +377,27 @@ body.cliente-app {
     padding: 20px;
     position: sticky;
     top: 20px;
+}
+
+#panel-reserva {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c9c6f1 #f4f4f4;
+}
+
+#panel-reserva::-webkit-scrollbar {
+    width: 8px;
+}
+
+#panel-reserva::-webkit-scrollbar-track {
+    background: #f4f4f4;
+    border-radius: 999px;
+}
+
+#panel-reserva::-webkit-scrollbar-thumb {
+    background: #c9c6f1;
+    border-radius: 999px;
 }
 
 .resumen-hab {
@@ -386,6 +506,20 @@ body.cliente-app {
     font-size: 11px;
     color: #555;
     line-height: 1.4;
+}
+
+.aviso-llegada {
+    background: #FFF8E1;
+    border-left: 4px solid #FFC107;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.45;
+}
+
+.aviso-llegada strong {
+    color: #1a1a1a;
 }
 
 body.sistema-page {
@@ -1845,6 +1979,26 @@ body.recepcion-page .hab-accion {
 }
 
 @media (max-width: 700px) {
+    .cliente-content {
+        grid-template-columns: 1fr;
+        padding: 20px 16px 32px;
+    }
+
+    .cliente-habitaciones-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .steps {
+        padding: 16px;
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+
+    .step-line {
+        width: 36px;
+        flex: 0 0 36px;
+    }
+
     .recepcion-header {
         gap: 12px;
     }

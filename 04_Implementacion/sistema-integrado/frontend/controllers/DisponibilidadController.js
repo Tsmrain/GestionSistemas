@@ -5,6 +5,15 @@ class DisponibilidadController {
         this.view.onBuscar((tipo, fecha) => {
             this.buscar(tipo, fecha);
         });
+
+        this.cargarDisponiblesDeHoy();
+    }
+
+    cargarDisponiblesDeHoy() {
+        const d = new Date();
+        const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        window.fechaBusquedaActual = hoy;
+        this.buscar("Todas las habitaciones", hoy);
     }
 
     async buscar(tipo, fecha) {
@@ -22,7 +31,7 @@ class DisponibilidadController {
         this.view.limpiar();
 
         try {
-            const url = "/api/v1/habitaciones/disponibles?fecha=" + fecha + "&tipoNombre=" + tipo;
+            const url = "/api/v1/habitaciones/disponibles?fecha=" + encodeURIComponent(fecha) + "&tipoNombre=" + encodeURIComponent(tipo);
             console.log("[DEBUG] Fetching:", url);
 
             const response = await fetch(url);
@@ -51,7 +60,11 @@ class DisponibilidadController {
             const habitaciones = data.map(function(h) {
                 var tipoNombre = (h.tipo && h.tipo.nombreTipo) ? h.tipo.nombreTipo : "Sin Tipo";
                 var estadoActual = h.estadoActual || "Disponible";
-                var precio = (h.tipo && h.tipo.precioBase) ? h.tipo.precioBase : 0;
+                var precio = {
+                    "Estandar": 150,
+                    "VIP": 180,
+                    "SUPERVIP": 250
+                }[tipoNombre] || ((h.tipo && h.tipo.precioBase) ? h.tipo.precioBase : 0);
                 var duracionHoras = (h.tipo && h.tipo.duracionHoras) ? h.tipo.duracionHoras : 12;
                 return new Habitacion(h.id, h.numero, tipoNombre, estadoActual, precio, duracionHoras);
             });
@@ -76,6 +89,6 @@ class DisponibilidadController {
     }
 })();
 
-if (document.getElementById("btn-buscar")) {
-    const app = new DisponibilidadController();
+if (document.getElementById("resultado-container")) {
+    window.disponibilidadApp = new DisponibilidadController();
 }

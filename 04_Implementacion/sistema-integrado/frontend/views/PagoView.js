@@ -148,8 +148,7 @@ class PagoView {
 
         document.getElementById("btn-cerrar-comprobante").addEventListener("click", () => {
             this.cerrarModal();
-            var buscar = document.getElementById("btn-buscar");
-            if (buscar) buscar.click();
+            if (window.disponibilidadApp) window.disponibilidadApp.cargarDisponiblesDeHoy();
         });
         this._actualizarPasos("confirmado");
     }
@@ -175,13 +174,13 @@ class PagoView {
         this.flujoContainer.innerHTML =
             '<div class="resumen-card reserva-vacia">' +
             '<h3>Tu reserva</h3>' +
-            '<p>Busca disponibilidad y selecciona una habitación para completar tus datos.</p>' +
+            '<p>Selecciona una habitación para completar tus datos.</p>' +
             '</div>';
-        this._actualizarPasos("buscar");
+        this._actualizarPasos("seleccionar");
     }
 
     _actualizarPasos(actual) {
-        var orden = ["buscar", "seleccionar", "datos", "pagar", "confirmado"];
+        var orden = ["seleccionar", "datos", "pagar", "confirmado"];
         var indiceActual = orden.indexOf(actual);
         document.querySelectorAll(".step").forEach(function(step) {
             var indice = orden.indexOf(step.getAttribute("data-step"));

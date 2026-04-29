@@ -33,8 +33,7 @@ class PagoController {
                 window.reservaApp._cancelarReservaPendiente(window.reservaPendienteSinPagoId);
                 window.reservaApp.reservaPendienteSinPagoId = null;
                 window.reservaPendienteSinPagoId = null;
-                var buscar = document.getElementById("btn-buscar");
-                if (buscar) buscar.click();
+                if (window.disponibilidadApp) window.disponibilidadApp.cargarDisponiblesDeHoy();
             }
             self.view.cerrarModal();
         });
