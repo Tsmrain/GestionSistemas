@@ -49,7 +49,7 @@ class ReservaController {
         this.borradorReserva = this.view.obtenerBorradorFormulario();
 
         try {
-            var response = await fetch("/api/v1/reservas", {
+            var response = await fetch(ApiClient.url("/api/v1/reservas"), {
                 method: "POST",
                 body: formData
             });
@@ -102,7 +102,7 @@ class ReservaController {
         if (!reservaId) return;
 
         try {
-            await fetch("/api/v1/reservas/" + reservaId + "/cancelar-pendiente", {
+            await fetch(ApiClient.url("/api/v1/reservas/" + reservaId + "/cancelar-pendiente"), {
                 method: "POST"
             });
         } catch (error) {
@@ -129,7 +129,7 @@ class ReservaController {
             var reservaId = window.reservaPendienteSinPagoId || this.reservaPendienteSinPagoId;
             if (!reservaId) return;
 
-            navigator.sendBeacon("/api/v1/reservas/" + reservaId + "/cancelar-pendiente", new Blob([], { type: "text/plain" }));
+            navigator.sendBeacon(ApiClient.url("/api/v1/reservas/" + reservaId + "/cancelar-pendiente"), new Blob([], { type: "text/plain" }));
         };
 
         window.addEventListener("beforeunload", cancelar);

@@ -33,6 +33,12 @@ body.cliente-app {
     margin: 0;
 }
 
+.cliente-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .btn-recepcion {
     font-size: 12px;
     padding: 8px 16px;
@@ -1307,6 +1313,321 @@ body.cliente-app .qr-imagen {
     height: 170px;
 }
 
+.acceso-demo-card {
+    border: 1px solid #ece9ff;
+    border-radius: 14px;
+    background: #fbfaff;
+    padding: 16px;
+    margin-bottom: 18px;
+    text-align: left;
+    animation: contentRise 0.34s ease 0.18s both;
+}
+
+.acceso-demo-header,
+.acceso-demo-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.acceso-demo-label {
+    display: block;
+    color: #7F77DD;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.acceso-demo-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #1a1a1a;
+}
+
+.acceso-demo-badge {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eaf7ea;
+    color: #2f8534;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.acceso-phone-preview {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    max-width: 220px;
+    margin: 14px auto;
+    padding: 18px 14px;
+    border: 10px solid #1b1b1b;
+    border-radius: 28px;
+    background: #fff;
+    text-align: center;
+}
+
+.acceso-phone-title {
+    margin: 0;
+    color: #111;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.qr-acceso-real {
+    width: 154px;
+    height: 154px;
+    display: block;
+    padding: 8px;
+    border: 2px solid #dedede;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.acceso-phone-preview strong {
+    color: #555;
+    font-size: 13px;
+}
+
+.acceso-phone-preview span {
+    color: #777;
+    font-size: 12px;
+}
+
+.acceso-demo-texto {
+    margin: 0 0 12px;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.btn-acceso-demo {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: #7F77DD;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.btn-descargar-qr {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-descargar-qr:disabled {
+    cursor: wait;
+    opacity: 0.75;
+}
+
+/* ===== TABLET EN PUERTA ===== */
+
+body.puerta-page {
+    min-height: 100vh;
+    padding: 28px 18px;
+    background: #f3f3f3;
+    text-align: center;
+}
+
+.puerta-shell {
+    max-width: 880px;
+    margin: 0 auto;
+}
+
+.puerta-caption {
+    margin: 0 0 20px;
+    color: #8a8a8a;
+    font-size: 26px;
+    font-weight: 500;
+}
+
+.tablet-device {
+    max-width: 760px;
+    min-height: 820px;
+    margin: 0 auto;
+    padding: 28px;
+    border-radius: 30px;
+    background: #1b1b1b;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.13);
+}
+
+.tablet-screen {
+    min-height: 764px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.tablet-room-header {
+    padding: 34px 22px 32px;
+    background: #7F77DD;
+    color: #fff;
+}
+
+.tablet-room-header h1 {
+    margin: 0;
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.tablet-room-header p {
+    margin: 8px 0 0;
+    font-size: 24px;
+    color: #fff;
+}
+
+.tablet-state {
+    padding: 40px 26px;
+}
+
+.scanner-card {
+    position: relative;
+    width: min(400px, 100%);
+    height: 400px;
+    margin: 0 auto 58px;
+    overflow: hidden;
+    border-radius: 22px;
+    background: #1b1b1b;
+}
+
+.scanner-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.28;
+}
+
+.scanner-reticle {
+    position: absolute;
+    inset: 58px;
+    border: 6px solid #43b657;
+    border-radius: 24px;
+    box-shadow: 0 0 20px rgba(67, 182, 87, 0.34);
+}
+
+.scanner-reticle span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 4px;
+    background: #43b657;
+}
+
+.tablet-status {
+    margin: 0 0 24px;
+    color: #8a8a8a;
+    font-size: 27px;
+    font-weight: 500;
+}
+
+.puerta-code-form {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    max-width: 430px;
+    margin: 0 auto 12px;
+}
+
+.puerta-code-form input {
+    min-width: 0;
+    flex: 1;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #dedede;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+}
+
+.puerta-code-form button,
+.btn-demo-scan {
+    height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 10px;
+    background: #7F77DD;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-demo-scan {
+    background: #1f8a63;
+}
+
+.welcome-card {
+    width: min(620px, 100%);
+    margin: 22px auto 60px;
+    padding: 56px 28px 48px;
+    border: 4px solid #43b657;
+    border-radius: 22px;
+    background: #edf9ef;
+    color: #555;
+}
+
+.unlock-icon {
+    margin-bottom: 22px;
+    font-size: 72px;
+    line-height: 1;
+}
+
+.welcome-card h2 {
+    margin: 0 0 20px;
+    color: #2f8534;
+    font-size: 44px;
+    font-weight: 700;
+}
+
+.welcome-card h3 {
+    margin: 0 0 34px;
+    color: #555;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.welcome-card p {
+    margin: 0;
+    color: #555;
+    font-size: 28px;
+    line-height: 1.22;
+}
+
+.error-card {
+    border-color: #e18484;
+    background: #fff4f4;
+}
+
+.error-card h2 {
+    color: #b63d3d;
+}
+
 @media (max-width: 900px) {
     .cliente-content {
         grid-template-columns: 1fr;
@@ -1325,6 +1646,35 @@ body.cliente-app .qr-imagen {
     .step-line {
         width: 34px;
     }
+
+    .tablet-device {
+        min-height: auto;
+        padding: 18px;
+    }
+
+    .tablet-screen {
+        min-height: 620px;
+    }
+
+    .tablet-room-header h1 {
+        font-size: 32px;
+    }
+
+    .tablet-room-header p,
+    .tablet-status {
+        font-size: 20px;
+    }
+
+    .scanner-card {
+        height: 280px;
+        margin-bottom: 34px;
+    }
+
+    .puerta-code-form,
+    .acceso-demo-actions {
+        flex-direction: column;
+    }
+
 }
 
 @keyframes panelReveal {

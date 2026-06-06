@@ -104,6 +104,7 @@ class PagoView {
         var titulo = esEfectivo ? "¡RESERVA REGISTRADA!" : "¡PAGO CONFIRMADO!";
         var icon = esEfectivo ? "🏨" : "✅";
         var habitacionHTML = reserva ? this.#habitacionComprobanteHTML(reserva) : "";
+        var qrAccesoHTML = reserva ? this.#qrAccesoHTML(reserva, !esEfectivo) : "";
         
         var avisoHTML = "";
         if (esEfectivo) {
@@ -143,6 +144,8 @@ class PagoView {
 
             avisoHTML +
 
+            qrAccesoHTML +
+
             '<button class="btn-confirmar" id="btn-cerrar-comprobante" type="button">ACEPTAR</button>' +
             '</div>';
 
@@ -150,6 +153,41 @@ class PagoView {
             this.cerrarModal();
             if (window.disponibilidadApp) window.disponibilidadApp.cargarDisponiblesDeHoy();
         });
+
+        var botonDescargarQR = document.querySelector(".btn-descargar-qr");
+        if (botonDescargarQR) {
+            botonDescargarQR.addEventListener("click", async function () {
+                var url = botonDescargarQR.getAttribute("data-qr-url");
+                var archivo = botonDescargarQR.getAttribute("data-archivo");
+                botonDescargarQR.textContent = "Descargando...";
+                botonDescargarQR.disabled = true;
+
+                try {
+                    var response = await fetch(url);
+                    if (!response.ok) throw new Error("No se pudo descargar el QR.");
+
+                    var blob = await response.blob();
+                    var objectUrl = URL.createObjectURL(blob);
+                    var link = document.createElement("a");
+                    link.href = objectUrl;
+                    link.download = archivo;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    URL.revokeObjectURL(objectUrl);
+                    botonDescargarQR.textContent = "QR descargado";
+                } catch (error) {
+                    botonDescargarQR.textContent = "Abrir QR";
+                    window.open(url, "_blank", "noopener");
+                } finally {
+                    setTimeout(function () {
+                        botonDescargarQR.disabled = false;
+                        botonDescargarQR.textContent = "Descargar QR";
+                    }, 1800);
+                }
+            });
+        }
+
         this._actualizarPasos("confirmado");
     }
 
@@ -222,6 +260,38 @@ class PagoView {
             '<p class="hab-num">Habitacion ' + reserva.habitacion.numero + '</p>' +
             '<p class="hab-tipo">' + tipoHabitacion + ' - Bs ' + reserva.montoTotal + '</p>' +
             '<p class="hab-horario">' + duracionHoras + ' horas</p>' +
+            '</div>' +
+            '</div>';
+    }
+
+    #qrAccesoHTML(reserva, habilitado) {
+        var habitacion = reserva.habitacion ? reserva.habitacion.numero : "";
+        var codigo = reserva.id;
+        var payload = window.QrCodeGenerator ? window.QrCodeGenerator.toPayload(codigo) : "RESERVA:" + codigo;
+        var qrDataUrl = window.QrCodeGenerator ? window.QrCodeGenerator.toDataUrl(payload, 8) : "";
+        var puertaUrl = 'puerta.html?habitacion=' + encodeURIComponent(habitacion) + '&codigo=' + encodeURIComponent(codigo);
+        var estadoTexto = habilitado
+            ? "Presenta este QR en la tablet de la puerta."
+            : "El QR abre la puerta cuando la reserva este pagada.";
+
+        return '<div class="acceso-demo-card">' +
+            '<div class="acceso-demo-header">' +
+            '<div>' +
+            '<span class="acceso-demo-label">QR de acceso</span>' +
+            '<h3>Habitacion ' + habitacion + '</h3>' +
+            '</div>' +
+            '<span class="acceso-demo-badge">Opcion 4</span>' +
+            '</div>' +
+            '<div class="acceso-phone-preview">' +
+            '<p class="acceso-phone-title">Tu QR de acceso</p>' +
+            '<img class="qr-acceso-real" src="' + qrDataUrl + '" alt="QR de acceso para la reserva ' + codigo + '">' +
+            '<strong>Reserva #' + codigo + '</strong>' +
+            '<span>Habitacion ' + habitacion + '</span>' +
+            '</div>' +
+            '<p class="acceso-demo-texto">' + estadoTexto + '</p>' +
+            '<div class="acceso-demo-actions">' +
+            '<a class="btn-acceso-demo" href="' + puertaUrl + '" target="_blank" rel="noopener">Abrir tablet puerta</a>' +
+            '<button class="btn-descargar-qr" type="button" data-qr-url="' + qrDataUrl + '" data-archivo="qr-acceso-reserva-' + codigo + '.png">Descargar QR</button>' +
             '</div>' +
             '</div>';
     }

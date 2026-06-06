@@ -31,7 +31,7 @@ class DisponibilidadController {
         this.view.limpiar();
 
         try {
-            const url = "/api/v1/habitaciones/disponibles?fecha=" + encodeURIComponent(fecha) + "&tipoNombre=" + encodeURIComponent(tipo);
+            const url = ApiClient.url("/api/v1/habitaciones/disponibles?fecha=" + encodeURIComponent(fecha) + "&tipoNombre=" + encodeURIComponent(tipo));
             console.log("[DEBUG] Fetching:", url);
 
             const response = await fetch(url);

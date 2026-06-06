@@ -56,7 +56,7 @@ class PagoController {
     // Privado — inicia el pago QR
     async _iniciarPagoQR(reserva) {
         try {
-            var response = await fetch("/api/v1/pagos/iniciar", {
+            var response = await fetch(ApiClient.url("/api/v1/pagos/iniciar"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -105,7 +105,7 @@ class PagoController {
     // Privado — inicia el pago en Efectivo
     async _iniciarPagoEfectivo(reserva) {
         try {
-            var response = await fetch("/api/v1/pagos/iniciar", {
+            var response = await fetch(ApiClient.url("/api/v1/pagos/iniciar"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -149,7 +149,7 @@ class PagoController {
         this._pollingInterval = setInterval(async function () {
             try {
                 intentos++;
-                var response = await fetch("/api/v1/pagos/verificar/" + reserva.id);
+                var response = await fetch(ApiClient.url("/api/v1/pagos/verificar/" + reserva.id));
 
                 if (!response.ok) return;
 
@@ -208,7 +208,7 @@ class PagoController {
     // Privado — simula la notificacion del banco para la demo
     async _simularPagoQR(reserva) {
         try {
-            var response = await fetch("/api/v1/pagos/simular-confirmacion/" + reserva.id, {
+            var response = await fetch(ApiClient.url("/api/v1/pagos/simular-confirmacion/" + reserva.id), {
                 method: "POST"
             });
 

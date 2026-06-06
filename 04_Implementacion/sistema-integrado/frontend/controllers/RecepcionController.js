@@ -107,7 +107,7 @@ class RecepcionController {
         if (errorDiv) errorDiv.style.display = "none";
 
         try {
-            var response = await fetch("/api/auth/recepcion/login", {
+            var response = await fetch(ApiClient.url("/api/auth/recepcion/login"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username: username, password: password })
@@ -145,7 +145,7 @@ class RecepcionController {
         if (errorDiv) errorDiv.style.display = "none";
 
         try {
-            var response = await fetch("/api/auth/recepcion/registro", {
+            var response = await fetch(ApiClient.url("/api/auth/recepcion/registro"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nombre: nombre, username: username, password: password })
@@ -184,7 +184,7 @@ class RecepcionController {
     // Privado — carga las habitaciones del backend
     async _cargarHabitaciones() {
         try {
-            var response = await fetch("/api/v1/habitaciones");
+            var response = await fetch(ApiClient.url("/api/v1/habitaciones"));
 
             if (!response.ok) {
                 console.error("Error al cargar habitaciones:", response.status);
@@ -290,7 +290,7 @@ class RecepcionController {
 
     async _actualizarEstadoHabitacion(id, accion, mensajeExito) {
         try {
-            var response = await fetch("/api/v1/habitaciones/" + id + "/" + accion, {
+            var response = await fetch(ApiClient.url("/api/v1/habitaciones/" + id + "/" + accion), {
                 method: "PATCH"
             });
 
@@ -315,7 +315,7 @@ class RecepcionController {
                 return;
             }
 
-            var response = await fetch("/api/checkin/buscar?termino=" + encodeURIComponent(termino));
+            var response = await fetch(ApiClient.url("/api/checkin/buscar?termino=" + encodeURIComponent(termino)));
 
             if (!response.ok) {
                 alert("No se encontro una reserva valida.");
@@ -340,7 +340,7 @@ class RecepcionController {
             var ci = prompt("Ingresa el CI del huesped para buscar la reserva:");
             if (!ci) return;
 
-            var response = await fetch("/api/checkin/buscar?ci=" + ci.trim());
+            var response = await fetch(ApiClient.url("/api/checkin/buscar?ci=" + ci.trim()));
 
             if (!response.ok) {
                 alert("No se encontro ninguna reserva para ese CI.");
@@ -389,7 +389,7 @@ class RecepcionController {
 
     async _registrarPagoEfectivo(reservaId) {
         try {
-            var response = await fetch("/api/v1/pagos/efectivo/" + reservaId, {
+            var response = await fetch(ApiClient.url("/api/v1/pagos/efectivo/" + reservaId), {
                 method: "POST"
             });
 
@@ -402,7 +402,7 @@ class RecepcionController {
             alert("Pago efectivo registrado. Ahora puedes confirmar el check-in.");
             var overlay = document.getElementById("modal-checkin");
             if (overlay) overlay.remove();
-            var reservaResponse = await fetch("/api/checkin/buscar?codigo=" + reservaId);
+            var reservaResponse = await fetch(ApiClient.url("/api/checkin/buscar?codigo=" + reservaId));
             var reservas = await reservaResponse.json();
             if (reservas && reservas.length > 0) {
                 this._abrirReservaCheckin(reservas[0]);
@@ -421,7 +421,7 @@ class RecepcionController {
             if (!formData) return;
             formData.append("recepcionista", this.recepcionista.nombre);
 
-            var response = await fetch("/api/checkin/" + reservaId, {
+            var response = await fetch(ApiClient.url("/api/checkin/" + reservaId), {
                 method: "POST",
                 body: formData
             });
@@ -444,7 +444,7 @@ class RecepcionController {
     // Privado — cancela por identidad incorrecta
     async _cancelarCheckin(reservaId) {
         try {
-            var response = await fetch("/api/checkin/" + reservaId + "/cancelar", {
+            var response = await fetch(ApiClient.url("/api/checkin/" + reservaId + "/cancelar"), {
                 method: "POST"
             });
 

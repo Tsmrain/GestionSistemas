@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tablet Puerta</title>
+    <link rel="stylesheet" href="css/styless.css?v=qr-api-1">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="puerta-page">
+    <main class="puerta-shell">
+        <p class="puerta-caption">Tablet en la puerta de la habitacion</p>
+        <section class="tablet-device" aria-live="polite">
+            <div class="tablet-screen">
+                <header class="tablet-room-header">
+                    <h1 id="tablet-habitacion">Habitacion</h1>
+                    <p>Acerca tu QR para entrar</p>
+                </header>
+
+                <section id="tablet-scan-state" class="tablet-state tablet-state-active">
+                    <div class="scanner-card">
+                        <video id="tablet-video" autoplay muted playsinline></video>
+                        <div class="scanner-reticle">
+                            <span></span>
+                        </div>
+                    </div>
+                    <p id="tablet-status" class="tablet-status">Esperando QR completo dentro del recuadro...</p>
+                    <form id="form-codigo-puerta" class="puerta-code-form">
+                        <input id="codigo-puerta" type="text" inputmode="numeric" placeholder="Codigo de reserva">
+                        <button type="submit">Validar</button>
+                    </form>
+                    <button id="btn-demo-scan" class="btn-demo-scan" type="button" style="display:none">Simular escaneo de demo</button>
+                </section>
+
+                <section id="tablet-success-state" class="tablet-state tablet-success" style="display:none">
+                    <div class="welcome-card">
+                        <div class="unlock-icon">🔓</div>
+                        <h2>¡Bienvenido!</h2>
+                        <h3 id="tablet-huesped">Huesped</h3>
+                        <p id="tablet-detalle">Habitacion</p>
+                    </div>
+                    <p class="tablet-status">La puerta esta abierta</p>
+                </section>
+
+                <section id="tablet-error-state" class="tablet-state tablet-error" style="display:none">
+                    <div class="welcome-card error-card">
+                        <div class="unlock-icon">🔒</div>
+                        <h2>Acceso no valido</h2>
+                        <p id="tablet-error">No se pudo validar la reserva.</p>
+                    </div>
+                    <button id="btn-reintentar-puerta" class="btn-demo-scan" type="button">Intentar otra vez</button>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="controllers/ApiClient.js?v=api-client-2"></script>
+    <script src="controllers/PuertaController.js?v=qr-api-1"></script>
+</body>
+
+</html>
