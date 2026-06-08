@@ -44,11 +44,18 @@
         mostrarEstado("success");
     });
 
-    iniciarCamara();
+    if (codigoDemo) {
+        status.textContent = "Validando QR de acceso...";
+        setTimeout(function () {
+            validarCodigo(codigoDemo);
+        }, 250);
+    } else {
+        iniciarCamara();
+    }
 
     async function iniciarCamara() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            status.textContent = "Camara bloqueada por el navegador. Para escanear en pruebas, abre la tablet desde localhost o usa HTTPS.";
+            status.textContent = "Camara no disponible. Usa el codigo de reserva.";
             return;
         }
 

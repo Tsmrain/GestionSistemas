@@ -267,17 +267,16 @@ class PagoView {
     #qrAccesoHTML(reserva, habilitado) {
         var habitacion = reserva.habitacion ? reserva.habitacion.numero : "";
         var codigo = reserva.id;
-        var tabletUrl = 'puerta.html?habitacion=' + encodeURIComponent(habitacion);
-        var qrAccesoUrl = tabletUrl + '&codigo=' + encodeURIComponent(codigo);
-        var qrAccesoUrlCompleta = new URL(qrAccesoUrl, window.location.href).href;
-        var qrDataUrl = window.QrCodeGenerator ? window.QrCodeGenerator.toDataUrl(qrAccesoUrlCompleta) : "";
+        var puertaUrl = 'puerta.html?habitacion=' + encodeURIComponent(habitacion) + '&codigo=' + encodeURIComponent(codigo);
+        var puertaUrlCompleta = new URL(puertaUrl, window.location.href).href;
+        var qrDataUrl = window.QrCodeGenerator ? window.QrCodeGenerator.toDataUrl(puertaUrlCompleta) : "";
         var esLocalhost = ["localhost", "127.0.0.1", "::1"].indexOf(window.location.hostname) !== -1;
         var avisoCelular = esLocalhost
             ? '<p class="acceso-demo-warning">Para usar este QR en tu celular, abre el sistema desde la IP de tu computadora y vuelve a generar el QR.</p>'
             : '';
         var estadoTexto = habilitado
-            ? "Presenta este QR en la tablet de la puerta. La tablet escanea la URL del QR y valida la reserva automaticamente."
-            : "El QR quedara habilitado para acceso cuando la reserva este pagada.";
+            ? "Presenta este QR en la tablet de la puerta. También puedes escanearlo desde tu celular para abrir la bienvenida y consumos."
+            : "El QR abre la puerta cuando la reserva este pagada.";
 
         return '<div class="acceso-demo-card">' +
             '<div class="acceso-demo-header">' +
@@ -285,7 +284,7 @@ class PagoView {
             '<span class="acceso-demo-label">QR de acceso</span>' +
             '<h3>Habitacion ' + habitacion + '</h3>' +
             '</div>' +
-            '<span class="acceso-demo-badge">QR estandar</span>' +
+            '<span class="acceso-demo-badge">Opcion 4</span>' +
             '</div>' +
             '<div class="acceso-phone-preview">' +
             '<p class="acceso-phone-title">Tu QR de acceso</p>' +
@@ -296,7 +295,7 @@ class PagoView {
             '<p class="acceso-demo-texto">' + estadoTexto + '</p>' +
             avisoCelular +
             '<div class="acceso-demo-actions">' +
-            '<a class="btn-acceso-demo" href="' + tabletUrl + '" target="_blank" rel="noopener">Abrir tablet para escanear</a>' +
+            '<a class="btn-acceso-demo" href="' + puertaUrl + '" target="_blank" rel="noopener">Abrir tablet puerta</a>' +
             '<button class="btn-descargar-qr" type="button" data-qr-url="' + qrDataUrl + '" data-archivo="qr-acceso-reserva-' + codigo + '.png">Descargar QR</button>' +
             '</div>' +
             '</div>';

@@ -103,17 +103,6 @@ CREATE TABLE IF NOT EXISTS comprobantes (
     fecha_emision TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS consumos_extra (
-    id BIGSERIAL PRIMARY KEY,
-    reserva_id BIGINT NOT NULL REFERENCES reservas(id),
-    items_json TEXT NOT NULL,
-    total DOUBLE PRECISION NOT NULL,
-    estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',
-    qr_data TEXT,
-    fecha_creacion TIMESTAMP NOT NULL DEFAULT NOW(),
-    fecha_pago TIMESTAMP
-);
-
 CREATE UNIQUE INDEX IF NOT EXISTS uq_pagos_reserva_pendiente
 ON pagos(reserva_id)
 WHERE estado = 'PENDIENTE';

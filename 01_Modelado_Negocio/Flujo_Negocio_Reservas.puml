@@ -1,0 +1,163 @@
+@startuml
+title Flujo de Negocio - Sistema de Reservas del Residencial
+
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+  DiamondBackgroundColor #FFF7ED
+  DiamondBorderColor #C2410C
+  StartColor #16A34A
+  EndColor #DC2626
+}
+skinparam swimlane {
+  BorderColor #CBD5E1
+  TitleBackgroundColor #E2E8F0
+  TitleFontColor #0F172A
+}
+
+start
+
+|Cliente|
+:Ingresar al portal de reservas;
+:Indicar fecha de ingreso y tipo de habitacion;
+
+|Sistema|
+:Validar que la fecha sea apta para reservar;
+if (La fecha es valida?) then (Si)
+  :Buscar habitaciones libres para la fecha y categoria;
+else (No)
+  :Informar que la fecha debe corregirse;
+  |Cliente|
+  :Corregir fecha o salir del flujo;
+  stop
+endif
+
+if (Hay habitaciones disponibles?) then (Si)
+  :Mostrar habitaciones disponibles con numero, categoria, precio y duracion;
+else (No)
+  :Informar que no hay habitaciones disponibles;
+  |Cliente|
+  :Elegir otra fecha o categoria;
+  stop
+endif
+
+|Cliente|
+:Seleccionar habitacion;
+:Registrar nombre, CI, celular y fotos del documento;
+:Elegir metodo de pago preferido;
+
+|Sistema|
+:Verificar datos obligatorios y disponibilidad actual;
+if (Datos completos y habitacion disponible?) then (Si)
+  :Registrar huesped;
+  :Crear reserva pendiente de pago;
+  :Calcular importe segun categoria y duracion;
+  :Apartar temporalmente la habitacion;
+else (No)
+  :Informar error o conflicto de disponibilidad;
+  |Cliente|
+  :Corregir datos o seleccionar otra habitacion;
+  stop
+endif
+
+|Cliente|
+if (Metodo de pago elegido?) then (QR)
+  :Solicitar pago por QR;
+  |Sistema|
+  :Generar QR por el importe de la reserva;
+  :Mostrar QR y tiempo de espera;
+  |Cliente|
+  :Confirmar pago desde su banca movil;
+  |Servicio bancario|
+  :Confirmar o rechazar pago;
+  |Sistema|
+  if (Pago confirmado a tiempo?) then (Si)
+    :Registrar pago;
+    :Generar comprobante;
+    :Marcar reserva como pagada;
+    :Comunicar ventana de llegada de 30 minutos;
+  else (No)
+    :Informar que el pago no se completo;
+    :Cancelar o liberar reserva pendiente segun corresponda;
+    |Cliente|
+    :Intentar nuevamente o elegir otro metodo;
+    stop
+  endif
+else (Efectivo)
+  :Elegir pago en efectivo;
+  |Sistema|
+  :Registrar pago en caja para la reserva;
+  :Generar comprobante;
+  :Marcar reserva como pagada;
+  :Comunicar ventana de llegada de 30 minutos;
+endif
+
+|Recepcionista|
+:Iniciar sesion en el panel de recepcion;
+:Revisar tablero de habitaciones y reservas;
+:Buscar reserva por codigo, CI o nombre;
+
+|Sistema|
+if (Reserva encontrada?) then (Si)
+  :Mostrar datos de reserva, huesped, habitacion y pago;
+else (No)
+  :Informar que no existe una reserva atendible;
+  |Recepcionista|
+  :Reintentar busqueda;
+  stop
+endif
+
+|Recepcionista|
+:Verificar identidad del huesped;
+
+if (Identidad coincide?) then (Si)
+  if (Cliente viene con acompanante?) then (Si)
+    :Registrar datos obligatorios del acompanante;
+    |Sistema|
+    if (Datos del acompanante completos?) then (Si)
+      :Vincular acompanante a la reserva;
+    else (No)
+      :Solicitar completar datos del acompanante;
+      stop
+    endif
+  else (No)
+    :Continuar sin registrar acompanante;
+  endif
+
+  |Recepcionista|
+  :Confirmar check-in;
+  |Sistema|
+  :Registrar hora de ingreso;
+  :Calcular hora estimada de salida;
+  :Marcar habitacion como ocupada;
+  :Mostrar resumen del ingreso;
+else (No)
+  |Sistema|
+  :Cancelar reserva por inconsistencia de identidad;
+  :Liberar habitacion;
+  stop
+endif
+
+|Recepcionista|
+:Atender estadia del cliente;
+:Finalizar estadia cuando el cliente sale;
+
+|Sistema|
+:Cerrar estadia;
+:Enviar habitacion a limpieza;
+
+|Personal de Limpieza|
+:Realizar limpieza de la habitacion;
+:Avisar a recepcion que la habitacion esta lista;
+
+|Recepcionista|
+:Confirmar limpieza completada en el panel;
+
+|Sistema|
+:Marcar habitacion como disponible;
+:Mostrar habitacion nuevamente en el inventario;
+
+stop
+@enduml

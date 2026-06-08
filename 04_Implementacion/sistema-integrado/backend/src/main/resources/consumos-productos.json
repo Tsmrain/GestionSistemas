@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cerveza",
+    "nombre": "Cerveza",
+    "emoji": "🍺",
+    "precio": 15.0,
+    "stock": 12
+  },
+  {
+    "id": "refresco",
+    "nombre": "Refresco",
+    "emoji": "🥤",
+    "precio": 8.0,
+    "stock": 20
+  },
+  {
+    "id": "chocolate",
+    "nombre": "Chocolate",
+    "emoji": "🍫",
+    "precio": 12.0,
+    "stock": 8
+  },
+  {
+    "id": "shampoo",
+    "nombre": "Shampoo",
+    "emoji": "🧴",
+    "precio": 10.0,
+    "stock": 5
+  }
+]
