@@ -28,7 +28,11 @@ public class CheckInController {
             @RequestParam(value = "ci", required = false) String ci,
             @RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "codigo", required = false) Long codigo,
+            @RequestParam(value = "habitacionId", required = false) Long habitacionId,
             @RequestParam(value = "termino", required = false) String termino) {
+        if (habitacionId != null) {
+            return ResponseEntity.ok(checkInService.buscarReservasPorHabitacion(habitacionId));
+        }
         if (codigo != null) {
             return ResponseEntity.ok(checkInService.buscarReservasPorCodigo(codigo));
         }

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Recepción</title>
-    <link rel="stylesheet" href="css/styless.css?v=recepcion-fix-1">
+    <link rel="stylesheet" href="css/styless.css?v=recepcion-finanzas-periodos-1">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
@@ -31,6 +31,7 @@
             </div>
             <div class="recepcion-header-actions">
                 <button id="btn-nueva-habitacion" class="btn-agregar" type="button">+ Nueva Habitación</button>
+                <a class="btn-secundario recepcion-nav-link" href="ventas-insumos.html">Ventas de Insumos</a>
                 <button id="btn-finanzas-panel" class="btn-secundario" type="button" style="height: 34px; padding: 0 14px; font-weight: 500; font-size: 13px; border-radius: 8px; cursor: pointer;">📊 Finanzas e Inventario</button>
                 <a class="btn-volver" href="index.html">← Volver</a>
                 <button id="btn-logout-recepcion" class="btn-salir" type="button">Salir</button>
@@ -68,6 +69,17 @@
             <div class="leyenda-item"><span class="dot gris"></span> En limpieza</div>
         </div>
 
+        <section class="estados-ayuda">
+            <strong>Estados:</strong>
+            <span><b>DISPONIBLE</b> se puede reservar.</span>
+            <span><b>PENDIENTE_PAGO</b> reserva creada, falta pagar.</span>
+            <span><b>PAGADA/Confirmada</b> falta check-in.</span>
+            <span><b>ACTIVA/Ocupada</b> huésped dentro, permite vender insumos.</span>
+            <span><b>LIMPIEZA/MANTENIMIENTO</b> no disponible.</span>
+        </section>
+
+        <section id="centro-control-recepcion" class="centro-control-recepcion"></section>
+
         <div class="recepcion-busqueda">
             <input id="buscar-reserva" type="text" placeholder="Buscar reserva por CI, nombre o codigo">
             <button id="btn-buscar-reserva">Buscar</button>
@@ -79,22 +91,34 @@
         <!-- Panel de Finanzas e Inventario -->
         <div id="finanzas-inventario-panel" style="display:none; padding: 20px 24px 24px; background: #f5f5f5; font-family: 'Montserrat', sans-serif;">
             <!-- Finanzas Section -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="font-size: 18px; margin: 0; font-weight: 600; color: #1a1a1a;">📊 Conciliación Financiera (Caja de Turno)</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 15px;">
+                <div>
+                    <h2 style="font-size: 18px; margin: 0; font-weight: 600; color: #1a1a1a;">📊 Caja e Ingresos</h2>
+                    <p id="finanzas-periodo-label" style="margin:4px 0 0; color:#666; font-size:12px;">Resumen de hoy</p>
+                </div>
+                <div class="finanzas-periodos" id="finanzas-periodos">
+                    <button type="button" data-periodo="hoy" class="activo">Hoy</button>
+                    <button type="button" data-periodo="semana">Semana</button>
+                    <button type="button" data-periodo="mes">Mes</button>
+                </div>
             </div>
+            <div id="finanzas-panel-status" class="panel-status" style="display:none"></div>
             
             <div class="stats-container" style="padding: 0; margin-bottom: 20px; background: transparent; grid-template-columns: repeat(3, 1fr);">
                 <div class="stat-card">
                     <span class="stat-num verde" id="finanzas-ingresos">Bs 0.00</span>
-                    <span class="stat-label">Ingresos Totales</span>
+                    <span class="stat-label" id="finanzas-ingresos-label">Ingresos de Hoy</span>
+                    <small id="finanzas-ingresos-detalle" class="finanzas-detalle">Alojamiento Bs 0.00 · Consumos Bs 0.00 · Ventas Bs 0.00</small>
                 </div>
                 <div class="stat-card">
                     <span class="stat-num rojo" id="finanzas-egresos">Bs 0.00</span>
-                    <span class="stat-label">Egresos Totales</span>
+                    <span class="stat-label" id="finanzas-egresos-label">Egresos de Hoy</span>
+                    <small class="finanzas-detalle">Gastos registrados por recepción</small>
                 </div>
                 <div class="stat-card">
                     <span class="stat-num azul" id="finanzas-balance">Bs 0.00</span>
-                    <span class="stat-label">Saldo de Caja (Neto)</span>
+                    <span class="stat-label" id="finanzas-balance-label">Caja Neta de Hoy</span>
+                    <small class="finanzas-detalle">Ingresos menos egresos</small>
                 </div>
             </div>
 
@@ -176,9 +200,9 @@
         </div>
     </div>
 
-    <script src="views/RecepcionView.js?v=recepcion-1"></script>
+    <script src="views/RecepcionView.js?v=recepcion-finanzas-periodos-1"></script>
     <script src="controllers/ApiClient.js?v=api-client-2"></script>
-    <script src="controllers/RecepcionController.js?v=recepcion-2"></script>
+    <script src="controllers/RecepcionController.js?v=recepcion-finanzas-periodos-1"></script>
 </body>
 
 </html>

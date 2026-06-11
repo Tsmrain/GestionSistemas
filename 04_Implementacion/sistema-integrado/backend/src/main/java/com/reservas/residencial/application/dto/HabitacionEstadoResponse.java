@@ -7,5 +7,9 @@ public record HabitacionEstadoResponse(
                 String numero,
                 String estadoActual,
                 TipoHabitacionResponse tipo,
-                LocalDateTime horaSalidaEstimada) {
+                LocalDateTime horaSalidaEstimada,
+                Long reservaVigenteId,
+                String reservaVigenteEstado,
+                String huespedNombre,
+                String huespedCi) {
 }

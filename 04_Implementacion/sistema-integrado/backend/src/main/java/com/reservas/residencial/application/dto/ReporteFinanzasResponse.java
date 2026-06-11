@@ -7,6 +7,9 @@ public record ReporteFinanzasResponse(
         Double totalIngresos,
         Double totalEgresos,
         Double saldoNeto,
+        Double ingresosAlojamiento,
+        Double ingresosConsumosReserva,
+        Double ingresosVentasDirectas,
         List<EgresoResponse> egresosRecientes,
         Map<String, Double> ingresosPorMetodo,
         Map<String, Double> egresosPorCategoria

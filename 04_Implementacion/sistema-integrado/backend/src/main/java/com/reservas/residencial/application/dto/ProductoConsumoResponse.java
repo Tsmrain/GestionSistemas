@@ -5,6 +5,7 @@ public record ProductoConsumoResponse(
         String nombre,
         String emoji,
         Double precio,
-        Integer stock
+        Integer stock,
+        Double precioCompra
 ) {
 }

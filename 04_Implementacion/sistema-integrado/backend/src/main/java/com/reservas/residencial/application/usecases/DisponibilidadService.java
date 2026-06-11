@@ -100,10 +100,7 @@ public class DisponibilidadService {
     // ✅ NUEVO
     private HabitacionEstadoResponse toEstadoResponse(Habitacion habitacion) {
         Reserva reservaVigente = reservaRepository
-                .findActiveByHabitacionAndFecha(habitacion.getId(), LocalDate.now(), ESTADO_CANCELADA)
-                .filter(reserva -> "PENDIENTE_PAGO".equals(reserva.getEstado())
-                        || "PAGADA".equals(reserva.getEstado())
-                        || "ACTIVA".equals(reserva.getEstado()))
+                .findVisibleByHabitacionId(habitacion.getId())
                 .orElse(null);
 
         String estadoPanel = reservaVigente != null
@@ -120,7 +117,11 @@ public class DisponibilidadService {
                         habitacion.getTipo().getPrecioBase(),
                         habitacion.getTipo().getDuracionHoras(),
                         habitacion.getTipo().getDescripcion()),
-                reservaVigente != null ? reservaVigente.getHoraSalidaEstimada() : null);
+                reservaVigente != null ? reservaVigente.getHoraSalidaEstimada() : null,
+                reservaVigente != null ? reservaVigente.getId() : null,
+                reservaVigente != null ? reservaVigente.getEstado() : null,
+                reservaVigente != null ? reservaVigente.getHuesped().getNombre() : null,
+                reservaVigente != null ? reservaVigente.getHuesped().getCi() : null);
     }
 
     public List<TipoHabitacionResponse> listarTodosTipos() {

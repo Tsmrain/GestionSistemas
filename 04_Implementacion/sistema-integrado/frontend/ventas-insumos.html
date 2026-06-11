@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas de Insumos</title>
+    <link rel="stylesheet" href="css/styless.css?v=ventas-insumos-6">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="recepcion-page ventas-page">
+    <div class="recepcion-header">
+        <div>
+            <h1 class="recepcion-titulo">Ventas de Insumos</h1>
+            <p class="recepcion-subtitulo">Registra ventas en habitaciones ocupadas o asociadas a una reserva activa</p>
+        </div>
+        <div class="recepcion-header-actions">
+            <a class="btn-volver" href="recepcion.html">← Panel Recepción</a>
+            <a class="btn-volver" href="index.html">Inicio</a>
+        </div>
+    </div>
+
+    <main class="ventas-layout">
+        <section class="ventas-panel ventas-habitaciones-panel">
+            <div class="ventas-panel-header">
+                <div>
+                    <h2>Habitaciones ocupadas</h2>
+                    <p>Selecciona la habitación. Si tiene reserva activa se carga a la reserva; si no, se registra como venta directa.</p>
+                </div>
+                <button id="btn-recargar-ventas" type="button" class="btn-secundario">Actualizar</button>
+            </div>
+            <div class="ventas-filtros">
+                <input id="ventas-buscar" type="text" placeholder="Buscar por habitación, huésped o CI">
+            </div>
+            <div id="ventas-reservas-lista" class="ventas-reservas-lista"></div>
+        </section>
+
+        <section class="ventas-panel ventas-productos-panel">
+            <div class="ventas-panel-header">
+                <div>
+                    <h2>Insumos disponibles</h2>
+                    <p>Puede venderse en habitación o en cualquier área del residencial.</p>
+                </div>
+                <div class="ventas-header-actions">
+                    <button id="btn-nuevo-insumo" type="button" class="btn-secundario">+ Nuevo insumo</button>
+                    <select id="ventas-ubicacion" class="ventas-select">
+                        <option value="HABITACION">Venta en habitación</option>
+                        <option value="RESIDENCIAL">Venta en el residencial</option>
+                    </select>
+                </div>
+            </div>
+            <div id="ventas-productos-grid" class="ventas-productos-grid"></div>
+        </section>
+
+        <aside class="ventas-panel ventas-carrito-panel">
+            <h2>Detalle de venta</h2>
+            <div id="ventas-reserva-seleccionada" class="ventas-reserva-seleccionada">Selecciona una habitación ocupada.</div>
+            <div id="ventas-carrito" class="ventas-carrito"></div>
+            <div class="ventas-total-row">
+                <span>Total</span>
+                <strong id="ventas-total">Bs 0.00</strong>
+            </div>
+            <button id="btn-registrar-venta" class="btn-agregar ventas-submit" type="button" disabled>Registrar venta</button>
+            <div id="ventas-mensaje" class="ventas-mensaje" style="display:none"></div>
+        </aside>
+    </main>
+
+    <section class="ventas-panel ventas-historial-panel">
+        <div class="ventas-panel-header">
+            <div>
+                <h2>Historial de ventas y consumos</h2>
+                <p>Últimos movimientos trazables por habitación, huésped, productos y total cobrado.</p>
+            </div>
+            <span id="ventas-historial-resumen" class="ventas-historial-resumen">0 movimientos</span>
+        </div>
+        <div id="ventas-historial-lista" class="ventas-historial-lista"></div>
+    </section>
+
+    <script src="controllers/ApiClient.js?v=api-client-2"></script>
+    <script src="views/VentasInsumosView.js?v=ventas-insumos-6"></script>
+    <script src="controllers/VentasInsumosController.js?v=ventas-insumos-6"></script>
+</body>
+
+</html>

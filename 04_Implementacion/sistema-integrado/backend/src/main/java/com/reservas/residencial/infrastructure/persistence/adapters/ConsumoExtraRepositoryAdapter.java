@@ -6,6 +6,7 @@ import com.reservas.residencial.infrastructure.persistence.jpa.JpaConsumoExtraRe
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -22,5 +23,10 @@ public class ConsumoExtraRepositoryAdapter implements ConsumoExtraRepositoryPort
     @Override
     public Optional<ConsumoExtra> findById(Long id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public List<ConsumoExtra> findByReservaId(Long reservaId) {
+        return repository.findByReservaIdOrderByFechaCreacionDesc(reservaId);
     }
 }

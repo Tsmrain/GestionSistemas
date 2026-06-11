@@ -29,6 +29,7 @@ public class InventarioSeeder implements CommandLineRunner {
         InventarioItem sabana = crearItemSiNoExiste("Sábana Matrimonial", "REUSABLE", 100, 40.0, 50.0, "🛏️");
         InventarioItem almohada = crearItemSiNoExiste("Almohada Cómoda", "REUSABLE", 100, 20.0, 30.0, "🛌");
         InventarioItem control = crearItemSiNoExiste("Control de TV", "REUSABLE", 20, 40.0, 50.0, "📺");
+        InventarioItem cerveza = crearItemSiNoExiste("Cerveza", "VENTA", 12, 10.0, 15.0, "🍺");
         InventarioItem refresco = crearItemSiNoExiste("Refresco 500ml", "VENTA", 50, 5.0, 8.0, "🥤");
         InventarioItem chocolate = crearItemSiNoExiste("Chocolate Fino", "VENTA", 30, 7.0, 12.0, "🍫");
         InventarioItem papas = crearItemSiNoExiste("Papas Fritas", "VENTA", 40, 6.0, 10.0, "🍟");

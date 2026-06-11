@@ -24,6 +24,11 @@ public class ConsumoExtraController {
         return ResponseEntity.ok(consumoExtraService.listarProductos());
     }
 
+    @GetMapping("/reserva/{reservaId}")
+    public ResponseEntity<List<ConsumoExtraResponse>> listarPorReserva(@PathVariable Long reservaId) {
+        return ResponseEntity.ok(consumoExtraService.listarPorReserva(reservaId));
+    }
+
     @PostMapping("/pagar")
     public ResponseEntity<ConsumoExtraResponse> iniciarPago(@Valid @RequestBody CrearConsumoExtraRequest request) {
         return ResponseEntity.ok(consumoExtraService.iniciarPagoConsumo(request));

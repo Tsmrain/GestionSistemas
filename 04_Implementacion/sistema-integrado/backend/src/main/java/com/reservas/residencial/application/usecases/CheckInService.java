@@ -58,6 +58,15 @@ public class CheckInService {
                 .orElseGet(List::of);
     }
 
+    @Transactional(readOnly = true)
+    public List<ReservaResponse> buscarReservasPorHabitacion(Long habitacionId) {
+        return reservaRepository.findVisibleByHabitacionId(habitacionId)
+                .filter(this::esReservaVisibleParaCheckIn)
+                .map(this::toResponse)
+                .map(List::of)
+                .orElseGet(List::of);
+    }
+
     @Transactional
     public ReservaResponse realizarCheckIn(Long reservaId, String acompananteNombre, String acompananteCi,
                                            LocalDate acompananteFechaNacimiento, String acompananteCelular,

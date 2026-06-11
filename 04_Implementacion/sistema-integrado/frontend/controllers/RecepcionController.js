@@ -6,6 +6,7 @@ class RecepcionController {
         this._intervaloActualizacion = null;
         this.modoRegistro = false;
         this.recepcionista = this._obtenerSesionRecepcionista();
+        this.periodoFinanzas = "hoy";
 
         this._configurarLogin();
         if (this.recepcionista) {
@@ -38,6 +39,19 @@ class RecepcionController {
         if (btnFinanzas) {
             btnFinanzas.addEventListener("click", function() {
                 self._alternarFinanzasPanel();
+            });
+        }
+
+        var periodosFinanzas = document.getElementById("finanzas-periodos");
+        if (periodosFinanzas) {
+            periodosFinanzas.addEventListener("click", function(event) {
+                var boton = event.target.closest("button[data-periodo]");
+                if (!boton) return;
+                self.periodoFinanzas = boton.dataset.periodo;
+                periodosFinanzas.querySelectorAll("button").forEach(function(btn) {
+                    btn.classList.toggle("activo", btn === boton);
+                });
+                self._cargarFinanzasYInventario();
             });
         }
 
@@ -235,8 +249,31 @@ class RecepcionController {
                     estado: RecepcionController._normalizarEstado(habitacion.estado || habitacion.estadoActual)
                 };
             });
+
+            var incidencias = [];
+            try {
+                var respIncidencias = await fetch(ApiClient.url("/api/inventario/incidencias"));
+                if (respIncidencias.ok) {
+                    incidencias = await respIncidencias.json();
+                }
+            } catch (error) {
+                console.warn("No se pudieron cargar alertas de inventario:", error);
+            }
+
+            habitaciones = habitaciones.map(function (habitacion) {
+                var pendientes = incidencias.filter(function (inc) {
+                    return inc.habitacionId === habitacion.id && inc.estado === "PENDIENTE";
+                });
+                return {
+                    ...habitacion,
+                    incidenciasPendientes: pendientes.length
+                };
+            });
+
             this.habitaciones = habitaciones;
+            this.incidencias = incidencias;
             this.view.renderizarHabitaciones(habitaciones);
+            this.view.renderizarCentroControl(habitaciones, incidencias);
 
         } catch (error) {
             console.error("No se pudo conectar con el servidor:", error);
@@ -309,7 +346,7 @@ class RecepcionController {
             var [respInventario, respIncidencias, respReservas] = await Promise.all([
                 fetch(ApiClient.url("/api/inventario/habitacion/" + id)),
                 fetch(ApiClient.url("/api/inventario/incidencias")),
-                fetch(ApiClient.url("/api/checkin/buscar?termino=" + id))
+                fetch(ApiClient.url("/api/checkin/buscar?habitacionId=" + id))
             ]);
 
             var itemsInventario = await respInventario.json();
@@ -317,26 +354,42 @@ class RecepcionController {
             var reservas = await respReservas.json();
             var reservaActiva = reservas.find(r => r.estado === "ACTIVA" || r.estado === "PAGADA");
 
+            if (!reservaActiva && habitacion.reservaVigenteId) {
+                reservaActiva = this._construirReservaDesdeHabitacion(habitacion);
+            }
+
+            var consumos = [];
+
+            if (reservaActiva) {
+                try {
+                    var respConsumos = await fetch(ApiClient.url("/api/v1/consumos/reserva/" + reservaActiva.id));
+                    if (respConsumos.ok) {
+                        consumos = await respConsumos.json();
+                    }
+                } catch (error) {
+                    console.warn("No se pudo cargar el historial de consumos:", error);
+                }
+            }
+
             this.view.mostrarModalDetalleHabitacion(
                 habitacion,
                 itemsInventario,
                 incidencias,
                 reservaActiva,
+                consumos,
                 {
                     onConciliarItem: async function(itemId, cantidadReal, modalOverlay) {
                         try {
                             var url = ApiClient.url("/api/inventario/habitacion/" + id + "/conciliar?itemId=" + itemId + "&cantidadReal=" + cantidadReal + "&recepcionista=" + encodeURIComponent(self.recepcionista.nombre));
                             var resp = await fetch(url, { method: "POST" });
                             if (resp.ok) {
-                                // Recargar datos del modal
-                                var updatedInvResp = await fetch(ApiClient.url("/api/inventario/habitacion/" + id));
-                                var updatedInv = await updatedInvResp.json();
                                 modalOverlay.remove();
-                                // Re-abrir con datos frescos
+                                alert("Revisión de inventario guardada.");
                                 self._manejarClickHabitacion(id, estado, accion);
                                 self._cargarFinanzasYInventario();
                             } else {
-                                alert("Error al conciliar inventario.");
+                                var errorTexto = await resp.text();
+                                alert("No se pudo guardar la revisión: " + errorTexto);
                             }
                         } catch (e) {
                             console.error("Error conciliar:", e);
@@ -355,6 +408,20 @@ class RecepcionController {
                     },
                     onReportarIncidencia: function() {
                         self._abrirReportarIncidencia(id);
+                    },
+                    onRegistrarConsumo: async function(modalOverlay) {
+                        var reservaParaConsumo = await self._resolverReservaParaConsumo(habitacion, reservaActiva);
+                        if (!reservaParaConsumo) return;
+
+                        if (reservaParaConsumo.estado !== "ACTIVA") {
+                            alert("Para vender insumos la reserva debe estar ACTIVA. Estado actual: " + reservaParaConsumo.estado + ". Si el huésped ya está dentro, confirma el check-in primero.");
+                            return;
+                        }
+
+                        self._abrirRegistrarConsumo(reservaParaConsumo, modalOverlay, function() {
+                            self._manejarClickHabitacion(id, estado, accion);
+                            self._cargarFinanzasYInventario();
+                        });
                     },
                     onAbrirAsignarItem: async function(modalOverlay) {
                         try {
@@ -417,6 +484,71 @@ class RecepcionController {
         } catch (error) {
             console.error("Error al abrir ficha de habitación:", error);
             alert("Error al cargar los datos de la habitación.");
+        }
+    }
+
+    _construirReservaDesdeHabitacion(habitacion) {
+        return {
+            id: habitacion.reservaVigenteId,
+            estado: habitacion.reservaVigenteEstado || habitacion.estado,
+            fechaIngreso: null,
+            cantidadBloques: 1,
+            montoTotal: 0,
+            huesped: {
+                nombre: habitacion.huespedNombre || "Huésped en habitación",
+                ci: habitacion.huespedCi || ""
+            },
+            habitacion: {
+                id: habitacion.id,
+                numero: habitacion.numero,
+                tipo: habitacion.tipo
+            },
+            horaIngreso: null,
+            horaSalidaEstimada: habitacion.horaSalidaEstimada
+        };
+    }
+
+    async _resolverReservaParaConsumo(habitacion, reservaActual) {
+        if (reservaActual) return reservaActual;
+
+        if (habitacion.reservaVigenteId) {
+            var porId = await this._buscarReservaPorCodigoSimple(habitacion.reservaVigenteId);
+            if (porId) return porId;
+            return this._construirReservaDesdeHabitacion(habitacion);
+        }
+
+        return {
+            id: null,
+            estado: "ACTIVA",
+            ventaDirecta: true,
+            fechaIngreso: null,
+            cantidadBloques: 1,
+            montoTotal: 0,
+            huesped: {
+                nombre: "Venta directa en habitación",
+                ci: ""
+            },
+            habitacion: {
+                id: habitacion.id,
+                numero: habitacion.numero,
+                tipo: habitacion.tipo
+            },
+            horaIngreso: null,
+            horaSalidaEstimada: habitacion.horaSalidaEstimada
+        };
+    }
+
+    async _buscarReservaPorCodigoSimple(codigo) {
+        try {
+            var response = await fetch(ApiClient.url("/api/checkin/buscar?codigo=" + encodeURIComponent(codigo)));
+            if (!response.ok) return null;
+            var reservas = await response.json();
+            return reservas.find(function (reserva) {
+                return reserva.estado === "ACTIVA" || reserva.estado === "PAGADA";
+            }) || null;
+        } catch (error) {
+            console.error("Error al buscar reserva por código:", error);
+            return null;
         }
     }
 
@@ -700,42 +832,54 @@ class RecepcionController {
         var search = document.querySelector(".recepcion-busqueda");
         var leyendas = document.querySelector(".leyenda-container");
         var stats = document.querySelector(".stats-container");
+        var centroControl = document.getElementById("centro-control-recepcion");
         var btnFinanzas = document.getElementById("btn-finanzas-panel");
 
-        if (panel.style.display === "none") {
+        if (!panel) return;
+
+        if (panel.style.display === "none" || panel.style.display === "") {
             panel.style.display = "block";
-            grid.style.display = "none";
+            if (grid) grid.style.display = "none";
             if (search) search.style.display = "none";
             if (leyendas) leyendas.style.display = "none";
             if (stats) stats.style.display = "none";
-            btnFinanzas.textContent = "🏨 Ver Habitaciones";
+            if (centroControl) centroControl.style.display = "none";
+            if (btnFinanzas) btnFinanzas.textContent = "🏨 Ver Habitaciones";
             this._cargarFinanzasYInventario();
         } else {
             panel.style.display = "none";
-            grid.style.display = "grid";
+            if (grid) grid.style.display = "grid";
             if (search) search.style.display = "flex";
             if (leyendas) leyendas.style.display = "flex";
             if (stats) stats.style.display = "grid";
-            btnFinanzas.textContent = "📊 Finanzas e Inventario";
+            if (centroControl) centroControl.style.display = "grid";
+            if (btnFinanzas) btnFinanzas.textContent = "📊 Finanzas e Inventario";
             this._cargarHabitaciones();
         }
     }
 
     async _cargarFinanzasYInventario() {
+        this.view.mostrarEstadoPanelFinanzas("Cargando caja, catálogo e incidencias...", "info");
         try {
-            var responseReporte = await fetch(ApiClient.url("/api/finanzas/reporte"));
+            var periodo = this._obtenerRangoFinanzas();
+            var responseReporte = await fetch(ApiClient.url("/api/finanzas/reporte?fechaInicio=" + periodo.fechaInicio + "&fechaFin=" + periodo.fechaFin));
+            if (!responseReporte.ok) throw new Error("No se pudo cargar el reporte financiero.");
             var reporte = await responseReporte.json();
 
             var responseItems = await fetch(ApiClient.url("/api/inventario/items"));
+            if (!responseItems.ok) throw new Error("No se pudo cargar el catálogo de inventario.");
             var items = await responseItems.json();
 
             var responseIncidencias = await fetch(ApiClient.url("/api/inventario/incidencias"));
+            if (!responseIncidencias.ok) throw new Error("No se pudieron cargar las incidencias.");
             var incidencias = await responseIncidencias.json();
 
+            this.view.mostrarEstadoPanelFinanzas("", "info");
             this.view.renderizarFinanzasYInventario(
                 reporte,
                 items,
                 incidencias,
+                periodo,
                 (incidenciaId, costo) => {
                     this._resolverIncidencia(incidenciaId, costo);
                 },
@@ -748,6 +892,100 @@ class RecepcionController {
             );
         } catch (error) {
             console.error("Error al cargar finanzas e inventario:", error);
+            this.view.mostrarEstadoPanelFinanzas(error.message || "No se pudo cargar Finanzas e Inventario. Revisa que el backend esté activo.", "error");
+        }
+    }
+
+    _obtenerRangoFinanzas() {
+        var hoy = new Date();
+        var inicio = new Date(hoy);
+        var etiqueta = "Resumen de hoy";
+        var etiquetaCorta = "Hoy";
+
+        if (this.periodoFinanzas === "semana") {
+            inicio.setDate(hoy.getDate() - 6);
+            etiqueta = "Resumen de los últimos 7 días";
+            etiquetaCorta = "Semana";
+        } else if (this.periodoFinanzas === "mes") {
+            inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            etiqueta = "Resumen del mes actual";
+            etiquetaCorta = "Mes";
+        }
+
+        return {
+            fechaInicio: this._formatearFechaLocal(inicio),
+            fechaFin: this._formatearFechaLocal(hoy),
+            etiqueta: etiqueta,
+            etiquetaCorta: etiquetaCorta
+        };
+    }
+
+    _formatearFechaLocal(fecha) {
+        var year = fecha.getFullYear();
+        var month = String(fecha.getMonth() + 1).padStart(2, "0");
+        var day = String(fecha.getDate()).padStart(2, "0");
+        return year + "-" + month + "-" + day;
+    }
+
+    async _abrirRegistrarConsumo(reserva, modalOverlay, onRegistrado) {
+        try {
+            var response = await fetch(ApiClient.url("/api/v1/consumos/productos"));
+            if (!response.ok) {
+                alert("No se pudo cargar el catálogo de consumos.");
+                return;
+            }
+
+            var productos = await response.json();
+            this.view.mostrarModalRegistrarConsumo(reserva, productos, async (items, overlayConsumo) => {
+                try {
+                    var crearResponse;
+                    if (reserva.ventaDirecta) {
+                        crearResponse = await fetch(ApiClient.url("/api/v1/ventas-insumos"), {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                habitacionId: reserva.habitacion.id,
+                                numeroHabitacion: reserva.habitacion.numero,
+                                cliente: reserva.huesped.nombre,
+                                ubicacion: "HABITACION",
+                                recepcionista: this.recepcionista.nombre,
+                                items: items
+                            })
+                        });
+                    } else {
+                        crearResponse = await fetch(ApiClient.url("/api/v1/consumos/pagar"), {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                reservaId: reserva.id,
+                                items: items
+                            })
+                        });
+                    }
+
+                    if (!crearResponse.ok) {
+                        var error = await this._leerMensajeError(crearResponse);
+                        alert("No se pudo registrar el consumo: " + error);
+                        return;
+                    }
+
+                    var consumo = await crearResponse.json();
+                    var confirmar = reserva.ventaDirecta || confirm("Consumo registrado por Bs " + consumo.total.toFixed(2) + ". ¿Marcarlo como pagado ahora?");
+                    if (!reserva.ventaDirecta && confirmar) {
+                        await fetch(ApiClient.url("/api/v1/consumos/" + consumo.id + "/confirmar"), { method: "POST" });
+                    }
+
+                    overlayConsumo.remove();
+                    if (modalOverlay) modalOverlay.remove();
+                    onRegistrado();
+                } catch (error) {
+                    console.error("Error al registrar consumo:", error);
+                    alert("Error al conectar con el servidor.");
+                }
+            });
+        } catch (error) {
+            console.error("Error al abrir consumos:", error);
+            alert("Error al conectar con el servidor.");
         }
     }
 
@@ -869,7 +1107,7 @@ class RecepcionController {
 
     async _iniciarPreverificacionCheckout(habitacionId) {
         try {
-            var responseReservas = await fetch(ApiClient.url("/api/checkin/buscar?termino=" + habitacionId));
+            var responseReservas = await fetch(ApiClient.url("/api/checkin/buscar?habitacionId=" + habitacionId));
             var reservas = await responseReservas.json();
             var reserva = reservas.find(r => r.estado === "ACTIVA");
 

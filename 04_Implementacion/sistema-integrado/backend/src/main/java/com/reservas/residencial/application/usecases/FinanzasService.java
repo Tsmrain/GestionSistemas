@@ -7,8 +7,10 @@ import com.reservas.residencial.application.ports.out.EgresoRepositoryPort;
 import com.reservas.residencial.domain.models.Egreso;
 import com.reservas.residencial.domain.models.Pago;
 import com.reservas.residencial.domain.models.ConsumoExtra;
+import com.reservas.residencial.domain.models.VentaInsumo;
 import com.reservas.residencial.infrastructure.persistence.jpa.JpaPagoRepository;
 import com.reservas.residencial.infrastructure.persistence.jpa.JpaConsumoExtraRepository;
+import com.reservas.residencial.infrastructure.persistence.jpa.JpaVentaInsumoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ public class FinanzasService {
     private final EgresoRepositoryPort egresoRepository;
     private final JpaPagoRepository jpaPagoRepository;
     private final JpaConsumoExtraRepository jpaConsumoExtraRepository;
+    private final JpaVentaInsumoRepository jpaVentaInsumoRepository;
 
     @Transactional
     public EgresoResponse registrarEgreso(EgresoRequest request) {
@@ -59,6 +62,11 @@ public class FinanzasService {
                 .filter(c -> c.getFechaPago() != null && !c.getFechaPago().isBefore(start) && !c.getFechaPago().isAfter(end))
                 .toList();
 
+        List<VentaInsumo> ventasInsumos = jpaVentaInsumoRepository.findAll().stream()
+                .filter(v -> "PAGADO".equals(v.getEstado()))
+                .filter(v -> v.getFecha() != null && !v.getFecha().isBefore(start) && !v.getFecha().isAfter(end))
+                .toList();
+
         // 3. Obtener egresos en el rango
         List<Egreso> egresos = egresoRepository.findAll().stream()
                 .filter(e -> e.getFecha() != null && !e.getFecha().isBefore(start) && !e.getFecha().isAfter(end))
@@ -67,7 +75,8 @@ public class FinanzasService {
         // Calcular totales
         Double totalIngresosReservas = pagos.stream().mapToDouble(Pago::getMonto).sum();
         Double totalIngresosConsumos = consumos.stream().mapToDouble(ConsumoExtra::getTotal).sum();
-        Double totalIngresos = totalIngresosReservas + totalIngresosConsumos;
+        Double totalIngresosVentasInsumos = ventasInsumos.stream().mapToDouble(VentaInsumo::getTotal).sum();
+        Double totalIngresos = totalIngresosReservas + totalIngresosConsumos + totalIngresosVentasInsumos;
 
         Double totalEgresos = egresos.stream().mapToDouble(Egreso::getMonto).sum();
         Double saldoNeto = totalIngresos - totalEgresos;
@@ -81,6 +90,9 @@ public class FinanzasService {
         for (ConsumoExtra c : consumos) {
             String metodo = c.getQrData() != null ? "QR_BNB" : "EFECTIVO";
             ingresosPorMetodo.put(metodo, ingresosPorMetodo.getOrDefault(metodo, 0.0) + c.getTotal());
+        }
+        for (VentaInsumo venta : ventasInsumos) {
+            ingresosPorMetodo.put("EFECTIVO", ingresosPorMetodo.getOrDefault("EFECTIVO", 0.0) + venta.getTotal());
         }
 
         // Agrupar egresos por categoría
@@ -98,6 +110,9 @@ public class FinanzasService {
                 totalIngresos,
                 totalEgresos,
                 saldoNeto,
+                totalIngresosReservas,
+                totalIngresosConsumos,
+                totalIngresosVentasInsumos,
                 egresosRecientes,
                 ingresosPorMetodo,
                 egresosPorCategoria

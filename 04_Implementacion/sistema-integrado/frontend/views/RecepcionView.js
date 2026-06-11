@@ -23,6 +23,7 @@ class RecepcionView {
                 '<div class="hab-tipo">' + hab.tipo.nombreTipo + '</div>' +
                 '<div class="hab-badge">' + this.#obtenerEtiqueta(hab.estado) + '</div>' +
                 '<div class="hab-hora">' + this.#obtenerInfo(hab) + '</div>' +
+                this.#obtenerAlertasHabitacion(hab) +
                 '<div class="hab-admin-buttons">' +
                     '<button class="hab-admin-btn edit" title="Editar Habitación">✏️</button>' +
                     '<button class="hab-admin-btn delete" title="Eliminar Habitación">🗑️</button>' +
@@ -31,6 +32,37 @@ class RecepcionView {
 
             this.grid.appendChild(card);
         });
+    }
+
+    renderizarCentroControl(habitaciones, incidencias) {
+        var panel = document.getElementById("centro-control-recepcion");
+        if (!panel) return;
+
+        var ocupadas = habitaciones.filter(h => h.estado === "ACTIVA").length;
+        var mantenimiento = habitaciones.filter(h => h.estado === "MANTENIMIENTO").length;
+        var incidenciasPendientes = (incidencias || []).filter(i => i.estado === "PENDIENTE");
+        var habitacionesConAlerta = incidenciasPendientes
+            .map(i => i.numeroHabitacion)
+            .filter((numero, index, arr) => arr.indexOf(numero) === index)
+            .slice(0, 4);
+
+        panel.innerHTML = `
+            <article class="control-card">
+                <span class="control-label">Operación ahora</span>
+                <strong>${ocupadas} habitaciones ocupadas</strong>
+                <p>Al abrir una tarjeta se ve huésped, accesorios esperados, faltantes, daños y consumos.</p>
+            </article>
+            <article class="control-card">
+                <span class="control-label">Trazabilidad</span>
+                <strong>${incidenciasPendientes.length} incidencias pendientes</strong>
+                <p>${habitacionesConAlerta.length ? "Revisar Hab. " + habitacionesConAlerta.join(", ") : "Sin daños activos reportados."}</p>
+            </article>
+            <article class="control-card">
+                <span class="control-label">Disponibilidad real</span>
+                <strong>${mantenimiento} bloqueadas por mantenimiento</strong>
+                <p>Una habitación dañada no vuelve a disponible hasta resolver la incidencia.</p>
+            </article>
+        `;
     }
 
     // Publico — escucha click en una habitacion
@@ -271,6 +303,11 @@ class RecepcionView {
         return "";
     }
 
+    #obtenerAlertasHabitacion(hab) {
+        if (!hab.incidenciasPendientes) return "";
+        return '<div class="hab-alerta">' + hab.incidenciasPendientes + ' incidencia(s)</div>';
+    }
+
     #obtenerAccion(estado) {
         if (estado === "DISPONIBLE" || estado === "ACTIVA") {
             return '<button class="hab-accion" data-accion="limpieza" type="button">Limpieza</button>';
@@ -460,10 +497,28 @@ class RecepcionView {
     }
 
     // Renderiza el listado de egresos, el catálogo de inventario y la lista de incidencias
-    renderizarFinanzasYInventario(reporte, items, incidencias, onResolverIncidencia, onEditarItem, onEliminarItem) {
+    renderizarFinanzasYInventario(reporte, items, incidencias, periodo, onResolverIncidencia, onEditarItem, onEliminarItem) {
         document.getElementById("finanzas-ingresos").textContent = "Bs " + (reporte.totalIngresos || 0).toFixed(2);
         document.getElementById("finanzas-egresos").textContent = "Bs " + (reporte.totalEgresos || 0).toFixed(2);
         document.getElementById("finanzas-balance").textContent = "Bs " + (reporte.saldoNeto || 0).toFixed(2);
+        var periodoLabel = document.getElementById("finanzas-periodo-label");
+        var ingresosLabel = document.getElementById("finanzas-ingresos-label");
+        var egresosLabel = document.getElementById("finanzas-egresos-label");
+        var balanceLabel = document.getElementById("finanzas-balance-label");
+        var etiquetaCorta = periodo && periodo.etiquetaCorta ? periodo.etiquetaCorta : "Periodo";
+        if (periodoLabel) {
+            periodoLabel.textContent = (periodo && periodo.etiqueta ? periodo.etiqueta : "Resumen financiero")
+                + " · " + (periodo ? periodo.fechaInicio + " a " + periodo.fechaFin : "");
+        }
+        if (ingresosLabel) ingresosLabel.textContent = "Ingresos de " + etiquetaCorta;
+        if (egresosLabel) egresosLabel.textContent = "Egresos de " + etiquetaCorta;
+        if (balanceLabel) balanceLabel.textContent = "Caja Neta de " + etiquetaCorta;
+        var detalleIngresos = document.getElementById("finanzas-ingresos-detalle");
+        if (detalleIngresos) {
+            detalleIngresos.textContent = "Alojamiento Bs " + (reporte.ingresosAlojamiento || 0).toFixed(2)
+                + " · Consumos Bs " + (reporte.ingresosConsumosReserva || 0).toFixed(2)
+                + " · Ventas Bs " + (reporte.ingresosVentasDirectas || 0).toFixed(2);
+        }
 
         var egresosLista = document.getElementById("egresos-lista");
         egresosLista.innerHTML = "";
@@ -544,6 +599,22 @@ class RecepcionView {
                 tablaInc.appendChild(row);
             });
         }
+    }
+
+    mostrarEstadoPanelFinanzas(mensaje, tipo) {
+        var status = document.getElementById("finanzas-panel-status");
+        if (!status) return;
+
+        if (!mensaje) {
+            status.style.display = "none";
+            status.textContent = "";
+            status.className = "panel-status";
+            return;
+        }
+
+        status.textContent = mensaje;
+        status.className = "panel-status " + (tipo || "info");
+        status.style.display = "block";
     }
 
     mostrarModalPreverificacionCheckout(reserva, itemsInventario, onVerificado) {
@@ -773,7 +844,7 @@ class RecepcionView {
         });
     }
 
-    mostrarModalDetalleHabitacion(habitacion, itemsInventario, incidencias, reservaActiva, callbacks) {
+    mostrarModalDetalleHabitacion(habitacion, itemsInventario, incidencias, reservaActiva, consumos, callbacks) {
         var overlay = document.createElement("div");
         overlay.className = "modal-overlay";
         overlay.id = "modal-detalle-habitacion";
@@ -834,6 +905,52 @@ class RecepcionView {
             `;
         }
 
+        var consumosHtml = "";
+        if (reservaActiva) {
+            var totalConsumos = (consumos || []).reduce(function (sum, consumo) {
+                return sum + (consumo.total || 0);
+            }, 0);
+
+            var consumoRows = "";
+            if (!consumos || consumos.length === 0) {
+                consumoRows = `<div style="color:#888; font-size:12px; padding:8px 0;">Sin consumos registrados para esta estadía.</div>`;
+            } else {
+                consumoRows = consumos.map(function (consumo) {
+                    var fecha = consumo.fechaCreacion
+                        ? new Date(consumo.fechaCreacion).toLocaleString("es-BO", { dateStyle: "short", timeStyle: "short" })
+                        : "";
+                    var detalle = (consumo.items || []).map(function (item) {
+                        return item.emoji + " " + item.nombre + " x" + item.cantidad;
+                    }).join(", ");
+                    var estadoStyle = consumo.estado === "PAGADO"
+                        ? "background:#E8F5E9; color:#2E7D32;"
+                        : "background:#FFF3E0; color:#E65100;";
+                    return `
+                        <div style="display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid #f0f0f0;">
+                            <div>
+                                <strong style="font-size:12px;">${detalle}</strong>
+                                <div style="font-size:10px; color:#888;">${fecha}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:12px; font-weight:700;">Bs ${(consumo.total || 0).toFixed(2)}</div>
+                                <span style="padding:2px 7px; border-radius:10px; font-size:10px; font-weight:600; ${estadoStyle}">${consumo.estado}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            }
+
+            consumosHtml = `
+                <div style="background:#fff; border:1px solid #e8e8e8; border-radius:8px; padding:12px; margin-bottom:15px; text-align:left;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px;">
+                        <h3 style="font-size:14px; font-weight:600; color:#1a1a1a; margin:0;">🧾 Consumos de la Estadía</h3>
+                        <strong style="font-size:12px;">Total Bs ${totalConsumos.toFixed(2)}</strong>
+                    </div>
+                    ${consumoRows}
+                </div>
+            `;
+        }
+
         var inventarioRows = "";
         if (itemsInventario.length === 0) {
             inventarioRows = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#888;">No hay ítems asignados a esta habitación.</td></tr>`;
@@ -858,7 +975,7 @@ class RecepcionView {
                             <span style="padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; ${badgeStyle}">${item.estadoVerificacion}</span>
                         </td>
                         <td style="padding: 6px; text-align: center;">
-                            <button class="btn-conciliar-inline" data-item-id="${item.itemId}" style="background:#2196F3; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif;">Recon.</button>
+                            <button class="btn-conciliar-inline" data-item-id="${item.itemId}" title="Guarda la cantidad encontrada y marca faltante o dañado si no coincide" style="background:#1565C0; color:#fff; border:none; padding:7px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; line-height:1.15;">Guardar<br>revisión</button>
                             <button class="btn-eliminar-hab-item" data-item-id="${item.itemId}" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; margin-left:4px;" title="Desasignar">🗑️</button>
                         </td>
                     </tr>
@@ -875,6 +992,7 @@ class RecepcionView {
             `;
         } else if (estadoLower === "activa" || estadoLower === "ocupada" || estadoLower === "pagada") {
             actionButtonsHtml += `
+                <button type="button" id="btn-registrar-consumo" style="background:#1565C0; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🧾 Registrar Consumo</button>
                 <button type="button" id="btn-iniciar-checkout" style="background:#7F77DD; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🛎️ Iniciar Check-out</button>
                 <button type="button" id="btn-estado-mantenimiento" style="background:#E65100; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🔧 Reportar Incidencia</button>
             `;
@@ -890,18 +1008,22 @@ class RecepcionView {
         }
 
         overlay.innerHTML = `
-            <div class="modal" style="max-width: 580px; width: 100%;">
+            <div class="modal modal-detalle-habitacion" style="max-width: 760px; width: 100%;">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
                     <h2 class="modal-titulo" style="margin:0;">🔑 Habitación ${habitacion.numero} (${habitacion.tipo.nombreTipo})</h2>
                     <span style="padding: 4px 10px; border-radius:12px; font-size:11px; font-weight:600; ${badgeColor}">${estadoFormateado}</span>
                 </div>
 
                 ${reservaHtml}
+                ${consumosHtml}
                 ${incidenciasHtml}
 
                 <div style="margin-bottom:15px; text-align:left;">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                        <h3 style="font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0;">📦 Inventario en Habitación</h3>
+                        <div>
+                            <h3 style="font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0;">📦 Inventario en Habitación</h3>
+                            <p style="font-size:11px; color:#666; margin:4px 0 0;">Actualiza “Actual” con lo encontrado por recepción/camarera y presiona “Guardar revisión”.</p>
+                        </div>
                         <button type="button" id="btn-abrir-asignar-item" style="background:#7F77DD; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif;">➕ Asignar Artículo</button>
                     </div>
                     <div style="max-height:200px; overflow-y:auto; border: 1px solid #e8e8e8; border-radius:8px; background:#fff;">
@@ -990,6 +1112,13 @@ class RecepcionView {
             });
         }
 
+        var btnConsumo = document.getElementById("btn-registrar-consumo");
+        if (btnConsumo) {
+            btnConsumo.addEventListener("click", () => {
+                callbacks.onRegistrarConsumo(overlay);
+            });
+        }
+
         var btnMantenimiento = document.getElementById("btn-estado-mantenimiento");
         if (btnMantenimiento) {
             btnMantenimiento.addEventListener("click", () => {
@@ -1049,6 +1178,96 @@ class RecepcionView {
             var cantidad = parseInt(document.getElementById("asignar-form-cantidad").value);
             overlay.remove();
             onSubmit(itemId, cantidad);
+        });
+    }
+
+    mostrarModalRegistrarConsumo(reserva, productos, onSubmit) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-registrar-consumo";
+        overlay.style.zIndex = "1100";
+
+        var rows = productos.map(function (producto) {
+            return `
+                <div class="consumo-row" data-producto-id="${producto.id}" data-precio="${producto.precio}" style="display:grid; grid-template-columns: 1fr 82px 84px; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid #f0f0f0;">
+                    <div>
+                        <strong style="font-size:13px;">${producto.emoji} ${producto.nombre}</strong>
+                        <div style="font-size:10px; color:#888;">Bs ${producto.precio.toFixed(2)} · Stock ${producto.stock}</div>
+                    </div>
+                    <input class="consumo-cantidad" type="number" min="0" max="${producto.stock}" value="0" style="height:32px; border:1px solid #ddd; border-radius:6px; padding:0 8px; font-family:'Montserrat',sans-serif;">
+                    <span class="consumo-subtotal" style="font-size:12px; font-weight:600; text-align:right;">Bs 0.00</span>
+                </div>
+            `;
+        }).join("");
+
+        var tituloConsumo = reserva.ventaDirecta
+            ? "🧾 Venta directa · Habitación " + reserva.habitacion.numero
+            : "🧾 Registrar consumo · Habitación " + reserva.habitacion.numero;
+        var detalleConsumo = reserva.ventaDirecta
+            ? "Se registrará como venta directa de insumos en habitación porque no hay reserva enlazada."
+            : "Queda asociado a la reserva #" + reserva.id + " y al huésped " + reserva.huesped.nombre + ".";
+
+        overlay.innerHTML = `
+            <div class="modal" style="max-width: 520px; width:100%;">
+                <h2 class="modal-titulo">${tituloConsumo}</h2>
+                <p style="font-size:12px; color:#666; margin:5px 0 12px;">${detalleConsumo}</p>
+                <div style="max-height:320px; overflow-y:auto; text-align:left; border:1px solid #eee; border-radius:8px; padding:0 12px; background:#fff;">
+                    ${rows}
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; border-top:1px solid #eee; padding-top:12px;">
+                    <strong id="consumo-total">Total Bs 0.00</strong>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" id="btn-cancelar-consumo" style="background:#e0e0e0; color:#333; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Cancelar</button>
+                        <button type="button" id="btn-guardar-consumo" style="background:#1565C0; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Registrar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        function actualizarTotal() {
+            var total = 0;
+            overlay.querySelectorAll(".consumo-row").forEach(function (row) {
+                var precio = parseFloat(row.getAttribute("data-precio")) || 0;
+                var cantidad = parseInt(row.querySelector(".consumo-cantidad").value) || 0;
+                var subtotal = precio * cantidad;
+                total += subtotal;
+                row.querySelector(".consumo-subtotal").textContent = "Bs " + subtotal.toFixed(2);
+            });
+            document.getElementById("consumo-total").textContent = "Total Bs " + total.toFixed(2);
+        }
+
+        overlay.querySelectorAll(".consumo-cantidad").forEach(function (input) {
+            input.addEventListener("input", actualizarTotal);
+        });
+
+        document.getElementById("btn-cancelar-consumo").addEventListener("click", function() {
+            overlay.remove();
+        });
+
+        document.getElementById("btn-guardar-consumo").addEventListener("click", function() {
+            var items = [];
+            overlay.querySelectorAll(".consumo-row").forEach(function (row) {
+                var cantidad = parseInt(row.querySelector(".consumo-cantidad").value) || 0;
+                if (cantidad > 0) {
+                    items.push({
+                        productoId: row.getAttribute("data-producto-id"),
+                        cantidad: cantidad
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                alert("Selecciona al menos un producto consumido.");
+                return;
+            }
+
+            onSubmit(items, overlay);
+        });
+
+        overlay.addEventListener("click", function(e) {
+            if (e.target === overlay) overlay.remove();
         });
     }
 }

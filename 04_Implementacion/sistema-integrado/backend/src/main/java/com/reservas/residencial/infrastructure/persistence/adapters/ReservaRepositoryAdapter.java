@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -45,6 +46,14 @@ public class ReservaRepositoryAdapter implements ReservaRepositoryPort {
                 habitacionId,
                 fechaIngreso,
                 estadoExcluido
+        );
+    }
+
+    @Override
+    public java.util.Optional<Reserva> findVisibleByHabitacionId(Long habitacionId) {
+        return repository.findFirstByHabitacionIdAndEstadoInOrderByIdDesc(
+                habitacionId,
+                List.of("PENDIENTE_PAGO", "PAGADA", "ACTIVA")
         );
     }
 

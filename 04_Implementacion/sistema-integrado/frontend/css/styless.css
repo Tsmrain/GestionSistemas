@@ -2571,6 +2571,18 @@ body.recepcion-page {
     background: #f5f5f5;
 }
 
+.recepcion-nav-link {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
 .recepcion-titulo {
     font-size: 20px;
     font-weight: 600;
@@ -2658,6 +2670,466 @@ body.recepcion-page {
     font-family: 'Montserrat', sans-serif;
 }
 
+.centro-control-recepcion {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0 24px 16px;
+    background: #f5f5f5;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.control-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-left: 4px solid #1565C0;
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.control-card strong {
+    display: block;
+    margin-top: 4px;
+    color: #1a1a1a;
+    font-size: 15px;
+}
+
+.control-card p {
+    margin-top: 6px;
+    color: #666;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.control-label {
+    color: #777;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.panel-status {
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.panel-status.info {
+    background: #E3F2FD;
+    color: #0D47A1;
+    border: 1px solid #BBDEFB;
+}
+
+.panel-status.error {
+    background: #FFEBEE;
+    color: #B71C1C;
+    border: 1px solid #FFCDD2;
+}
+
+.finanzas-detalle {
+    display: block;
+    margin-top: 8px;
+    color: #777;
+    font-size: 10px;
+    line-height: 1.35;
+    font-weight: 500;
+}
+
+.finanzas-periodos {
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid #e3e3e3;
+    border-radius: 10px;
+}
+
+.finanzas-periodos button {
+    height: 32px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.finanzas-periodos button.activo {
+    background: #1E88E5;
+    color: #fff;
+}
+
+.ventas-page {
+    min-height: 100vh;
+}
+
+.ventas-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 0.9fr) minmax(360px, 1.4fr) minmax(280px, 0.8fr);
+    gap: 16px;
+    padding: 20px 24px 32px;
+}
+
+.ventas-panel {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.ventas-panel-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.ventas-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ventas-panel h2 {
+    font-size: 16px;
+    margin: 0;
+    color: #1a1a1a;
+}
+
+.ventas-panel p {
+    margin-top: 4px;
+    color: #666;
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.ventas-filtros input,
+.ventas-select {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+}
+
+.ventas-select {
+    max-width: 190px;
+}
+
+.ventas-reservas-lista,
+.ventas-productos-grid,
+.ventas-carrito {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.venta-reserva-card {
+    width: 100%;
+    min-height: 82px;
+    border: 1px solid #e6e6e6;
+    border-left: 4px solid #E53935;
+    border-radius: 8px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    text-align: left;
+    padding: 12px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.venta-reserva-card.activa {
+    border-color: #1565C0;
+    border-left-color: #1565C0;
+    background: #F3F8FF;
+}
+
+.venta-reserva-card strong,
+.venta-reserva-card span,
+.venta-reserva-card small {
+    display: block;
+}
+
+.venta-reserva-card span {
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+.venta-reserva-card small {
+    margin-top: 3px;
+    color: #777;
+    font-size: 10px;
+}
+
+.ventas-productos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.venta-producto-card {
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    min-width: 0;
+}
+
+.venta-producto-emoji {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.venta-producto-card strong,
+.venta-producto-card span {
+    display: block;
+}
+
+.venta-producto-card span {
+    margin-top: 3px;
+    color: #777;
+    font-size: 11px;
+}
+
+.venta-producto-actions {
+    display: flex;
+    gap: 6px;
+    grid-column: 1 / -1;
+}
+
+.venta-producto-actions button {
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #F3F8FF;
+    color: #1565C0;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.venta-producto-actions .venta-eliminar {
+    color: #B71C1C;
+    border-color: #FFCDD2;
+    background: #FFEBEE;
+}
+
+.venta-stepper {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.venta-insumo-form {
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+    text-align: left;
+}
+
+.venta-insumo-form label {
+    display: grid;
+    gap: 5px;
+    color: #555;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.venta-insumo-form input {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0 10px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.venta-insumo-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.venta-stepper button,
+.venta-stepper input {
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #1a1a1a;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    text-align: center;
+    min-width: 0;
+}
+
+.venta-stepper button {
+    cursor: pointer;
+    background: #f8f8f8;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.venta-stepper button:hover,
+.venta-producto-actions button:hover {
+    background: #E3F2FD;
+}
+
+.ventas-reserva-seleccionada {
+    border: 1px dashed #d8d8d8;
+    border-radius: 8px;
+    padding: 12px;
+    color: #777;
+    font-size: 12px;
+}
+
+.ventas-reserva-seleccionada strong,
+.ventas-reserva-seleccionada span {
+    display: block;
+}
+
+.ventas-carrito-item,
+.ventas-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    font-size: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 8px 0;
+}
+
+.ventas-total-row {
+    border-bottom: none;
+    border-top: 1px solid #e8e8e8;
+    margin-top: 12px;
+    padding-top: 14px;
+    font-size: 15px;
+}
+
+.ventas-submit {
+    width: 100%;
+    margin: 12px 0 0;
+    border: none;
+}
+
+.ventas-submit:disabled {
+    background: #cfcfcf;
+    border-color: #cfcfcf;
+    cursor: not-allowed;
+}
+
+.ventas-vacio {
+    color: #777;
+    background: #fafafa;
+    border: 1px dashed #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.ventas-mensaje {
+    margin-top: 12px;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.ventas-mensaje.info {
+    background: #E3F2FD;
+    color: #0D47A1;
+}
+
+.ventas-mensaje.exito {
+    background: #E8F5E9;
+    color: #1B5E20;
+}
+
+.ventas-mensaje.error {
+    background: #FFEBEE;
+    color: #B71C1C;
+}
+
+.ventas-historial-panel {
+    margin: 0 24px 32px;
+}
+
+.ventas-historial-resumen {
+    color: #555;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ventas-historial-lista {
+    display: grid;
+    gap: 10px;
+}
+
+.venta-historial-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    border: 1px solid #ededed;
+    border-left: 4px solid #1565C0;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fff;
+}
+
+.venta-historial-card strong,
+.venta-historial-card span,
+.venta-historial-card small {
+    display: block;
+}
+
+.venta-historial-card strong {
+    font-size: 13px;
+    color: #222;
+}
+
+.venta-historial-card span {
+    margin-top: 3px;
+    color: #666;
+    font-size: 11px;
+}
+
+.venta-historial-card small {
+    margin-top: 6px;
+    color: #777;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.venta-historial-card b {
+    color: #1a1a1a;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
 .recepcion-busqueda {
     display: flex;
     gap: 12px;
@@ -2722,6 +3194,26 @@ body.recepcion-page {
     gap: 6px;
     font-size: 12px;
     color: #555;
+}
+
+.estados-ayuda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    padding: 0 24px 16px;
+    background: #f5f5f5;
+    color: #555;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.estados-ayuda strong {
+    color: #1a1a1a;
+}
+
+.estados-ayuda b {
+    color: #333;
+    font-weight: 700;
 }
 
 .dot {
@@ -2845,6 +3337,17 @@ body.recepcion-page {
     font-size: 10px;
     color: #aaa;
     margin-top: 6px;
+}
+
+.hab-alerta {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: #FFEBEE;
+    color: #B71C1C;
+    font-size: 10px;
+    font-weight: 600;
 }
 
 .hab-accion {
@@ -3101,10 +3604,43 @@ body.recepcion-page .hab-accion {
 
     .recepcion-header {
         gap: 12px;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .recepcion-header-actions {
+        width: 100%;
+        flex-wrap: wrap;
     }
 
     .stats-container {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .centro-control-recepcion {
+        grid-template-columns: 1fr;
+        padding: 0 16px 16px;
+    }
+
+    .estados-ayuda {
+        padding: 0 16px 16px;
+    }
+
+    .ventas-layout {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .ventas-historial-panel {
+        margin: 0 16px 24px;
+    }
+
+    .ventas-panel-header {
+        flex-direction: column;
+    }
+
+    .ventas-select {
+        max-width: none;
     }
 
     .habitaciones-grid {

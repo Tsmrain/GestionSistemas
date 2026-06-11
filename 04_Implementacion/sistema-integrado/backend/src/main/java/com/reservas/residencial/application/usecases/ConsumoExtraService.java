@@ -1,6 +1,5 @@
 package com.reservas.residencial.application.usecases;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reservas.residencial.application.dto.ConsumoExtraResponse;
 import com.reservas.residencial.application.dto.CrearConsumoExtraRequest;
@@ -8,21 +7,19 @@ import com.reservas.residencial.application.dto.ItemConsumoRequest;
 import com.reservas.residencial.application.dto.ItemConsumoResponse;
 import com.reservas.residencial.application.dto.ProductoConsumoResponse;
 import com.reservas.residencial.application.ports.out.ConsumoExtraRepositoryPort;
+import com.reservas.residencial.application.ports.out.InventarioItemRepositoryPort;
 import com.reservas.residencial.application.ports.out.ReservaRepositoryPort;
 import com.reservas.residencial.domain.models.ConsumoExtra;
+import com.reservas.residencial.domain.models.InventarioItem;
 import com.reservas.residencial.domain.models.Reserva;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +27,20 @@ public class ConsumoExtraService {
 
     private final ReservaRepositoryPort reservaRepository;
     private final ConsumoExtraRepositoryPort consumoExtraRepository;
+    private final InventarioItemRepositoryPort inventarioItemRepository;
     private final ObjectMapper objectMapper;
 
     public List<ProductoConsumoResponse> listarProductos() {
-        return cargarProductos();
+        return inventarioItemRepository.findAll().stream()
+                .filter(item -> "VENTA".equals(item.getTipo()))
+                .map(this::toProductoResponse)
+                .toList();
+    }
+
+    public List<ConsumoExtraResponse> listarPorReserva(Long reservaId) {
+        return consumoExtraRepository.findByReservaId(reservaId).stream()
+                .map(consumo -> toResponse(consumo, leerItemsJson(consumo.getItemsJson())))
+                .toList();
     }
 
     @Transactional
@@ -68,35 +75,52 @@ public class ConsumoExtraService {
     }
 
     private List<ItemConsumoResponse> construirItems(List<ItemConsumoRequest> requestItems) {
-        Map<String, ProductoConsumoResponse> productos = cargarProductos().stream()
-                .collect(Collectors.toMap(ProductoConsumoResponse::id, Function.identity()));
-
         return requestItems.stream().map(item -> {
-            ProductoConsumoResponse producto = productos.get(item.productoId());
-            if (producto == null) {
-                throw new IllegalArgumentException("Producto no encontrado: " + item.productoId());
+            InventarioItem producto = obtenerProductoVenta(item.productoId());
+            if (item.cantidad() > producto.getStockActual()) {
+                throw new IllegalStateException("Stock insuficiente para " + producto.getNombre() + ".");
             }
-            if (item.cantidad() > producto.stock()) {
-                throw new IllegalStateException("Stock insuficiente para " + producto.nombre() + ".");
-            }
-            Double subtotal = producto.precio() * item.cantidad();
+            Double precio = producto.getPrecioVenta() != null ? producto.getPrecioVenta() : 0.0;
+            Double subtotal = precio * item.cantidad();
+            producto.setStockActual(producto.getStockActual() - item.cantidad());
+            inventarioItemRepository.save(producto);
             return new ItemConsumoResponse(
-                    producto.id(),
-                    producto.nombre(),
-                    producto.emoji(),
+                    String.valueOf(producto.getId()),
+                    producto.getNombre(),
+                    producto.getEmoji(),
                     item.cantidad(),
-                    producto.precio(),
+                    precio,
                     subtotal
             );
         }).toList();
     }
 
-    private List<ProductoConsumoResponse> cargarProductos() {
-        try (InputStream input = new ClassPathResource("consumos-productos.json").getInputStream()) {
-            return objectMapper.readValue(input, new TypeReference<List<ProductoConsumoResponse>>() {});
-        } catch (Exception e) {
-            throw new IllegalStateException("No se pudo cargar el catalogo de consumos.", e);
+    private InventarioItem obtenerProductoVenta(String productoId) {
+        Long id;
+        try {
+            id = Long.valueOf(productoId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Producto no encontrado: " + productoId);
         }
+
+        InventarioItem producto = inventarioItemRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + productoId));
+
+        if (!"VENTA".equals(producto.getTipo())) {
+            throw new IllegalArgumentException("El artículo no es vendible: " + producto.getNombre());
+        }
+        return producto;
+    }
+
+    private ProductoConsumoResponse toProductoResponse(InventarioItem item) {
+        return new ProductoConsumoResponse(
+                String.valueOf(item.getId()),
+                item.getNombre(),
+                item.getEmoji(),
+                item.getPrecioVenta() != null ? item.getPrecioVenta() : 0.0,
+                item.getStockActual(),
+                item.getPrecioCompra() != null ? item.getPrecioCompra() : 0.0
+        );
     }
 
     private String escribirItemsJson(List<ItemConsumoResponse> items) {

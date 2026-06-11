@@ -10,6 +10,7 @@ import com.reservas.residencial.domain.models.Pago;
 import com.reservas.residencial.domain.models.Reserva;
 import com.reservas.residencial.infrastructure.persistence.jpa.JpaPagoRepository;
 import com.reservas.residencial.infrastructure.persistence.jpa.JpaConsumoExtraRepository;
+import com.reservas.residencial.infrastructure.persistence.jpa.JpaVentaInsumoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +38,9 @@ class FinanzasServiceTest {
 
     @Mock
     private JpaConsumoExtraRepository jpaConsumoExtraRepository;
+
+    @Mock
+    private JpaVentaInsumoRepository jpaVentaInsumoRepository;
 
     @InjectMocks
     private FinanzasService finanzasService;
@@ -83,6 +87,7 @@ class FinanzasServiceTest {
 
         when(jpaPagoRepository.findAll()).thenReturn(List.of(pago));
         when(jpaConsumoExtraRepository.findAll()).thenReturn(List.of(consumo));
+        when(jpaVentaInsumoRepository.findAll()).thenReturn(Collections.emptyList());
         when(egresoRepository.findAll()).thenReturn(List.of(egresoGasto));
 
         ReporteFinanzasResponse report = finanzasService.obtenerReporteFinanzas(start, end);

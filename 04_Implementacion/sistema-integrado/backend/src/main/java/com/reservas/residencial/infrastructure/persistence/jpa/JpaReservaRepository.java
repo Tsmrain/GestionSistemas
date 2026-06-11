@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 @Repository
 public interface JpaReservaRepository extends JpaRepository<Reserva, Long> {
@@ -37,6 +38,11 @@ public interface JpaReservaRepository extends JpaRepository<Reserva, Long> {
             Long habitacionId,
             LocalDate fechaIngreso,
             String estado
+    );
+
+    java.util.Optional<Reserva> findFirstByHabitacionIdAndEstadoInOrderByIdDesc(
+            Long habitacionId,
+            Collection<String> estados
     );
 
     boolean existsByHabitacionId(Long habitacionId);
