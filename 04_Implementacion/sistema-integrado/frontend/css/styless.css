@@ -3122,3 +3122,61 @@ body.recepcion-page .hab-accion {
         flex-direction: column;
     }
 }
+
+/* Gestión de Habitaciones (Admin) */
+.btn-agregar {
+    font-size: 13px;
+    padding: 8px 16px;
+    border: 1px solid #7F77DD;
+    border-radius: 8px;
+    background: #7F77DD;
+    color: #fff;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.btn-agregar:hover {
+    background: #534AB7;
+}
+
+.hab-admin-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    justify-content: center;
+}
+
+.hab-admin-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.hab-admin-btn:active {
+    transform: scale(0.95);
+}
+
+.hab-admin-btn.edit:hover {
+    background: #e0f2fe;
+    border-color: #0284c7;
+}
+
+.hab-admin-btn.delete:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+}

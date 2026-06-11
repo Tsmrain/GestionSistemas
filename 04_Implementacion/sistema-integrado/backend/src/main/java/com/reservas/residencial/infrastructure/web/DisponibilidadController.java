@@ -2,16 +2,25 @@ package com.reservas.residencial.infrastructure.web;
 
 import com.reservas.residencial.application.dto.HabitacionDisponibleResponse;
 import com.reservas.residencial.application.dto.HabitacionEstadoResponse;
+import com.reservas.residencial.application.dto.GuardarHabitacionRequest;
+import com.reservas.residencial.application.dto.TipoHabitacionResponse;
 import com.reservas.residencial.application.usecases.DisponibilidadService;
 import com.reservas.residencial.infrastructure.web.dto.ConsultaDisponibilidadRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -47,5 +56,27 @@ public class DisponibilidadController {
     @PatchMapping("/{habitacionId}/disponible")
     public HabitacionEstadoResponse marcarDisponible(@PathVariable Long habitacionId) {
         return disponibilidadService.marcarDisponible(habitacionId);
+    }
+
+    @GetMapping("/tipos")
+    public List<TipoHabitacionResponse> listarTipos() {
+        return disponibilidadService.listarTodosTipos();
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public HabitacionEstadoResponse crearHabitacion(@Valid @RequestBody GuardarHabitacionRequest request) {
+        return disponibilidadService.crearHabitacion(request);
+    }
+
+    @PutMapping("/{id}")
+    public HabitacionEstadoResponse actualizarHabitacion(@PathVariable Long id, @Valid @RequestBody GuardarHabitacionRequest request) {
+        return disponibilidadService.actualizarHabitacion(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarHabitacion(@PathVariable Long id) {
+        disponibilidadService.eliminarHabitacion(id);
+        return ResponseEntity.noContent().build();
     }
 }

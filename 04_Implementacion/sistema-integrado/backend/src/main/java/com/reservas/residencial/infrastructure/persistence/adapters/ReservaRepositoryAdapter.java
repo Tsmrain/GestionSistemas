@@ -47,4 +47,9 @@ public class ReservaRepositoryAdapter implements ReservaRepositoryPort {
                 estadoExcluido
         );
     }
+
+    @Override
+    public boolean existsByHabitacionId(Long habitacionId) {
+        return repository.existsByHabitacionId(habitacionId);
+    }
 }

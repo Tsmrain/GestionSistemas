@@ -38,4 +38,6 @@ public interface JpaReservaRepository extends JpaRepository<Reserva, Long> {
             LocalDate fechaIngreso,
             String estado
     );
+
+    boolean existsByHabitacionId(Long habitacionId);
 }

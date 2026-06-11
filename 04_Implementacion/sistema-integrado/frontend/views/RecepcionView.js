@@ -23,6 +23,10 @@ class RecepcionView {
                 '<div class="hab-tipo">' + hab.tipo.nombreTipo + '</div>' +
                 '<div class="hab-badge">' + this.#obtenerEtiqueta(hab.estado) + '</div>' +
                 '<div class="hab-hora">' + this.#obtenerInfo(hab) + '</div>' +
+                '<div class="hab-admin-buttons">' +
+                    '<button class="hab-admin-btn edit" title="Editar Habitación">✏️</button>' +
+                    '<button class="hab-admin-btn delete" title="Eliminar Habitación">🗑️</button>' +
+                '</div>' +
                 this.#obtenerAccion(hab.estado);
 
             this.grid.appendChild(card);
@@ -33,6 +37,9 @@ class RecepcionView {
     onClickHabitacion(callback) {
         var self = this;
         this.grid.addEventListener("click", function (e) {
+            var adminBtn = e.target.closest(".hab-admin-btn");
+            if (adminBtn) return; // Evitar el flujo ordinario si se hizo clic en botones de edición o borrado
+
             var botonAccion = e.target.closest(".hab-accion");
             var card = e.target.closest(".hab-card");
             if (card) {
@@ -291,5 +298,757 @@ class RecepcionView {
         document.getElementById("count-confirmada").textContent = contadores.confirmada;
         document.getElementById("count-ocupada").textContent = contadores.ocupada;
         document.getElementById("count-limpieza").textContent = contadores.limpieza;
+    }
+
+    onAdminAccionHabitacion(callback) {
+        this.grid.addEventListener("click", function (e) {
+            var btnEdit = e.target.closest(".hab-admin-btn.edit");
+            var btnDelete = e.target.closest(".hab-admin-btn.delete");
+            var card = e.target.closest(".hab-card");
+            if (card) {
+                var id = card.getAttribute("data-id");
+                var numero = card.querySelector(".hab-numero").textContent;
+                var tipo = card.querySelector(".hab-tipo").textContent;
+                var estado = card.getAttribute("data-estado");
+                
+                if (btnEdit) {
+                    callback(id, "edit", { numero: numero, tipo: tipo, estado: estado });
+                } else if (btnDelete) {
+                    callback(id, "delete", { numero: numero, tipo: tipo, estado: estado });
+                }
+            }
+        });
+    }
+
+    mostrarModalHabitacion(tipos, habitacionData, callback) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-habitacion";
+        
+        var esEdicion = !!habitacionData;
+        var titulo = esEdicion ? "Editar Habitación" : "Nueva Habitación";
+        var numeroVal = esEdicion ? habitacionData.numero : "";
+        var tipoIdVal = esEdicion ? habitacionData.tipoId : "";
+        var estadoVal = esEdicion ? habitacionData.estado : "DISPONIBLE";
+
+        var opcionesTipos = tipos.map(t => 
+            `<option value="${t.id}" ${tipoIdVal == t.id ? "selected" : ""}>${t.nombreTipo} (Bs ${t.precioBase})</option>`
+        ).join("");
+
+        overlay.innerHTML = `
+            <div class="modal">
+                <h2 class="modal-titulo">${titulo}</h2>
+                <form id="form-habitacion" style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin-top: 15px;">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="hab-form-numero" style="font-size: 12px; font-weight: 600; color: #555;">Número de Habitación</label>
+                        <input id="hab-form-numero" type="text" value="${numeroVal}" placeholder="Ej. 108" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="hab-form-tipo" style="font-size: 12px; font-weight: 600; color: #555;">Tipo de Habitación</label>
+                        <select id="hab-form-tipo" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                            <option value="">Seleccione un tipo...</option>
+                            ${opcionesTipos}
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="hab-form-estado" style="font-size: 12px; font-weight: 600; color: #555;">Estado Actual</label>
+                        <select id="hab-form-estado" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                            <option value="Disponible" ${estadoVal === "DISPONIBLE" || estadoVal === "Disponible" ? "selected" : ""}>Disponible</option>
+                            <option value="Limpieza" ${estadoVal === "LIMPIEZA" || estadoVal === "Limpieza" ? "selected" : ""}>En Limpieza</option>
+                            <option value="Mantenimiento" ${estadoVal === "MANTENIMIENTO" || estadoVal === "Mantenimiento" ? "selected" : ""}>Mantenimiento</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end;">
+                        <button type="button" id="btn-cancelar-hab-form" style="background: #e0e0e0; color: #333; height: 40px;">Cancelar</button>
+                        <button type="submit" style="background: #7F77DD; color: #fff; height: 40px;">Guardar</button>
+                    </div>
+                    <div id="hab-form-error" class="form-error" style="display:none; color: #c0392b; font-size: 12px; margin-top: 5px;"></div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        var form = document.getElementById("form-habitacion");
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            var num = document.getElementById("hab-form-numero").value.trim();
+            var tipoId = document.getElementById("hab-form-tipo").value;
+            var estado = document.getElementById("hab-form-estado").value;
+            callback({ numero: num, tipoId: parseInt(tipoId), estadoActual: estado });
+        });
+
+        document.getElementById("btn-cancelar-hab-form").addEventListener("click", function() {
+            overlay.remove();
+        });
+
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) overlay.remove();
+        });
+    }
+
+    mostrarFormError(mensaje) {
+        var err = document.getElementById("hab-form-error");
+        if (err) {
+            err.textContent = mensaje;
+            err.style.display = "block";
+        }
+    }
+
+    cerrarModalHabitacion() {
+        var modal = document.getElementById("modal-habitacion");
+        if (modal) modal.remove();
+    }
+
+    mostrarConfirmacion(mensaje, onConfirmar) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-confirmacion";
+
+        overlay.innerHTML = `
+            <div class="modal modal-confirm" style="text-align: center; max-width: 400px; padding: 24px;">
+                <h2 class="modal-titulo" style="font-size: 18px; font-weight: 600; color: #1a1a1a;">Confirmar eliminación</h2>
+                <p style="margin: 15px 0 20px; color: #555; font-size: 14px; line-height: 1.5;">${mensaje}</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" id="btn-cancelar-confirm" style="background: #e2e8f0; color: #475569; height: 38px; padding: 0 16px; font-weight: 500; font-size: 12px; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s;">Cancelar</button>
+                    <button type="button" id="btn-aceptar-confirm" style="background: #ef4444; color: #fff; height: 38px; padding: 0 16px; font-weight: 500; font-size: 12px; border: none; border-radius: 8px; cursor: pointer; transition: background 0.2s;">Eliminar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById("btn-cancelar-confirm").addEventListener("click", function () {
+            overlay.remove();
+        });
+
+        document.getElementById("btn-aceptar-confirm").addEventListener("click", function () {
+            overlay.remove();
+            onConfirmar();
+        });
+
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) overlay.remove();
+        });
+    }
+
+    mostrarMensaje(titulo, mensaje, tipo = "exito") {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-mensaje";
+        
+        var icon = tipo === "exito" ? "✅" : "⚠️";
+        var btnBg = tipo === "exito" ? "#7F77DD" : "#ef4444";
+
+        overlay.innerHTML = `
+            <div class="modal" style="text-align: center; max-width: 360px; padding: 24px;">
+                <div style="font-size: 36px; margin-bottom: 10px;">${icon}</div>
+                <h2 class="modal-titulo" style="font-size: 18px; font-weight: 600; color: #1a1a1a;">${titulo}</h2>
+                <p style="margin: 12px 0 20px; color: #555; font-size: 13px; line-height: 1.4;">${mensaje}</p>
+                <button type="button" id="btn-cerrar-mensaje" style="background: ${btnBg}; color: #fff; height: 38px; width: 100%; font-weight: 500; font-size: 12px; border: none; border-radius: 8px; cursor: pointer;">Aceptar</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById("btn-cerrar-mensaje").addEventListener("click", function () {
+            overlay.remove();
+        });
+
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) overlay.remove();
+        });
+    }
+
+    // Renderiza el listado de egresos, el catálogo de inventario y la lista de incidencias
+    renderizarFinanzasYInventario(reporte, items, incidencias, onResolverIncidencia, onEditarItem, onEliminarItem) {
+        document.getElementById("finanzas-ingresos").textContent = "Bs " + (reporte.totalIngresos || 0).toFixed(2);
+        document.getElementById("finanzas-egresos").textContent = "Bs " + (reporte.totalEgresos || 0).toFixed(2);
+        document.getElementById("finanzas-balance").textContent = "Bs " + (reporte.saldoNeto || 0).toFixed(2);
+
+        var egresosLista = document.getElementById("egresos-lista");
+        egresosLista.innerHTML = "";
+        if (!reporte.egresosRecientes || reporte.egresosRecientes.length === 0) {
+            egresosLista.innerHTML = '<div style="color: #888; text-align: center; padding: 15px;">No hay egresos registrados.</div>';
+        } else {
+            reporte.egresosRecientes.forEach(e => {
+                var itemDiv = document.createElement("div");
+                itemDiv.style.cssText = "padding: 8px 10px; background: #fafafa; border-radius: 6px; border-left: 3px solid #ef4444; display: flex; justify-content: space-between; align-items: center;";
+                var fechaStr = new Date(e.fecha).toLocaleDateString("es-BO") + " " + new Date(e.fecha).toLocaleTimeString("es-BO", {hour: "2-digit", minute:"2-digit"});
+                
+                var compHtml = e.urlComprobante ? ` <a href="${e.urlComprobante}" target="_blank" style="text-decoration:none;">📄</a>` : "";
+
+                itemDiv.innerHTML = `
+                    <div>
+                        <strong>Bs ${e.monto.toFixed(2)}</strong> - <span style="color:#555;">${e.descripcion}</span>
+                        <div style="font-size: 10px; color:#aaa; margin-top:2px;">Categoría: ${e.categoria} · Por: ${e.recepcionista} · ${fechaStr}${compHtml}</div>
+                    </div>
+                `;
+                egresosLista.appendChild(itemDiv);
+            });
+        }
+
+        var tablaInv = document.getElementById("inventario-items-tabla");
+        tablaInv.innerHTML = "";
+        items.forEach(item => {
+            var row = document.createElement("tr");
+            row.style.cssText = "border-bottom: 1px solid #eee; height: 40px;";
+            row.innerHTML = `
+                <td style="padding: 8px; font-size: 18px;">${item.emoji || "📦"}</td>
+                <td style="padding: 8px;"><strong>${item.nombre}</strong></td>
+                <td style="padding: 8px; font-size: 11px; color:#666;">${item.tipo}</td>
+                <td style="padding: 8px; text-align: right; font-weight:600;">${item.stockActual}</td>
+                <td style="padding: 8px; text-align: right; color:#555;">Bs ${(item.precioCompra || 0).toFixed(2)}</td>
+                <td style="padding: 8px; text-align: right; color:#555;">Bs ${(item.precioVenta || 0).toFixed(2)}</td>
+                <td style="padding: 8px; text-align: center;">
+                    <button class="btn-editar-item" style="background:none; border:none; cursor:pointer; font-size:14px; margin-right:6px;" title="Editar">📝</button>
+                    <button class="btn-eliminar-item" style="background:none; border:none; cursor:pointer; font-size:14px;" title="Eliminar">🗑️</button>
+                </td>
+            `;
+
+            row.querySelector(".btn-editar-item").addEventListener("click", () => onEditarItem(item));
+            row.querySelector(".btn-eliminar-item").addEventListener("click", () => onEliminarItem(item));
+
+            tablaInv.appendChild(row);
+        });
+
+        var tablaInc = document.getElementById("mantenimiento-incidencias-tabla");
+        tablaInc.innerHTML = "";
+        var activas = incidencias.filter(i => "PENDIENTE" === i.estado);
+        if (activas.length === 0) {
+            tablaInc.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px; color:#888;">No hay incidencias activas en mantenimiento.</td></tr>`;
+        } else {
+            activas.forEach(inc => {
+                var row = document.createElement("tr");
+                row.style.cssText = "border-bottom: 1px solid #eee; height: 45px;";
+                var fechaStr = new Date(inc.fechaReporte).toLocaleDateString("es-BO") + " " + new Date(inc.fechaReporte).toLocaleTimeString("es-BO", {hour: "2-digit", minute:"2-digit"});
+                
+                row.innerHTML = `
+                    <td style="padding: 8px; font-weight:600;">Habitación ${inc.numeroHabitacion}</td>
+                    <td style="padding: 8px; color:#555;"><strong>${inc.nombreItem}</strong>: ${inc.descripcion}</td>
+                    <td style="padding: 8px; color:#666;">${inc.recepcionistaReporta}</td>
+                    <td style="padding: 8px; color:#888; font-size: 11px;">${fechaStr}</td>
+                    <td style="padding: 8px;"><span style="padding:3px 8px; border-radius:12px; background:#FFE0B2; color:#E65100; font-size:11px; font-weight:600;">PENDIENTE</span></td>
+                    <td style="padding: 8px; text-align: center;">
+                        <button class="btn-resolver-incidencia" data-id="${inc.id}" style="background:#4CAF50; color:#fff; border:none; padding: 5px 10px; border-radius:6px; cursor:pointer; font-weight:600; font-family:'Montserrat', sans-serif; font-size:11px;">🔧 Resolver</button>
+                    </td>
+                `;
+                
+                row.querySelector(".btn-resolver-incidencia").addEventListener("click", function() {
+                    var costo = prompt("Ingrese el costo de la reparación o reposición (Bs):", "0");
+                    if (costo !== null) {
+                        var costoFloat = parseFloat(costo) || 0.0;
+                        onResolverIncidencia(inc.id, costoFloat);
+                    }
+                });
+                
+                tablaInc.appendChild(row);
+            });
+        }
+    }
+
+    mostrarModalPreverificacionCheckout(reserva, itemsInventario, onVerificado) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-preverificacion-checkout";
+
+        var listRows = itemsInventario.map(item => `
+            <div class="preverif-row" data-item-id="${item.itemId}" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr; gap:10px; align-items:center; border-bottom:1px solid #f0f0f0; padding: 8px 0;">
+                <span style="font-size:13px; font-weight:500;">${item.emoji} ${item.nombreItem}</span>
+                <select class="preverif-estado" style="height:32px; border:1px solid #ccc; border-radius:6px; font-size:12px; font-family:'Montserrat',sans-serif;">
+                    <option value="OK">OK (Conforme)</option>
+                    <option value="FALTANTE">Faltante</option>
+                    <option value="DAÑADO">Dañado</option>
+                </select>
+                <input class="preverif-cantidad" type="number" value="1" min="1" max="${item.cantidadEsperada}" style="height:32px; border:1px solid #ccc; border-radius:6px; font-size:12px; padding:0 5px; font-family:'Montserrat',sans-serif;">
+                <label style="font-size:11px; display:flex; align-items:center; gap:3px;"><input class="preverif-cobrar" type="checkbox" checked> Cobrar</label>
+            </div>
+        `).join("");
+
+        overlay.innerHTML = `
+            <div class="modal" style="max-width: 500px; width:100%;">
+                <h2 class="modal-titulo">📋 Pre-verificación de Habitación ${reserva.habitacion.numero}</h2>
+                <p style="font-size:12px; color:#666; margin: 5px 0 15px;">Completa el checklist dictado por walkie-talkie por la camarera.</p>
+                
+                <div style="margin-bottom:15px; display:flex; flex-direction:column; gap:5px; text-align:left;">
+                    <label for="preverif-camarera" style="font-size:12px; font-weight:600; color:#555;">Nombre de la camarera (Walkie-talkie)</label>
+                    <input id="preverif-camarera" type="text" placeholder="Ej: Camarera Juana" required style="width: 100%; height:38px; padding:0 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                </div>
+
+                <div style="max-height:220px; overflow-y:auto; margin-bottom:15px; text-align:left; border:1px solid #eee; padding:10px; border-radius:8px; background:#fafafa;">
+                    ${listRows}
+                </div>
+
+                <div style="margin-bottom:15px; display:flex; flex-direction:column; gap:5px; text-align:left;">
+                    <label for="preverif-obs" style="font-size:12px; font-weight:600; color:#555;">Observaciones adicionales</label>
+                    <textarea id="preverif-obs" placeholder="Ninguna" style="width: 100%; height:60px; padding:8px 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px; resize:none;"></textarea>
+                </div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button type="button" id="btn-cancelar-preverif" style="background:#e0e0e0; color:#333; height:40px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Cancelar</button>
+                    <button type="button" id="btn-guardar-preverif" style="background:#7F77DD; color:#fff; height:40px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Enviar Reporte</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById("btn-cancelar-preverif").addEventListener("click", function() {
+            overlay.remove();
+        });
+
+        document.getElementById("btn-guardar-preverif").addEventListener("click", function() {
+            var camarera = document.getElementById("preverif-camarera").value.trim();
+            if (!camarera) {
+                alert("Ingrese el nombre de la camarera que reporta por Walkie-talkie.");
+                return;
+            }
+
+            var detalles = [];
+            var rows = overlay.querySelectorAll(".preverif-row");
+            rows.forEach(r => {
+                var itemId = parseInt(r.getAttribute("data-item-id"));
+                var estado = r.querySelector(".preverif-estado").value;
+                var cant = parseInt(r.querySelector(".preverif-cantidad").value) || 1;
+                var cobrar = r.querySelector(".preverif-cobrar").checked;
+
+                detalles.push({
+                    itemId: itemId,
+                    estadoReportado: estado,
+                    cantidad: cant,
+                    cobrado: cobrar
+                });
+            });
+
+            var obs = document.getElementById("preverif-obs").value.trim();
+
+            overlay.remove();
+            onVerificado(camarera, detalles, obs);
+        });
+
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) overlay.remove();
+        });
+    }
+
+    mostrarModalReportarIncidencia(habitacionId, items, onReportado) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-reportar-incidencia";
+
+        var itemOptions = items.map(item => `
+            <option value="${item.id}">${item.emoji || "📦"} ${item.nombre} (${item.tipo})</option>
+        `).join("");
+
+        overlay.innerHTML = `
+            <div class="modal" style="max-width: 400px; width:100%;">
+                <h2 class="modal-titulo">⚠️ Reportar Incidencia de Mantenimiento</h2>
+                <form id="form-incidencia" style="display:flex; flex-direction:column; gap:12px; text-align:left; margin-top:15px;">
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <label for="inc-form-item" style="font-size:12px; font-weight:600; color:#555;">Elemento Afectado</label>
+                        <select id="inc-form-item" style="width:100%; height:40px; padding:0 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                            <option value="">Estructural / Otro (Ninguno de la lista)</option>
+                            ${itemOptions}
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <label for="inc-form-desc" style="font-size:12px; font-weight:600; color:#555;">Descripción del Daño</label>
+                        <textarea id="inc-form-desc" placeholder="Ej: Pantalla rota, pata de cama floja" required style="width: 100%; height:80px; padding:8px 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px; resize:none;"></textarea>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:10px; justify-content:flex-end;">
+                        <button type="button" id="btn-cancelar-inc-form" style="background:#e0e0e0; color:#333; height:40px; padding:0 15px; font-weight:600; font-size:12px; border:none; border-radius:8px;">Cancelar</button>
+                        <button type="submit" style="background:#7F77DD; color:#fff; height:40px; padding:0 15px; font-weight:600; font-size:12px; border:none; border-radius:8px;">Guardar Reporte</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        var form = document.getElementById("form-incidencia");
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            var itemIdVal = document.getElementById("inc-form-item").value;
+            var itemId = itemIdVal ? parseInt(itemIdVal) : null;
+            var desc = document.getElementById("inc-form-desc").value.trim();
+            overlay.remove();
+            onReportado(itemId, desc);
+        });
+
+        document.getElementById("btn-cancelar-inc-form").addEventListener("click", function() {
+            overlay.remove();
+        });
+
+        overlay.addEventListener("click", function(e) {
+            if (e.target === overlay) overlay.remove();
+        });
+    }
+
+    mostrarModalInventarioItem(item, onSubmit) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-inventario-item";
+
+        var esEdicion = !!item;
+        var titulo = esEdicion ? "Editar Artículo de Catálogo" : "Nuevo Artículo de Catálogo";
+        var nombre = esEdicion ? item.nombre : "";
+        var tipo = esEdicion ? item.tipo : "VENTA";
+        var stockActual = esEdicion ? item.stockActual : 0;
+        var precioCompra = esEdicion ? item.precioCompra : 0;
+        var precioVenta = esEdicion ? item.precioVenta : 0;
+        var emoji = esEdicion ? item.emoji : "📦";
+
+        overlay.innerHTML = `
+            <div class="modal" style="max-width: 450px; width: 100%;">
+                <h2 class="modal-titulo">${titulo}</h2>
+                <form id="form-inventario-item" style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin-top: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label for="item-form-nombre" style="font-size: 12px; font-weight: 600; color: #555;">Nombre del Artículo</label>
+                            <input id="item-form-nombre" type="text" value="${nombre}" placeholder="Ej. Coca Cola 350ml" required style="height: 38px; padding: 0 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px; width: 80px;">
+                            <label for="item-form-emoji" style="font-size: 12px; font-weight: 600; color: #555;">Emoji</label>
+                            <input id="item-form-emoji" type="text" value="${emoji}" placeholder="🥤" required style="height: 38px; text-align: center; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 18px;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="item-form-tipo" style="font-size: 12px; font-weight: 600; color: #555;">Tipo de Artículo</label>
+                        <select id="item-form-tipo" required style="height: 38px; padding: 0 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                            <option value="VENTA" ${tipo === "VENTA" ? "selected" : ""}>VENTA (Insumo para vender)</option>
+                            <option value="CORTESIA" ${tipo === "CORTESIA" ? "selected" : ""}>CORTESIA (Insumo gratuito)</option>
+                            <option value="REUSABLE" ${tipo === "REUSABLE" ? "selected" : ""}>REUSABLE (Toallas, Sábanas, Almohadas)</option>
+                            <option value="ACTIVO_FIJO" ${tipo === "ACTIVO_FIJO" ? "selected" : ""}>ACTIVO FIJO (TV, Cama, Aire Acondicionado)</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label for="item-form-stock" style="font-size: 12px; font-weight: 600; color: #555;">Stock Inicial Almacén</label>
+                            <input id="item-form-stock" type="number" min="0" value="${stockActual}" required style="height: 38px; padding: 0 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label for="item-form-compra" style="font-size: 12px; font-weight: 600; color: #555;">Precio Compra (Bs)</label>
+                            <input id="item-form-compra" type="number" min="0" step="0.01" value="${precioCompra}" required style="height: 38px; padding: 0 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <label for="item-form-venta" style="font-size: 12px; font-weight: 600; color: #555;">Precio Venta / Multa (Bs)</label>
+                            <input id="item-form-venta" type="number" min="0" step="0.01" value="${precioVenta}" required style="height: 38px; padding: 0 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end;">
+                        <button type="button" id="btn-cancelar-item-form" style="background: #e0e0e0; color: #333; height: 38px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family:'Montserrat',sans-serif; font-size:12px; padding: 0 15px;">Cancelar</button>
+                        <button type="submit" style="background: #7F77DD; color: #fff; height: 38px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family:'Montserrat',sans-serif; font-size:12px; padding: 0 15px;">Guardar</button>
+                    </div>
+                    <div id="item-form-error" class="form-error" style="display:none; color: #c0392b; font-size: 12px; margin-top: 5px;"></div>
+                </form>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById("btn-cancelar-item-form").addEventListener("click", function() {
+            overlay.remove();
+        });
+
+        overlay.addEventListener("click", function(e) {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        var form = document.getElementById("form-inventario-item");
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            var payload = {
+                nombre: document.getElementById("item-form-nombre").value.trim(),
+                tipo: document.getElementById("item-form-tipo").value,
+                stockActual: parseInt(document.getElementById("item-form-stock").value) || 0,
+                precioCompra: parseFloat(document.getElementById("item-form-compra").value) || 0.0,
+                precioVenta: parseFloat(document.getElementById("item-form-venta").value) || 0.0,
+                emoji: document.getElementById("item-form-emoji").value.trim()
+            };
+            onSubmit(payload, overlay);
+        });
+    }
+
+    mostrarModalDetalleHabitacion(habitacion, itemsInventario, incidencias, reservaActiva, callbacks) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-detalle-habitacion";
+
+        var estadoFormateado = (habitacion.estado || "Disponible").toUpperCase();
+        var badgeColor = "background:#E8F5E9; color:#2E7D32;"; // Disponible
+        if (estadoFormateado === "ACTIVA" || estadoFormateado === "OCUPADA") {
+            badgeColor = "background:#E8EAF6; color:#1A237E;";
+        } else if (estadoFormateado === "LIMPIEZA") {
+            badgeColor = "background:#E3F2FD; color:#0D47A1;";
+        } else if (estadoFormateado === "MANTENIMIENTO") {
+            badgeColor = "background:#FFEBEE; color:#C62828;";
+        } else if (estadoFormateado === "PENDIENTE_PAGO" || estadoFormateado === "PAGADA") {
+            badgeColor = "background:#FFF3E0; color:#E65100;";
+        }
+
+        var reservaHtml = "";
+        if (reservaActiva) {
+            var horaIngreso = reservaActiva.horaIngreso
+                ? new Date(reservaActiva.horaIngreso).toLocaleTimeString("es-BO", { hour: "2-digit", minute: "2-digit" })
+                : "--:--";
+            var horaSalida = reservaActiva.horaSalidaEstimada
+                ? new Date(reservaActiva.horaSalidaEstimada).toLocaleTimeString("es-BO", { hour: "2-digit", minute: "2-digit" })
+                : "--:--";
+
+            reservaHtml = `
+                <div style="background: #fafafa; border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size:12px; text-align:left;">
+                    <h3 style="margin:0 0 8px 0; font-size:13px; font-weight:600; color:#555;">🛎️ Reserva Activa #${reservaActiva.id}</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <div><strong>Huésped:</strong> ${reservaActiva.huesped.nombre}</div>
+                        <div><strong>CI:</strong> ${reservaActiva.huesped.ci || "S/CI"}</div>
+                        <div><strong>Ingreso:</strong> ${reservaActiva.fechaIngreso} ${horaIngreso}</div>
+                        <div><strong>Salida Estimada:</strong> ${horaSalida}</div>
+                        <div><strong>Horas Contratadas:</strong> ${reservaActiva.cantidadBloques * 12}h</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            reservaHtml = `
+                <div style="background: #fafafa; border: 1px dashed #ddd; border-radius: 8px; padding: 12px; margin-bottom: 15px; text-align:center; font-size:12px; color:#888;">
+                    No hay reserva activa actualmente en esta habitación.
+                </div>
+            `;
+        }
+
+        var incidenciasHab = incidencias.filter(i => i.habitacionId === habitacion.id && i.estado === "PENDIENTE");
+        var incidenciasHtml = "";
+        if (incidenciasHab.length > 0) {
+            var itemsList = incidenciasHab.map(inc => {
+                var fechaStr = new Date(inc.fechaReporte).toLocaleDateString("es-BO") + " " + new Date(inc.fechaReporte).toLocaleTimeString("es-BO", {hour: "2-digit", minute:"2-digit"});
+                return `<li style="margin-bottom:6px; color:#c0392b;"><strong>${inc.nombreItem}</strong>: ${inc.descripcion} <br><span style="font-size:10px; color:#999;">Reportado por ${inc.recepcionistaReporta} el ${fechaStr}</span></li>`;
+            }).join("");
+            incidenciasHtml = `
+                <div style="background: #FFF5F5; border: 1px solid #FEB2B2; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size:12px; text-align:left;">
+                    <h3 style="margin:0 0 6px 0; font-size:13px; font-weight:600; color:#C53030;">⚠️ Incidencias de Mantenimiento Activas</h3>
+                    <ul style="margin:0; padding-left:16px;">${itemsList}</ul>
+                </div>
+            `;
+        }
+
+        var inventarioRows = "";
+        if (itemsInventario.length === 0) {
+            inventarioRows = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#888;">No hay ítems asignados a esta habitación.</td></tr>`;
+        } else {
+            inventarioRows = itemsInventario.map(item => {
+                var badgeStyle = "background:#E8F5E9; color:#2E7D32;"; // OK
+                if (item.estadoVerificacion === "FALTANTE") {
+                    badgeStyle = "background:#FFEBEE; color:#C62828;";
+                } else if (item.estadoVerificacion === "DAÑADO") {
+                    badgeStyle = "background:#FFF3E0; color:#EF6C00;";
+                }
+
+                return `
+                    <tr style="border-bottom: 1px solid #f0f0f0; height: 38px;">
+                        <td style="padding: 6px; font-size: 16px;">${item.emoji || "📦"}</td>
+                        <td style="padding: 6px;"><strong>${item.nombreItem}</strong><br><span style="font-size:10px; color:#999;">${item.tipoItem}</span></td>
+                        <td style="padding: 6px; text-align: center; font-weight:600;">${item.cantidadEsperada}</td>
+                        <td style="padding: 6px; text-align: center;">
+                            <input type="number" min="0" value="${item.cantidadActual}" class="hab-item-actual-input" data-item-id="${item.itemId}" style="width: 45px; height: 26px; text-align: center; border: 1px solid #ccc; border-radius: 6px; font-family:'Montserrat',sans-serif; font-size:12px;">
+                        </td>
+                        <td style="padding: 6px; text-align: center;">
+                            <span style="padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; ${badgeStyle}">${item.estadoVerificacion}</span>
+                        </td>
+                        <td style="padding: 6px; text-align: center;">
+                            <button class="btn-conciliar-inline" data-item-id="${item.itemId}" style="background:#2196F3; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif;">Recon.</button>
+                            <button class="btn-eliminar-hab-item" data-item-id="${item.itemId}" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; margin-left:4px;" title="Desasignar">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        var actionButtonsHtml = "";
+        var estadoLower = estadoFormateado.toLowerCase();
+        if (estadoLower === "disponible") {
+            actionButtonsHtml += `
+                <button type="button" id="btn-estado-limpieza" style="background:#0D47A1; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🧹 Iniciar Limpieza</button>
+                <button type="button" id="btn-estado-mantenimiento" style="background:#E65100; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🔧 Reportar Incidencia</button>
+            `;
+        } else if (estadoLower === "activa" || estadoLower === "ocupada" || estadoLower === "pagada") {
+            actionButtonsHtml += `
+                <button type="button" id="btn-iniciar-checkout" style="background:#7F77DD; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🛎️ Iniciar Check-out</button>
+                <button type="button" id="btn-estado-mantenimiento" style="background:#E65100; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🔧 Reportar Incidencia</button>
+            `;
+        } else if (estadoLower === "limpieza") {
+            actionButtonsHtml += `
+                <button type="button" id="btn-estado-disponible" style="background:#2E7D32; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">✅ Marcar Disponible</button>
+                <button type="button" id="btn-estado-mantenimiento" style="background:#E65100; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🔧 Reportar Incidencia</button>
+            `;
+        } else if (estadoLower === "mantenimiento") {
+            actionButtonsHtml += `
+                <button type="button" id="btn-estado-disponible" style="background:#2E7D32; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">✅ Marcar Disponible</button>
+            `;
+        }
+
+        overlay.innerHTML = `
+            <div class="modal" style="max-width: 580px; width: 100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
+                    <h2 class="modal-titulo" style="margin:0;">🔑 Habitación ${habitacion.numero} (${habitacion.tipo.nombreTipo})</h2>
+                    <span style="padding: 4px 10px; border-radius:12px; font-size:11px; font-weight:600; ${badgeColor}">${estadoFormateado}</span>
+                </div>
+
+                ${reservaHtml}
+                ${incidenciasHtml}
+
+                <div style="margin-bottom:15px; text-align:left;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                        <h3 style="font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0;">📦 Inventario en Habitación</h3>
+                        <button type="button" id="btn-abrir-asignar-item" style="background:#7F77DD; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif;">➕ Asignar Artículo</button>
+                    </div>
+                    <div style="max-height:200px; overflow-y:auto; border: 1px solid #e8e8e8; border-radius:8px; background:#fff;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #eee; height: 30px; color: #555; background:#f9f9f9;">
+                                    <th style="padding: 6px;">Emoji</th>
+                                    <th style="padding: 6px;">Artículo</th>
+                                    <th style="padding: 6px; text-align: center;">Esperado</th>
+                                    <th style="padding: 6px; text-align: center;">Actual</th>
+                                    <th style="padding: 6px; text-align: center;">Estado</th>
+                                    <th style="padding: 6px; text-align: center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody style="color: #333;">
+                                ${inventarioRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; gap:10px; margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                    <div style="display:flex; gap:8px;">
+                        ${actionButtonsHtml}
+                    </div>
+                    <button type="button" id="btn-cerrar-detalle-hab" style="background:#e0e0e0; color:#333; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Cerrar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById("btn-cerrar-detalle-hab").addEventListener("click", () => overlay.remove());
+        overlay.addEventListener("click", function(e) {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        overlay.querySelectorAll(".btn-conciliar-inline").forEach(btn => {
+            btn.addEventListener("click", function() {
+                var itemId = parseInt(this.getAttribute("data-item-id"));
+                var input = overlay.querySelector(`.hab-item-actual-input[data-item-id="${itemId}"]`);
+                var qty = parseInt(input.value);
+                if (isNaN(qty) || qty < 0) {
+                    alert("Ingrese una cantidad válida.");
+                    return;
+                }
+                callbacks.onConciliarItem(itemId, qty, overlay);
+            });
+        });
+
+        var btnAbrirAsignar = document.getElementById("btn-abrir-asignar-item");
+        if (btnAbrirAsignar) {
+            btnAbrirAsignar.addEventListener("click", function() {
+                callbacks.onAbrirAsignarItem(overlay);
+            });
+        }
+
+        overlay.querySelectorAll(".btn-eliminar-hab-item").forEach(btn => {
+            btn.addEventListener("click", function() {
+                var itemId = parseInt(this.getAttribute("data-item-id"));
+                callbacks.onEliminarItem(itemId, overlay);
+            });
+        });
+
+        var btnLimpieza = document.getElementById("btn-estado-limpieza");
+        if (btnLimpieza) {
+            btnLimpieza.addEventListener("click", () => {
+                overlay.remove();
+                callbacks.onCambiarEstado("limpieza");
+            });
+        }
+
+        var btnDisponible = document.getElementById("btn-estado-disponible");
+        if (btnDisponible) {
+            btnDisponible.addEventListener("click", () => {
+                overlay.remove();
+                callbacks.onCambiarEstado("disponible");
+            });
+        }
+
+        var btnCheckout = document.getElementById("btn-iniciar-checkout");
+        if (btnCheckout) {
+            btnCheckout.addEventListener("click", () => {
+                overlay.remove();
+                callbacks.onIniciarCheckout();
+            });
+        }
+
+        var btnMantenimiento = document.getElementById("btn-estado-mantenimiento");
+        if (btnMantenimiento) {
+            btnMantenimiento.addEventListener("click", () => {
+                overlay.remove();
+                callbacks.onReportarIncidencia();
+            });
+        }
+    }
+
+    mostrarModalAsignarItem(habitacion, catalogoItems, onSubmit) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-asignar-item";
+        overlay.style.zIndex = "1100";
+
+        var itemOptions = catalogoItems.map(item => `
+            <option value="${item.id}">${item.emoji || "📦"} ${item.nombre} (${item.tipo})</option>
+        `).join("");
+
+        overlay.innerHTML = `
+            <div class="modal" style="max-width: 400px; width: 100%;">
+                <h2 class="modal-titulo">➕ Asignar Artículo a Habitación ${habitacion.numero}</h2>
+                <form id="form-asignar-item" style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin-top: 15px;">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="asignar-form-item" style="font-size: 12px; font-weight: 600; color: #555;">Artículo de Catálogo</label>
+                        <select id="asignar-form-item" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                            <option value="">Seleccione un artículo...</option>
+                            ${itemOptions}
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <label for="asignar-form-cantidad" style="font-size: 12px; font-weight: 600; color: #555;">Cantidad Esperada</label>
+                        <input id="asignar-form-cantidad" type="number" min="1" value="1" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end;">
+                        <button type="button" id="btn-cancelar-asignar" style="background: #e0e0e0; color: #333; height: 40px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family:'Montserrat',sans-serif; font-size:12px; padding: 0 15px;">Cancelar</button>
+                        <button type="submit" style="background: #7F77DD; color: #fff; height: 40px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family:'Montserrat',sans-serif; font-size:12px; padding: 0 15px;">Asignar</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById("btn-cancelar-asignar").addEventListener("click", function() {
+            overlay.remove();
+        });
+
+        overlay.addEventListener("click", function(e) {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        var form = document.getElementById("form-asignar-item");
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            var itemId = parseInt(document.getElementById("asignar-form-item").value);
+            var cantidad = parseInt(document.getElementById("asignar-form-cantidad").value);
+            overlay.remove();
+            onSubmit(itemId, cantidad);
+        });
     }
 }

@@ -44,4 +44,6 @@ public interface JpaHabitacionRepository extends JpaRepository<Habitacion, Long>
             order by h.numero
             """)
     List<Habitacion> findDisponibles(@Param("fecha") LocalDate fecha, @Param("tipoNombre") String tipoNombre);
+
+    java.util.Optional<Habitacion> findByNumero(String numero);
 }

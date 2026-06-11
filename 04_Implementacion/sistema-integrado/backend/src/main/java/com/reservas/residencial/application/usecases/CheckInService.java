@@ -1,26 +1,16 @@
 package com.reservas.residencial.application.usecases;
 
-import com.reservas.residencial.application.dto.HabitacionResumenResponse;
-import com.reservas.residencial.application.dto.HuespedResumenResponse;
-import com.reservas.residencial.application.dto.PuertaAccesoResponse;
-import com.reservas.residencial.application.dto.ReservaResponse;
-import com.reservas.residencial.application.dto.TipoHabitacionResponse;
-import com.reservas.residencial.application.dto.ValidarPuertaRequest;
-import com.reservas.residencial.application.ports.out.FileStoragePort;
-import com.reservas.residencial.application.ports.out.HabitacionRepositoryPort;
-import com.reservas.residencial.application.ports.out.HuespedRepositoryPort;
-import com.reservas.residencial.application.ports.out.PagoRepositoryPort;
-import com.reservas.residencial.application.ports.out.ReservaRepositoryPort;
-import com.reservas.residencial.domain.models.Pago;
-import com.reservas.residencial.domain.models.Huesped;
-import com.reservas.residencial.domain.models.Reserva;
+import com.reservas.residencial.application.dto.*;
+import com.reservas.residencial.application.ports.out.*;
+import com.reservas.residencial.domain.models.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +26,12 @@ public class CheckInService {
     private final HuespedRepositoryPort huespedRepository;
     private final FileStoragePort fileStoragePort;
     private final PagoRepositoryPort pagoRepository;
+    private final InventarioItemRepositoryPort itemRepository;
+    private final HabitacionInventarioRepositoryPort habitacionInventarioRepository;
+    private final VerificacionCheckoutRepositoryPort verificacionCheckoutRepository;
+    private final ConsumoExtraRepositoryPort consumoExtraRepository;
+    private final EgresoRepositoryPort egresoRepository;
+    private final IncidenciaMantenimientoRepositoryPort incidenciaRepository;
 
     @Transactional(readOnly = true)
     public List<ReservaResponse> buscarReservasPorCi(String ci) {
@@ -205,6 +201,141 @@ public class CheckInService {
                 reserva.getHoraSalidaEstimada(),
                 pago != null ? pago.getMetodo() : null,
                 pago != null ? pago.getEstado() : null
+        );
+    }
+
+    @Transactional
+    public PreverificacionResponse preverificarCheckout(PreverificacionRequest request) {
+        Reserva reserva = reservaRepository.findById(request.reservaId())
+                .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada: " + request.reservaId()));
+
+        Habitacion habitacion = reserva.getHabitacion();
+
+        boolean conforme = true;
+        for (ItemPreverificacion det : request.detalles()) {
+            if (!"OK".equals(det.estadoReportado())) {
+                conforme = false;
+            }
+        }
+
+        VerificacionCheckout verificacion = new VerificacionCheckout(
+                reserva,
+                habitacion,
+                request.recepcionista(),
+                request.nombreCamarera(),
+                conforme,
+                request.observaciones()
+        );
+        verificacion = verificacionCheckoutRepository.save(verificacion);
+
+        Double totalCargosExtra = 0.0;
+        List<PreverificacionResponse.DetalleVerificacionResponse> listDetalles = new ArrayList<>();
+
+        for (ItemPreverificacion det : request.detalles()) {
+            InventarioItem item = itemRepository.findById(det.itemId())
+                    .orElseThrow(() -> new IllegalArgumentException("Item no encontrado: " + det.itemId()));
+
+            HabitacionInventario habInv = habitacionInventarioRepository.findByHabitacionIdAndItemId(habitacion.getId(), item.getId())
+                    .orElse(null);
+            if (habInv != null) {
+                if (!"OK".equals(det.estadoReportado())) {
+                    habInv.setCantidadActual(Math.max(0, habInv.getCantidadEsperada() - det.cantidad()));
+                    habInv.setEstadoVerificacion(det.estadoReportado());
+                } else {
+                    habInv.setCantidadActual(habInv.getCantidadEsperada());
+                    habInv.setEstadoVerificacion("OK");
+                }
+                habitacionInventarioRepository.save(habInv);
+            }
+
+            if ("DAÑADO".equals(det.estadoReportado())) {
+                IncidenciaMantenimiento incidencia = new IncidenciaMantenimiento(
+                        habitacion,
+                        item,
+                        "Daño en " + item.getNombre() + " reportado por camarera " + request.nombreCamarera() + " durante check-out.",
+                        request.recepcionista()
+                );
+                incidenciaRepository.save(incidencia);
+            }
+
+            Double cargo = 0.0;
+            boolean cobrado = det.cobrado() != null ? det.cobrado() : true;
+
+            if (!"OK".equals(det.estadoReportado())) {
+                Double precioMulta = item.getPrecioVenta() != null ? item.getPrecioVenta() : 0.0;
+                cargo = precioMulta * det.cantidad();
+
+                if (cargo > 0) {
+                    if (cobrado) {
+                        totalCargosExtra += cargo;
+                        String itemsJson = "[{\"id\":\"" + item.getNombre() + "\",\"nombre\":\"Penalidad: " + item.getNombre() + " (" + det.estadoReportado() + ")\",\"emoji\":\"" + (item.getEmoji() != null ? item.getEmoji() : "⚠️") + "\",\"cantidad\":" + det.cantidad() + ",\"precio\":" + precioMulta + ",\"subtotal\":" + cargo + "}]";
+                        String payload = "CONSUMO|" + reserva.getId() + "|BS " + cargo;
+                        String qrData = "https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=18&data=" +
+                                java.net.URLEncoder.encode(payload, java.nio.charset.StandardCharsets.UTF_8);
+
+                        ConsumoExtra consumoPenalty = new ConsumoExtra(reserva, itemsJson, cargo, qrData);
+                        consumoExtraRepository.save(consumoPenalty);
+                    } else {
+                        Double costoCompra = item.getPrecioCompra() != null ? item.getPrecioCompra() : 0.0;
+                        Double totalPerdido = costoCompra * det.cantidad();
+                        if (totalPerdido > 0) {
+                            Egreso egreso = new Egreso(
+                                    "Pérdida asumida: " + item.getNombre() + " (" + det.estadoReportado() + ") en Hab. " + habitacion.getNumero(),
+                                    totalPerdido,
+                                    "INVENTARIO",
+                                    request.recepcionista(),
+                                    null
+                            );
+                            egresoRepository.save(egreso);
+                        }
+                    }
+                }
+            }
+
+            VerificacionDetalle verDetalle = new VerificacionDetalle(
+                    verificacion,
+                    item,
+                    det.estadoReportado(),
+                    det.cantidad(),
+                    cargo,
+                    cobrado
+            );
+            verDetalle = verificacionCheckoutRepository.saveDetalle(verDetalle);
+
+            listDetalles.add(new PreverificacionResponse.DetalleVerificacionResponse(
+                    verDetalle.getId(),
+                    item.getId(),
+                    item.getNombre(),
+                    verDetalle.getEstadoReportado(),
+                    verDetalle.getCantidad(),
+                    verDetalle.getCargoAplicado(),
+                    verDetalle.getCobrado()
+            ));
+        }
+
+        // Finalizar reserva y actualizar estado de la habitación
+        reserva.finalizarEstadia();
+        reservaRepository.save(reserva);
+
+        boolean tieneDanos = request.detalles().stream().anyMatch(d -> "DAÑADO".equals(d.estadoReportado()));
+        if (tieneDanos) {
+            habitacion.setEstadoActual("Mantenimiento");
+        } else {
+            habitacion.setEstadoActual("Limpieza");
+        }
+        habitacionRepository.save(habitacion);
+
+        return new PreverificacionResponse(
+                verificacion.getId(),
+                reserva.getId(),
+                habitacion.getId(),
+                verificacion.getFechaVerificacion(),
+                verificacion.getRecepcionista(),
+                verificacion.getNombreCamarera(),
+                verificacion.getConforme(),
+                verificacion.getObservaciones(),
+                totalCargosExtra,
+                listDetalles
         );
     }
 }

@@ -1,6 +1,6 @@
 package com.reservas.residencial.infrastructure.web;
 
-import com.reservas.residencial.application.dto.ReservaResponse;
+import com.reservas.residencial.application.dto.*;
 import com.reservas.residencial.application.usecases.CheckInService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -80,5 +80,10 @@ public class CheckInController {
     public ResponseEntity<Void> cancelarCheckIn(@PathVariable Long reservaId) {
         checkInService.cancelarPorInconsistenciaIdentidad(reservaId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verificar")
+    public ResponseEntity<PreverificacionResponse> preverificarCheckout(@jakarta.validation.Valid @RequestBody PreverificacionRequest request) {
+        return ResponseEntity.ok(checkInService.preverificarCheckout(request));
     }
 }

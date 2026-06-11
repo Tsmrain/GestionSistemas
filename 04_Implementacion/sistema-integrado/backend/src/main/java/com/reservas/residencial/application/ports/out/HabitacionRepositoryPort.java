@@ -17,4 +17,12 @@ public interface HabitacionRepositoryPort {
 
     // ✅ NUEVO
     List<Habitacion> findAll();
+
+    void deleteById(Long id);
+
+    List<com.reservas.residencial.domain.models.TipoHabitacion> findAllTipos();
+
+    Optional<com.reservas.residencial.domain.models.TipoHabitacion> findTipoById(Long id);
+
+    Optional<Habitacion> findByNumero(String numero);
 }

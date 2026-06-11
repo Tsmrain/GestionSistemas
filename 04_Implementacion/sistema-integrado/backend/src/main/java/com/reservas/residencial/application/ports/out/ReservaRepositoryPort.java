@@ -16,4 +16,6 @@ public interface ReservaRepositoryPort {
     java.util.List<Reserva> findByHuespedNombre(String nombre);
 
     java.util.Optional<Reserva> findActiveByHabitacionAndFecha(Long habitacionId, LocalDate fechaIngreso, String estadoExcluido);
+
+    boolean existsByHabitacionId(Long habitacionId);
 }
