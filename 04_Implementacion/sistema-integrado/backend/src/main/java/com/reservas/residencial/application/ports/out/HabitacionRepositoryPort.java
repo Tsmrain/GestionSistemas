@@ -15,6 +15,8 @@ public interface HabitacionRepositoryPort {
 
     Habitacion save(Habitacion habitacion);
 
+    void updateEstadoActual(Long id, String estadoActual);
+
     // ✅ NUEVO
     List<Habitacion> findAll();
 

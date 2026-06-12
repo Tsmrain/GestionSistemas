@@ -4,6 +4,7 @@ import com.reservas.residencial.application.dto.EgresoRequest;
 import com.reservas.residencial.application.dto.EgresoResponse;
 import com.reservas.residencial.application.dto.ReporteFinanzasResponse;
 import com.reservas.residencial.application.ports.out.EgresoRepositoryPort;
+import com.reservas.residencial.application.ports.out.FileStoragePort;
 import com.reservas.residencial.domain.models.Egreso;
 import com.reservas.residencial.domain.models.Pago;
 import com.reservas.residencial.domain.models.ConsumoExtra;
@@ -14,6 +15,7 @@ import com.reservas.residencial.infrastructure.persistence.jpa.JpaVentaInsumoRep
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,15 +33,26 @@ public class FinanzasService {
     private final JpaPagoRepository jpaPagoRepository;
     private final JpaConsumoExtraRepository jpaConsumoExtraRepository;
     private final JpaVentaInsumoRepository jpaVentaInsumoRepository;
+    private final FileStoragePort fileStoragePort;
 
     @Transactional
     public EgresoResponse registrarEgreso(EgresoRequest request) {
+        return registrarEgreso(request, null);
+    }
+
+    @Transactional
+    public EgresoResponse registrarEgreso(EgresoRequest request, MultipartFile comprobante) {
+        String urlComprobante = request.urlComprobante();
+        if (comprobante != null && !comprobante.isEmpty()) {
+            urlComprobante = fileStoragePort.guardar(comprobante);
+        }
+
         Egreso egreso = new Egreso(
                 request.descripcion(),
                 request.monto(),
                 request.categoria(),
                 request.recepcionista(),
-                request.urlComprobante()
+                urlComprobante
         );
         egreso = egresoRepository.save(egreso);
         return toResponse(egreso);
@@ -53,7 +66,8 @@ public class FinanzasService {
         // 1. Obtener pagos de reservas completados en el rango
         List<Pago> pagos = jpaPagoRepository.findAll().stream()
                 .filter(p -> "COMPLETADO".equals(p.getEstado()))
-                .filter(p -> p.getFechaCreacion() != null && !p.getFechaCreacion().isBefore(start) && !p.getFechaCreacion().isAfter(end))
+                .filter(p -> p.getReserva() != null && p.getReserva().getFechaPago() != null)
+                .filter(p -> !p.getReserva().getFechaPago().isBefore(start) && !p.getReserva().getFechaPago().isAfter(end))
                 .toList();
 
         // 2. Obtener consumos extras pagados en el rango

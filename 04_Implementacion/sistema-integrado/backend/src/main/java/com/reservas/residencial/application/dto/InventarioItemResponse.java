@@ -5,6 +5,8 @@ public record InventarioItemResponse(
         String nombre,
         String tipo,
         Integer stockActual,
+        Integer stockEnUso,
+        Integer stockDisponible,
         Double precioCompra,
         Double precioVenta,
         String emoji

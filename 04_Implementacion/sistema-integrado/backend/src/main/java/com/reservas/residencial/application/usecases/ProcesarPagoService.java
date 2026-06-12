@@ -52,9 +52,13 @@ public class ProcesarPagoService {
 
         return switch (request.metodo()) {
             case METODO_QR_BNB  -> iniciarPagoQR(reserva);
-            case METODO_EFECTIVO -> procesarPagoEfectivo(reserva);
+            case METODO_EFECTIVO -> iniciarPagoEfectivoPendiente(reserva);
             default -> throw new IllegalArgumentException("Método de pago no soportado: " + request.metodo());
         };
+    }
+
+    private PagoStatusResponse iniciarPagoEfectivoPendiente(Reserva reserva) {
+        return new PagoStatusResponse(reserva.getId(), ESTADO_PAGO_PENDIENTE, null, null, null, null);
     }
 
     /**
@@ -207,7 +211,7 @@ public class ProcesarPagoService {
 
     private boolean tieneQrValido(Pago pago) {
         String qrData = pago.getQrData();
-        return qrData != null && qrData.length() > 100 && qrData.startsWith("iVBOR");
+        return qrData != null && (qrData.startsWith("http://") || qrData.startsWith("https://") || (qrData.length() > 100 && qrData.startsWith("iVBOR")));
     }
 
     private String generarQrReserva(Reserva reserva) {

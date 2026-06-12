@@ -31,6 +31,11 @@ public class HabitacionInventarioRepositoryAdapter implements HabitacionInventar
     }
 
     @Override
+    public Integer sumCantidadEsperadaByItemId(Long itemId) {
+        return repository.sumCantidadEsperadaByItemId(itemId);
+    }
+
+    @Override
     public List<HabitacionInventario> saveAll(List<HabitacionInventario> items) {
         return repository.saveAll(items);
     }

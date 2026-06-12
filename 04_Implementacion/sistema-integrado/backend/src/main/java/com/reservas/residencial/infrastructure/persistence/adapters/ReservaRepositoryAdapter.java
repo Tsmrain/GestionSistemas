@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -51,14 +52,26 @@ public class ReservaRepositoryAdapter implements ReservaRepositoryPort {
 
     @Override
     public java.util.Optional<Reserva> findVisibleByHabitacionId(Long habitacionId) {
-        return repository.findFirstByHabitacionIdAndEstadoInOrderByIdDesc(
-                habitacionId,
-                List.of("PENDIENTE_PAGO", "PAGADA", "ACTIVA")
-        );
+        return findByHabitacionIdAndEstados(habitacionId, List.of("PENDIENTE_PAGO", "PAGADA", "ACTIVA"));
+    }
+
+    @Override
+    public java.util.Optional<Reserva> findByHabitacionIdAndEstados(Long habitacionId, Collection<String> estados) {
+        return repository.findFirstByHabitacionIdAndEstadoInOrderByIdDesc(habitacionId, estados);
+    }
+
+    @Override
+    public java.util.List<Reserva> findAllByHabitacionIdAndEstados(Long habitacionId, Collection<String> estados) {
+        return repository.findByHabitacionIdAndEstadoInOrderByIdDesc(habitacionId, estados);
     }
 
     @Override
     public boolean existsByHabitacionId(Long habitacionId) {
         return repository.existsByHabitacionId(habitacionId);
+    }
+
+    @Override
+    public boolean existsByHuespedId(Long huespedId) {
+        return repository.existsByHuespedIdOrAcompananteId(huespedId, huespedId);
     }
 }

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface JpaIncidenciaMantenimientoRepository extends JpaRepository<IncidenciaMantenimiento, Long> {
     List<IncidenciaMantenimiento> findByHabitacionId(Long habitacionId);
+    boolean existsByHabitacionIdAndEstado(Long habitacionId, String estado);
 }

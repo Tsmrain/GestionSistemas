@@ -8,6 +8,7 @@ public interface HabitacionInventarioRepositoryPort {
     HabitacionInventario save(HabitacionInventario habitacionInventario);
     List<HabitacionInventario> findByHabitacionId(Long habitacionId);
     Optional<HabitacionInventario> findByHabitacionIdAndItemId(Long habitacionId, Long itemId);
+    Integer sumCantidadEsperadaByItemId(Long itemId);
     List<HabitacionInventario> saveAll(List<HabitacionInventario> items);
     void delete(HabitacionInventario habitacionInventario);
 }

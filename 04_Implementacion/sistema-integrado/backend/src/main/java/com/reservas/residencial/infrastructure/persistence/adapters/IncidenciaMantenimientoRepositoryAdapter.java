@@ -34,4 +34,9 @@ public class IncidenciaMantenimientoRepositoryAdapter implements IncidenciaMante
     public List<IncidenciaMantenimiento> findByHabitacionId(Long habitacionId) {
         return repository.findByHabitacionId(habitacionId);
     }
+
+    @Override
+    public boolean existsByHabitacionIdAndEstado(Long habitacionId, String estado) {
+        return repository.existsByHabitacionIdAndEstado(habitacionId, estado);
+    }
 }

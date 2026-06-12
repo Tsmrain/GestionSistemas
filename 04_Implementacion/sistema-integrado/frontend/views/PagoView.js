@@ -61,10 +61,14 @@ class PagoView {
         if (botonesPago) botonesPago.style.display = "none";
         if (instruccion) instruccion.textContent = "Confirma el pago de la reserva con QR BNB.";
 
+        var qrSrc = /^https?:\/\//i.test(qrData) || String(qrData || "").startsWith("data:")
+            ? qrData
+            : "data:image/png;base64," + qrData;
+
         contenido.innerHTML =
             '<div class="qr-container">' +
             '<p class="qr-instruccion">Escanea el QR con tu banca movil:</p>' +
-            '<img class="qr-imagen" src="data:image/png;base64,' + qrData + '" alt="QR de pago BNB">' +
+            '<img class="qr-imagen" src="' + qrSrc + '" alt="QR de pago BNB">' +
             '<p class="qr-espera">Esperando confirmacion del pago...</p>' +
             '<div class="qr-spinner"></div>' +
             '<button class="btn-confirmar btn-simular-pago" id="btn-simular-pago">Simular pago recibido</button>' +
@@ -104,7 +108,7 @@ class PagoView {
         var titulo = esEfectivo ? "¡RESERVA REGISTRADA!" : "¡PAGO CONFIRMADO!";
         var icon = esEfectivo ? "🏨" : "✅";
         var habitacionHTML = reserva ? this.#habitacionComprobanteHTML(reserva) : "";
-        var qrAccesoHTML = reserva ? this.#qrAccesoHTML(reserva, !esEfectivo) : "";
+        var accesoPuertaHTML = (!esEfectivo && reserva) ? this.#accesoPuertaHTML(reserva) : "";
         
         var avisoHTML = "";
         if (esEfectivo) {
@@ -144,7 +148,7 @@ class PagoView {
 
             avisoHTML +
 
-            qrAccesoHTML +
+            accesoPuertaHTML +
 
             '<button class="btn-confirmar" id="btn-cerrar-comprobante" type="button">ACEPTAR</button>' +
             '</div>';
@@ -186,6 +190,40 @@ class PagoView {
                     }, 1800);
                 }
             });
+        });
+
+        this._actualizarPasos("confirmado");
+    }
+
+    mostrarReservaEfectivoPendiente(reserva) {
+        var habitacionHTML = reserva ? this.#habitacionComprobanteHTML(reserva) : "";
+        this.flujoContainer.innerHTML =
+            '<div class="flujo-panel modal-exito">' +
+            '<div class="exito-icon">🏨</div>' +
+            '<h2 style="text-transform: uppercase; letter-spacing: 1px;">RESERVA PENDIENTE DE PAGO</h2>' +
+            habitacionHTML +
+            '<div class="comprobante-grid">' +
+                '<div class="grid-item">' +
+                    '<span class="label">Reserva</span>' +
+                    '<span class="valor">#' + reserva.id + '</span>' +
+                '</div>' +
+                '<div class="grid-item">' +
+                    '<span class="label">Estado</span>' +
+                    '<span class="valor" style="color:#E65100;">Pendiente en recepción</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="pago-alerta">' +
+                '<span class="alerta-icon">⚠️</span>' +
+                '<div class="alerta-texto">' +
+                    '<strong>Importante:</strong> el acceso y el check-in se habilitan solo cuando recepción recibe el efectivo y confirma la reserva.' +
+                '</div>' +
+            '</div>' +
+            '<button class="btn-confirmar" id="btn-cerrar-comprobante" type="button">ACEPTAR</button>' +
+            '</div>';
+
+        document.getElementById("btn-cerrar-comprobante").addEventListener("click", () => {
+            this.cerrarModal();
+            if (window.disponibilidadApp) window.disponibilidadApp.cargarDisponiblesDeHoy();
         });
 
         this._actualizarPasos("confirmado");
@@ -264,41 +302,34 @@ class PagoView {
             '</div>';
     }
 
-    #qrAccesoHTML(reserva, habilitado) {
+    #accesoPuertaHTML(reserva) {
         var habitacion = reserva.habitacion ? reserva.habitacion.numero : "";
         var codigo = reserva.id;
-        var tabletUrl = 'puerta.html?habitacion=' + encodeURIComponent(habitacion);
-        var qrAccesoUrl = tabletUrl + '&codigo=' + encodeURIComponent(codigo);
-        var qrAccesoUrlCompleta = new URL(qrAccesoUrl, window.location.href).href;
-        var qrDataUrl = window.QrCodeGenerator ? window.QrCodeGenerator.toDataUrl(qrAccesoUrlCompleta) : "";
-        var esLocalhost = ["localhost", "127.0.0.1", "::1"].indexOf(window.location.hostname) !== -1;
-        var avisoCelular = esLocalhost
-            ? '<p class="acceso-demo-warning">Para usar este QR en tu celular, abre el sistema desde la IP de tu computadora y vuelve a generar el QR.</p>'
-            : '';
-        var estadoTexto = habilitado
-            ? "Presenta este QR en la tablet de la puerta. La tablet escanea la URL del QR y valida la reserva automaticamente."
-            : "El QR quedara habilitado para acceso cuando la reserva este pagada.";
-
+        var tabletUrl = "puerta.html?habitacion=" + encodeURIComponent(habitacion) + "&codigo=" + encodeURIComponent(codigo);
+        var tabletUrlCompleta = new URL(tabletUrl, window.location.href).href;
+        var qrUrl = window.QrCodeGenerator
+            ? window.QrCodeGenerator.toDataUrl(tabletUrlCompleta)
+            : "https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=18&data=" + encodeURIComponent(tabletUrlCompleta);
         return '<div class="acceso-demo-card">' +
             '<div class="acceso-demo-header">' +
             '<div>' +
-            '<span class="acceso-demo-label">QR de acceso</span>' +
-            '<h3>Habitacion ' + habitacion + '</h3>' +
+            '<span class="acceso-demo-label">Acceso de habitación</span>' +
+            '<h3>Habitación ' + habitacion + '</h3>' +
             '</div>' +
-            '<span class="acceso-demo-badge">QR estandar</span>' +
+            '<span class="acceso-demo-badge">Pago QR confirmado</span>' +
             '</div>' +
             '<div class="acceso-phone-preview">' +
-            '<p class="acceso-phone-title">Tu QR de acceso</p>' +
-            '<img class="qr-acceso-real" src="' + qrDataUrl + '" alt="QR de acceso para la reserva ' + codigo + '">' +
+            '<p class="acceso-phone-title">QR para abrir puerta</p>' +
+            '<img class="qr-acceso-real" src="' + qrUrl + '" alt="QR de acceso para habitación ' + habitacion + '">' +
             '<strong>Reserva #' + codigo + '</strong>' +
-            '<span>Habitacion ' + habitacion + '</span>' +
+            '<span>Habitación ' + habitacion + '</span>' +
             '</div>' +
-            '<p class="acceso-demo-texto">' + estadoTexto + '</p>' +
-            avisoCelular +
+            '<p class="acceso-demo-texto">Tu pago ya fue confirmado. Abre la tablet de puerta para validar el acceso y ocupar la habitación.</p>' +
             '<div class="acceso-demo-actions">' +
-            '<a class="btn-acceso-demo" href="' + tabletUrl + '" target="_blank" rel="noopener">Abrir tablet para escanear</a>' +
-            '<button class="btn-descargar-qr" type="button" data-qr-url="' + qrDataUrl + '" data-archivo="qr-acceso-reserva-' + codigo + '.png">Descargar QR</button>' +
+            '<a class="btn-acceso-demo" href="' + tabletUrl + '" target="_blank" rel="noopener">Abrir tablet puerta</a>' +
+            '<button class="btn-descargar-qr" type="button" data-qr-url="' + qrUrl + '" data-archivo="qr-acceso-reserva-' + codigo + '.png">Descargar QR</button>' +
             '</div>' +
             '</div>';
     }
+
 }

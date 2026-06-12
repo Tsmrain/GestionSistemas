@@ -1,4 +1,19 @@
 -- 1. Catálogo General de Inventario y Activos
+CREATE TABLE IF NOT EXISTS camareras (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    celular VARCHAR(20),
+    activo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+INSERT INTO camareras (nombre, celular, activo)
+VALUES
+    ('Camarera Juana', '', TRUE),
+    ('Camarera Maria', '', TRUE)
+ON CONFLICT (nombre) DO UPDATE
+SET celular = EXCLUDED.celular,
+    activo = EXCLUDED.activo;
+
 CREATE TABLE IF NOT EXISTS inventario_items (
     id BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL UNIQUE,

@@ -104,39 +104,8 @@ class PagoController {
 
     // Privado — inicia el pago en Efectivo
     async _iniciarPagoEfectivo(reserva) {
-        try {
-            var response = await fetch(ApiClient.url("/api/v1/pagos/iniciar"), {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    reservaId: reserva.id,
-                    metodo: "EFECTIVO"
-                })
-            });
-
-            if (!response.ok) {
-                this.view.mostrarError("Error al procesar el pago en efectivo.");
-                return;
-            }
-
-            this._desactivarCancelacionAutomatica();
-
-            var data = await response.json();
-            var pago = new Pago(
-                data.reservaId,
-                data.estado,
-                data.qrData,
-                data.comprobanteId,
-                data.nroComprobante,
-                data.ventanaCheckIn
-            );
-
-            // Mostrar el comprobante directamente con el mensaje de advertencia de efectivo
-            this.view.mostrarComprobante(pago, "EFECTIVO", reserva);
-
-        } catch (error) {
-            this.view.mostrarError("No se pudo conectar con el servidor.");
-        }
+        this._desactivarCancelacionAutomatica();
+        this.view.mostrarReservaEfectivoPendiente(reserva);
     }
 
     // Privado — polling cada 3 segundos para verificar si el QR fue pagado

@@ -99,6 +99,7 @@ public class InventarioService {
 
         // Bloquear habitación por mantenimiento
         habitacion.setEstadoActual("Mantenimiento");
+        habitacionRepository.updateEstadoActual(habitacion.getId(), "Mantenimiento");
         habitacionRepository.save(habitacion);
 
         return toIncidenciaResponse(incidencia);
@@ -132,6 +133,7 @@ public class InventarioService {
         if (!tienePendientes) {
             Habitacion habitacion = incidencia.getHabitacion();
             habitacion.setEstadoActual("Disponible");
+            habitacionRepository.updateEstadoActual(habitacion.getId(), "Disponible");
             habitacionRepository.save(habitacion);
         }
 
@@ -168,6 +170,12 @@ public class InventarioService {
             }
         }
 
+        Integer stockEnUso = stockEnUso(item.getId());
+        if (request.stockActual() < stockEnUso) {
+            throw new IllegalArgumentException("No se puede bajar el stock a " + request.stockActual()
+                    + " porque ya hay " + stockEnUso + " unidades asignadas a habitaciones.");
+        }
+
         item.setNombre(request.nombre());
         item.setTipo(request.tipo());
         item.setStockActual(request.stockActual());
@@ -193,8 +201,19 @@ public class InventarioService {
                 .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada: " + habitacionId));
         InventarioItem item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("Artículo no encontrado: " + itemId));
+        if (cantidadEsperada == null || cantidadEsperada < 1) {
+            throw new IllegalArgumentException("La cantidad esperada debe ser mayor a cero.");
+        }
 
         Optional<HabitacionInventario> existingOpt = habitacionInventarioRepository.findByHabitacionIdAndItemId(habitacionId, itemId);
+        Integer asignadoActual = existingOpt.map(HabitacionInventario::getCantidadEsperada).orElse(0);
+        Integer stockEnUsoSinEstaHabitacion = stockEnUso(itemId) - asignadoActual;
+        Integer disponible = item.getStockActual() - stockEnUsoSinEstaHabitacion;
+        if (cantidadEsperada > disponible) {
+            throw new IllegalArgumentException("Stock insuficiente para " + item.getNombre()
+                    + ". Disponible: " + Math.max(disponible, 0) + ", solicitado: " + cantidadEsperada + ".");
+        }
+
         if (existingOpt.isPresent()) {
             HabitacionInventario existing = existingOpt.get();
             existing.setCantidadEsperada(cantidadEsperada);
@@ -215,15 +234,24 @@ public class InventarioService {
     }
 
     private InventarioItemResponse toItemResponse(InventarioItem item) {
+        Integer enUso = stockEnUso(item.getId());
+        Integer disponible = Math.max(0, item.getStockActual() - enUso);
         return new InventarioItemResponse(
                 item.getId(),
                 item.getNombre(),
                 item.getTipo(),
                 item.getStockActual(),
+                enUso,
+                disponible,
                 item.getPrecioCompra(),
                 item.getPrecioVenta(),
                 item.getEmoji()
         );
+    }
+
+    private Integer stockEnUso(Long itemId) {
+        Integer total = habitacionInventarioRepository.sumCantidadEsperadaByItemId(itemId);
+        return total != null ? total : 0;
     }
 
     private HabitacionInventarioResponse toHabitacionInventarioResponse(HabitacionInventario habInv) {

@@ -75,6 +75,7 @@ class FinanzasServiceTest {
 
         Reserva r = new Reserva();
         r.setId(1L);
+        r.confirmarPago();
 
         Pago pago = new Pago(r, 150.0, "EFECTIVO", "COMPLETADO");
         pago.setFechaCreacion(LocalDateTime.now());

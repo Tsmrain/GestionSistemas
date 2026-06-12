@@ -1,0 +1,13 @@
+package com.reservas.residencial.application.dto;
+
+import java.time.LocalDate;
+
+public record ClienteResponse(
+        Long id,
+        String nombre,
+        String ci,
+        LocalDate fechaNacimiento,
+        String celular,
+        String urlFotoAnverso,
+        String urlFotoReverso
+) {}

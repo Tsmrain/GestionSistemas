@@ -9,4 +9,5 @@ public interface IncidenciaMantenimientoRepositoryPort {
     Optional<IncidenciaMantenimiento> findById(Long id);
     List<IncidenciaMantenimiento> findAll();
     List<IncidenciaMantenimiento> findByHabitacionId(Long habitacionId);
+    boolean existsByHabitacionIdAndEstado(Long habitacionId, String estado);
 }

@@ -2,6 +2,7 @@ package com.reservas.residencial.infrastructure.persistence.jpa;
 
 import com.reservas.residencial.domain.models.Habitacion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -46,4 +47,8 @@ public interface JpaHabitacionRepository extends JpaRepository<Habitacion, Long>
     List<Habitacion> findDisponibles(@Param("fecha") LocalDate fecha, @Param("tipoNombre") String tipoNombre);
 
     java.util.Optional<Habitacion> findByNumero(String numero);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Habitacion h set h.estadoActual = :estadoActual where h.id = :id")
+    void updateEstadoActual(@Param("id") Long id, @Param("estadoActual") String estadoActual);
 }

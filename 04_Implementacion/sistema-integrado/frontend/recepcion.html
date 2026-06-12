@@ -3,9 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-store">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Recepción</title>
-    <link rel="stylesheet" href="css/styless.css?v=recepcion-finanzas-periodos-1">
+    <link rel="stylesheet" href="css/styless.css?v=recepcion-sin-puerta-1">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
@@ -33,6 +34,7 @@
                 <button id="btn-nueva-habitacion" class="btn-agregar" type="button">+ Nueva Habitación</button>
                 <a class="btn-secundario recepcion-nav-link" href="ventas-insumos.html">Ventas de Insumos</a>
                 <button id="btn-finanzas-panel" class="btn-secundario" type="button" style="height: 34px; padding: 0 14px; font-weight: 500; font-size: 13px; border-radius: 8px; cursor: pointer;">📊 Finanzas e Inventario</button>
+                <button id="btn-admin-panel" class="btn-secundario" type="button" style="height: 34px; padding: 0 14px; font-weight: 500; font-size: 13px; border-radius: 8px; cursor: pointer;">⚙️ Administración</button>
                 <a class="btn-volver" href="index.html">← Volver</a>
                 <button id="btn-logout-recepcion" class="btn-salir" type="button">Salir</button>
             </div>
@@ -138,7 +140,7 @@
                             <option value="SALARIOS">Salarios / Personal</option>
                             <option value="OTROS">Otros Gastos</option>
                         </select>
-                        <input id="egreso-comprobante" type="text" placeholder="URL foto comprobante (opcional)" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 13px;">
+                        <input id="egreso-comprobante" type="file" accept="image/*" style="width: 100%; height: 40px; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 13px;">
                         <button type="submit" style="background: #E53935; color: #fff; height: 42px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; font-size: 13px; transition: background 0.2s;">Registrar Gasto</button>
                     </form>
                 </div>
@@ -164,7 +166,9 @@
                             <th style="padding: 10px;">Emoji</th>
                             <th style="padding: 10px;">Nombre del Item</th>
                             <th style="padding: 10px;">Tipo</th>
-                            <th style="padding: 10px; text-align: right;">Stock General</th>
+                            <th style="padding: 10px; text-align: right;">Stock Total</th>
+                            <th style="padding: 10px; text-align: right;">En Uso</th>
+                            <th style="padding: 10px; text-align: right;">Disponible</th>
                             <th style="padding: 10px; text-align: right;">Precio Compra</th>
                             <th style="padding: 10px; text-align: right;">Precio Venta / Multa</th>
                             <th style="padding: 10px; text-align: center;">Acciones</th>
@@ -198,11 +202,29 @@
                 </table>
             </div>
         </div>
+
+        <!-- Panel de Administración / ABM -->
+        <div id="administracion-panel" style="display:none; padding: 20px 24px 24px; background: #f5f5f5; font-family: 'Montserrat', sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:15px; flex-wrap:wrap;">
+                <div>
+                    <h2 style="font-size:18px; margin:0; font-weight:600; color:#1a1a1a;">⚙️ Administración / ABM</h2>
+                    <p style="margin:4px 0 0; color:#666; font-size:12px;">Clientes, camareras, usuarios de recepción e incidencias.</p>
+                </div>
+                <div id="admin-tabs" class="finanzas-periodos">
+                    <button type="button" data-admin-modulo="clientes" class="activo">Clientes</button>
+                    <button type="button" data-admin-modulo="camareras">Camareras</button>
+                    <button type="button" data-admin-modulo="recepcionistas">Recepción</button>
+                    <button type="button" data-admin-modulo="incidencias">Incidencias</button>
+                </div>
+            </div>
+            <div id="admin-status" class="panel-status" style="display:none"></div>
+            <div id="admin-content"></div>
+        </div>
     </div>
 
-    <script src="views/RecepcionView.js?v=recepcion-finanzas-periodos-1"></script>
+    <script src="views/RecepcionView.js?v=recepcion-admin-abm-2"></script>
     <script src="controllers/ApiClient.js?v=api-client-2"></script>
-    <script src="controllers/RecepcionController.js?v=recepcion-finanzas-periodos-1"></script>
+    <script src="controllers/RecepcionController.js?v=recepcion-admin-abm-2"></script>
 </body>
 
 </html>

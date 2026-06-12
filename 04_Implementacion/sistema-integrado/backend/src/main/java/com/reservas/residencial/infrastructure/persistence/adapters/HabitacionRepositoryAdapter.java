@@ -39,6 +39,11 @@ public class HabitacionRepositoryAdapter implements HabitacionRepositoryPort {
         return repository.save(habitacion);
     }
 
+    @Override
+    public void updateEstadoActual(Long id, String estadoActual) {
+        repository.updateEstadoActual(id, estadoActual);
+    }
+
     // NUEVO
     @Override
     public List<Habitacion> findAll() {

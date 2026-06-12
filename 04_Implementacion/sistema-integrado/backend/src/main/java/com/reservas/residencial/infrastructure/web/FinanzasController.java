@@ -7,8 +7,10 @@ import com.reservas.residencial.application.usecases.FinanzasService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -27,8 +29,19 @@ public class FinanzasController {
         return ResponseEntity.ok(finanzasService.obtenerReporteFinanzas(fechaInicio, fechaFin));
     }
 
-    @PostMapping("/egresos")
-    public ResponseEntity<EgresoResponse> registrarEgreso(@Valid @RequestBody EgresoRequest request) {
+    @PostMapping(value = "/egresos", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EgresoResponse> registrarEgresoJson(@Valid @RequestBody EgresoRequest request) {
         return ResponseEntity.ok(finanzasService.registrarEgreso(request));
+    }
+
+    @PostMapping(value = "/egresos", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EgresoResponse> registrarEgreso(
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("monto") Double monto,
+            @RequestParam("categoria") String categoria,
+            @RequestParam("recepcionista") String recepcionista,
+            @RequestParam(value = "comprobante", required = false) MultipartFile comprobante) {
+        EgresoRequest request = new EgresoRequest(descripcion, monto, categoria, recepcionista, null);
+        return ResponseEntity.ok(finanzasService.registrarEgreso(request, comprobante));
     }
 }

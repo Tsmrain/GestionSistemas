@@ -45,5 +45,12 @@ public interface JpaReservaRepository extends JpaRepository<Reserva, Long> {
             Collection<String> estados
     );
 
+    java.util.List<Reserva> findByHabitacionIdAndEstadoInOrderByIdDesc(
+            Long habitacionId,
+            Collection<String> estados
+    );
+
     boolean existsByHabitacionId(Long habitacionId);
+
+    boolean existsByHuespedIdOrAcompananteId(Long huespedId, Long acompananteId);
 }

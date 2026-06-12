@@ -125,8 +125,8 @@ class RecepcionView {
         overlay.className = "modal-overlay";
         overlay.id = "modal-checkin";
 
-        var fotoAnverso = reserva.huesped.urlFotoAnverso || "";
-        var fotoReverso = reserva.huesped.urlFotoReverso || "";
+        var fotoAnverso = this._assetUrl(reserva.huesped.urlFotoAnverso || "");
+        var fotoReverso = this._assetUrl(reserva.huesped.urlFotoReverso || "");
         var horaIngreso = reserva.horaIngreso
             ? new Date(reserva.horaIngreso).toLocaleTimeString("es-BO", { hour: "2-digit", minute: "2-digit" })
             : "--:--";
@@ -530,7 +530,8 @@ class RecepcionView {
                 itemDiv.style.cssText = "padding: 8px 10px; background: #fafafa; border-radius: 6px; border-left: 3px solid #ef4444; display: flex; justify-content: space-between; align-items: center;";
                 var fechaStr = new Date(e.fecha).toLocaleDateString("es-BO") + " " + new Date(e.fecha).toLocaleTimeString("es-BO", {hour: "2-digit", minute:"2-digit"});
                 
-                var compHtml = e.urlComprobante ? ` <a href="${e.urlComprobante}" target="_blank" style="text-decoration:none;">📄</a>` : "";
+                var compUrl = this._assetUrl(e.urlComprobante || "");
+                var compHtml = compUrl ? ` <a href="${compUrl}" target="_blank" style="text-decoration:none;">📄</a>` : "";
 
                 itemDiv.innerHTML = `
                     <div>
@@ -552,6 +553,8 @@ class RecepcionView {
                 <td style="padding: 8px;"><strong>${item.nombre}</strong></td>
                 <td style="padding: 8px; font-size: 11px; color:#666;">${item.tipo}</td>
                 <td style="padding: 8px; text-align: right; font-weight:600;">${item.stockActual}</td>
+                <td style="padding: 8px; text-align: right; color:#555;">${item.stockEnUso || 0}</td>
+                <td style="padding: 8px; text-align: right; font-weight:700; color:${(item.stockDisponible || 0) <= 0 ? "#c0392b" : "#2E7D32"};">${item.stockDisponible || 0}</td>
                 <td style="padding: 8px; text-align: right; color:#555;">Bs ${(item.precioCompra || 0).toFixed(2)}</td>
                 <td style="padding: 8px; text-align: right; color:#555;">Bs ${(item.precioVenta || 0).toFixed(2)}</td>
                 <td style="padding: 8px; text-align: center;">
@@ -617,7 +620,18 @@ class RecepcionView {
         status.style.display = "block";
     }
 
-    mostrarModalPreverificacionCheckout(reserva, itemsInventario, onVerificado) {
+    _assetUrl(url) {
+        if (!url) return "";
+        if (/^https?:\/\//i.test(url) || url.startsWith("data:")) return url;
+        if (window.ApiClient && url.startsWith("/")) return ApiClient.url(url);
+        return url;
+    }
+
+    mostrarModalPreverificacionCheckout(reserva, itemsInventario, camareras, onVerificado) {
+        if (typeof camareras === "function") {
+            onVerificado = camareras;
+            camareras = [];
+        }
         var overlay = document.createElement("div");
         overlay.className = "modal-overlay";
         overlay.id = "modal-preverificacion-checkout";
@@ -634,6 +648,17 @@ class RecepcionView {
                 <label style="font-size:11px; display:flex; align-items:center; gap:3px;"><input class="preverif-cobrar" type="checkbox" checked> Cobrar</label>
             </div>
         `).join("");
+        var camarerasOptions = (camareras || []).map(camarera => `
+            <option value="${camarera.nombre}">${camarera.nombre}</option>
+        `).join("");
+        var camareraField = camarerasOptions ? `
+            <select id="preverif-camarera" required style="width: 100%; height:38px; padding:0 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px; background:#fff;">
+                <option value="">Seleccione camarera...</option>
+                ${camarerasOptions}
+            </select>
+        ` : `
+            <input id="preverif-camarera" type="text" placeholder="Ej: Camarera Juana" required style="width: 100%; height:38px; padding:0 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+        `;
 
         overlay.innerHTML = `
             <div class="modal" style="max-width: 500px; width:100%;">
@@ -642,7 +667,7 @@ class RecepcionView {
                 
                 <div style="margin-bottom:15px; display:flex; flex-direction:column; gap:5px; text-align:left;">
                     <label for="preverif-camarera" style="font-size:12px; font-weight:600; color:#555;">Nombre de la camarera (Walkie-talkie)</label>
-                    <input id="preverif-camarera" type="text" placeholder="Ej: Camarera Juana" required style="width: 100%; height:38px; padding:0 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                    ${camareraField}
                 </div>
 
                 <div style="max-height:220px; overflow-y:auto; margin-bottom:15px; text-align:left; border:1px solid #eee; padding:10px; border-radius:8px; background:#fafafa;">
@@ -987,6 +1012,7 @@ class RecepcionView {
         var estadoLower = estadoFormateado.toLowerCase();
         if (estadoLower === "disponible") {
             actionButtonsHtml += `
+                <button type="button" id="btn-ingreso-puerta" style="background:#2E7D32; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">💵 Ingreso en Puerta</button>
                 <button type="button" id="btn-estado-limpieza" style="background:#0D47A1; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🧹 Iniciar Limpieza</button>
                 <button type="button" id="btn-estado-mantenimiento" style="background:#E65100; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🔧 Reportar Incidencia</button>
             `;
@@ -1081,6 +1107,14 @@ class RecepcionView {
             });
         }
 
+        var btnIngresoPuerta = document.getElementById("btn-ingreso-puerta");
+        if (btnIngresoPuerta) {
+            btnIngresoPuerta.addEventListener("click", () => {
+                overlay.remove();
+                callbacks.onRegistrarIngresoPuerta();
+            });
+        }
+
         overlay.querySelectorAll(".btn-eliminar-hab-item").forEach(btn => {
             btn.addEventListener("click", function() {
                 var itemId = parseInt(this.getAttribute("data-item-id"));
@@ -1128,6 +1162,49 @@ class RecepcionView {
         }
     }
 
+    mostrarModalIngresoPuerta(habitacion, onSubmit) {
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-ingreso-puerta";
+        overlay.innerHTML = `
+            <div class="modal" style="max-width: 460px; width:100%;">
+                <h2 class="modal-titulo">💵 Ingreso en Puerta · Habitación ${habitacion.numero}</h2>
+                <p style="font-size:12px; color:#666; margin:5px 0 14px;">Recepción confirma el efectivo y la habitación queda ocupada.</p>
+                <form id="form-ingreso-puerta" style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+                    <input id="puerta-nombre" type="text" placeholder="Nombre del huésped" required style="height:40px; padding:0 12px; border:1px solid #ddd; border-radius:8px; font-family:'Montserrat',sans-serif;">
+                    <input id="puerta-ci" type="text" placeholder="CI" required style="height:40px; padding:0 12px; border:1px solid #ddd; border-radius:8px; font-family:'Montserrat',sans-serif;">
+                    <input id="puerta-celular" type="tel" placeholder="Celular (opcional)" style="height:40px; padding:0 12px; border:1px solid #ddd; border-radius:8px; font-family:'Montserrat',sans-serif;">
+                    <label style="font-size:12px; font-weight:600; color:#555;">Foto CI anverso<input id="puerta-foto-anverso" type="file" accept="image/*" required style="width:100%; margin-top:5px;"></label>
+                    <label style="font-size:12px; font-weight:600; color:#555;">Foto CI reverso<input id="puerta-foto-reverso" type="file" accept="image/*" required style="width:100%; margin-top:5px;"></label>
+                    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:6px;">
+                        <button type="button" id="btn-cancelar-ingreso-puerta" style="background:#e0e0e0; color:#333; height:40px; border:none; border-radius:8px; cursor:pointer; font-weight:600; padding:0 15px;">Cancelar</button>
+                        <button type="submit" style="background:#2E7D32; color:#fff; height:40px; border:none; border-radius:8px; cursor:pointer; font-weight:600; padding:0 15px;">Confirmar efectivo e ingresar</button>
+                    </div>
+                    <div id="ingreso-puerta-error" class="form-error" style="display:none;"></div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        document.getElementById("btn-cancelar-ingreso-puerta").addEventListener("click", function () {
+            overlay.remove();
+        });
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        document.getElementById("form-ingreso-puerta").addEventListener("submit", function (e) {
+            e.preventDefault();
+            onSubmit({
+                nombre: document.getElementById("puerta-nombre").value.trim(),
+                ci: document.getElementById("puerta-ci").value.trim(),
+                celular: document.getElementById("puerta-celular").value.trim(),
+                fotoAnverso: document.getElementById("puerta-foto-anverso").files[0],
+                fotoReverso: document.getElementById("puerta-foto-reverso").files[0]
+            }, overlay);
+        });
+    }
+
     mostrarModalAsignarItem(habitacion, catalogoItems, onSubmit) {
         var overlay = document.createElement("div");
         overlay.className = "modal-overlay";
@@ -1135,7 +1212,7 @@ class RecepcionView {
         overlay.style.zIndex = "1100";
 
         var itemOptions = catalogoItems.map(item => `
-            <option value="${item.id}">${item.emoji || "📦"} ${item.nombre} (${item.tipo})</option>
+            <option value="${item.id}" data-disponible="${item.stockDisponible || 0}">${item.emoji || "📦"} ${item.nombre} (${item.tipo}) · disponible ${item.stockDisponible || 0}</option>
         `).join("");
 
         overlay.innerHTML = `
@@ -1152,6 +1229,7 @@ class RecepcionView {
                     <div style="display: flex; flex-direction: column; gap: 5px;">
                         <label for="asignar-form-cantidad" style="font-size: 12px; font-weight: 600; color: #555;">Cantidad Esperada</label>
                         <input id="asignar-form-cantidad" type="number" min="1" value="1" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family:'Montserrat',sans-serif; font-size:13px;">
+                        <small id="asignar-stock-ayuda" style="font-size:11px; color:#666;">Selecciona un artículo para ver stock disponible.</small>
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end;">
                         <button type="button" id="btn-cancelar-asignar" style="background: #e0e0e0; color: #333; height: 40px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-family:'Montserrat',sans-serif; font-size:12px; padding: 0 15px;">Cancelar</button>
@@ -1172,10 +1250,30 @@ class RecepcionView {
         });
 
         var form = document.getElementById("form-asignar-item");
+        var selectItem = document.getElementById("asignar-form-item");
+        var cantidadInput = document.getElementById("asignar-form-cantidad");
+        var ayuda = document.getElementById("asignar-stock-ayuda");
+
+        function actualizarDisponible() {
+            var option = selectItem.options[selectItem.selectedIndex];
+            var disponible = option ? parseInt(option.getAttribute("data-disponible")) || 0 : 0;
+            cantidadInput.max = disponible > 0 ? String(disponible) : "1";
+            ayuda.textContent = selectItem.value ? "Disponible para asignar: " + disponible : "Selecciona un artículo para ver stock disponible.";
+        }
+
+        selectItem.addEventListener("change", actualizarDisponible);
+        actualizarDisponible();
+
         form.addEventListener("submit", function(e) {
             e.preventDefault();
-            var itemId = parseInt(document.getElementById("asignar-form-item").value);
-            var cantidad = parseInt(document.getElementById("asignar-form-cantidad").value);
+            var itemId = parseInt(selectItem.value);
+            var cantidad = parseInt(cantidadInput.value);
+            var option = selectItem.options[selectItem.selectedIndex];
+            var disponible = option ? parseInt(option.getAttribute("data-disponible")) || 0 : 0;
+            if (!itemId || cantidad < 1 || cantidad > disponible) {
+                alert("La cantidad debe estar entre 1 y el stock disponible (" + disponible + ").");
+                return;
+            }
             overlay.remove();
             onSubmit(itemId, cantidad);
         });

@@ -60,11 +60,10 @@ public class CheckInService {
 
     @Transactional(readOnly = true)
     public List<ReservaResponse> buscarReservasPorHabitacion(Long habitacionId) {
-        return reservaRepository.findVisibleByHabitacionId(habitacionId)
-                .filter(this::esReservaVisibleParaCheckIn)
+        return reservaRepository.findAllByHabitacionIdAndEstados(habitacionId, List.of("ACTIVA", "PAGADA", "PENDIENTE_PAGO"))
+                .stream()
                 .map(this::toResponse)
-                .map(List::of)
-                .orElseGet(List::of);
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -218,7 +217,8 @@ public class CheckInService {
         Reserva reserva = reservaRepository.findById(request.reservaId())
                 .orElseThrow(() -> new IllegalArgumentException("Reserva no encontrada: " + request.reservaId()));
 
-        Habitacion habitacion = reserva.getHabitacion();
+        Habitacion habitacion = habitacionRepository.findById(reserva.getHabitacion().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada: " + reserva.getHabitacion().getId()));
 
         boolean conforme = true;
         for (ItemPreverificacion det : request.detalles()) {
@@ -322,22 +322,20 @@ public class CheckInService {
             ));
         }
 
-        // Finalizar reserva y actualizar estado de la habitación
-        reserva.finalizarEstadia();
-        reservaRepository.save(reserva);
+        limpiarReservasAbiertasDeHabitacion(habitacion.getId(), reserva.getId());
 
         boolean tieneDanos = request.detalles().stream().anyMatch(d -> "DAÑADO".equals(d.estadoReportado()));
-        if (tieneDanos) {
-            habitacion.setEstadoActual("Mantenimiento");
-        } else {
-            habitacion.setEstadoActual("Limpieza");
-        }
-        habitacionRepository.save(habitacion);
+        String estadoFinalHabitacion = tieneDanos ? "Mantenimiento" : "Limpieza";
+        Habitacion habitacionActualizada = habitacionRepository.findById(habitacion.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada: " + habitacion.getId()));
+        habitacionActualizada.setEstadoActual(estadoFinalHabitacion);
+        habitacionRepository.updateEstadoActual(habitacionActualizada.getId(), estadoFinalHabitacion);
+        habitacionRepository.save(habitacionActualizada);
 
         return new PreverificacionResponse(
                 verificacion.getId(),
                 reserva.getId(),
-                habitacion.getId(),
+                habitacionActualizada.getId(),
                 verificacion.getFechaVerificacion(),
                 verificacion.getRecepcionista(),
                 verificacion.getNombreCamarera(),
@@ -346,5 +344,23 @@ public class CheckInService {
                 totalCargosExtra,
                 listDetalles
         );
+    }
+
+    private void limpiarReservasAbiertasDeHabitacion(Long habitacionId, Long reservaCheckoutId) {
+        reservaRepository.findAllByHabitacionIdAndEstados(habitacionId, List.of("ACTIVA", "PAGADA", "PENDIENTE_PAGO"))
+                .stream()
+                .filter(this::esReservaActualOPasada)
+                .forEach(reservaAbierta -> {
+                    if ("ACTIVA".equals(reservaAbierta.getEstado()) || reservaAbierta.getId().equals(reservaCheckoutId)) {
+                        reservaAbierta.finalizarEstadia();
+                    } else {
+                        reservaAbierta.cancelar();
+                    }
+                    reservaRepository.save(reservaAbierta);
+                });
+    }
+
+    private boolean esReservaActualOPasada(Reserva reserva) {
+        return reserva.getFechaIngreso() == null || !reserva.getFechaIngreso().isAfter(LocalDate.now());
     }
 }

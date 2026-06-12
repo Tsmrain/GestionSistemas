@@ -6,6 +6,7 @@ import com.reservas.residencial.application.dto.HabitacionEstadoResponse;
 import com.reservas.residencial.application.dto.TipoHabitacionResponse;
 import com.reservas.residencial.application.dto.GuardarHabitacionRequest;
 import com.reservas.residencial.application.ports.out.HabitacionRepositoryPort;
+import com.reservas.residencial.application.ports.out.IncidenciaMantenimientoRepositoryPort;
 import com.reservas.residencial.application.ports.out.ReservaRepositoryPort;
 import com.reservas.residencial.domain.models.Habitacion;
 import com.reservas.residencial.domain.models.TipoHabitacion;
@@ -13,7 +14,6 @@ import com.reservas.residencial.domain.models.Reserva;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -23,12 +23,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DisponibilidadService {
 
-    private static final String ESTADO_CANCELADA = "CANCELADA";
     private static final String ESTADO_DISPONIBLE = "Disponible";
     private static final String ESTADO_LIMPIEZA = "Limpieza";
 
     private final HabitacionRepositoryPort habitacionRepository;
     private final ReservaRepositoryPort reservaRepository;
+    private final IncidenciaMantenimientoRepositoryPort incidenciaRepository;
 
     public List<HabitacionDisponibleResponse> consultarDisponibilidad(ConsultarDisponibilidadQuery query) {
         String tipoNormalizado = normalizarTipo(query.tipoNombre());
@@ -53,14 +53,14 @@ public class DisponibilidadService {
         Habitacion habitacion = habitacionRepository.findById(habitacionId)
                 .orElseThrow(() -> new IllegalArgumentException("Habitacion no encontrada: " + habitacionId));
 
-        reservaRepository.findActiveByHabitacionAndFecha(habitacionId, LocalDate.now(), ESTADO_CANCELADA)
-                .filter(reserva -> "ACTIVA".equals(reserva.getEstado()))
-                .ifPresent(reserva -> {
+        reservaRepository.findAllByHabitacionIdAndEstados(habitacionId, List.of("ACTIVA"))
+                .forEach(reserva -> {
                     reserva.finalizarEstadia();
                     reservaRepository.save(reserva);
                 });
 
         habitacion.setEstadoActual(ESTADO_LIMPIEZA);
+        habitacionRepository.updateEstadoActual(habitacionId, ESTADO_LIMPIEZA);
         return toEstadoResponse(habitacionRepository.save(habitacion));
     }
 
@@ -68,7 +68,14 @@ public class DisponibilidadService {
         Habitacion habitacion = habitacionRepository.findById(habitacionId)
                 .orElseThrow(() -> new IllegalArgumentException("Habitacion no encontrada: " + habitacionId));
 
+        if (incidenciaRepository.existsByHabitacionIdAndEstado(habitacionId, "PENDIENTE")) {
+            habitacion.setEstadoActual("Mantenimiento");
+            habitacionRepository.updateEstadoActual(habitacionId, "Mantenimiento");
+            throw new IllegalStateException("La habitación tiene incidencias pendientes. Resuélvelas antes de marcarla disponible.");
+        }
+
         habitacion.setEstadoActual(ESTADO_DISPONIBLE);
+        habitacionRepository.updateEstadoActual(habitacionId, ESTADO_DISPONIBLE);
         return toEstadoResponse(habitacionRepository.save(habitacion));
     }
 
@@ -99,13 +106,14 @@ public class DisponibilidadService {
 
     // ✅ NUEVO
     private HabitacionEstadoResponse toEstadoResponse(Habitacion habitacion) {
-        Reserva reservaVigente = reservaRepository
-                .findVisibleByHabitacionId(habitacion.getId())
-                .orElse(null);
-
-        String estadoPanel = reservaVigente != null
-                ? reservaVigente.getEstado()
-                : habitacion.getEstadoActual();
+        String estadoOperativo = normalizarEstadoOperativo(habitacion.getEstadoActual());
+        boolean tieneIncidenciaPendiente = !("LIMPIEZA".equals(estadoOperativo) || "MANTENIMIENTO".equals(estadoOperativo))
+                && incidenciaRepository.existsByHabitacionIdAndEstado(habitacion.getId(), "PENDIENTE");
+        if (tieneIncidenciaPendiente) {
+            estadoOperativo = "MANTENIMIENTO";
+        }
+        Reserva reservaVigente = resolverReservaParaPanel(habitacion, estadoOperativo);
+        String estadoPanel = estadoOperativoParaPanel(estadoOperativo, habitacion.getEstadoActual());
 
         return new HabitacionEstadoResponse(
                 habitacion.getId(),
@@ -122,6 +130,40 @@ public class DisponibilidadService {
                 reservaVigente != null ? reservaVigente.getEstado() : null,
                 reservaVigente != null ? reservaVigente.getHuesped().getNombre() : null,
                 reservaVigente != null ? reservaVigente.getHuesped().getCi() : null);
+    }
+
+    private Reserva resolverReservaParaPanel(Habitacion habitacion, String estadoOperativo) {
+        if ("LIMPIEZA".equals(estadoOperativo) || "MANTENIMIENTO".equals(estadoOperativo)) {
+            return null;
+        }
+        if ("OCUPADA".equals(estadoOperativo) || "ACTIVA".equals(estadoOperativo)) {
+            return reservaRepository
+                    .findAllByHabitacionIdAndEstados(habitacion.getId(), List.of("ACTIVA"))
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    private String estadoOperativoParaPanel(String estadoOperativo, String estadoOriginal) {
+        return switch (estadoOperativo) {
+            case "DISPONIBLE" -> ESTADO_DISPONIBLE;
+            case "LIMPIEZA" -> ESTADO_LIMPIEZA;
+            case "MANTENIMIENTO" -> "Mantenimiento";
+            case "OCUPADA", "ACTIVA" -> "Ocupada";
+            default -> estadoOriginal;
+        };
+    }
+
+    private String normalizarEstadoOperativo(String estado) {
+        if (estado == null) return "";
+        String limpio = estado.trim();
+        if ("Limpieza".equalsIgnoreCase(limpio) || "En limpieza".equalsIgnoreCase(limpio)) return "LIMPIEZA";
+        if ("Mantenimiento".equalsIgnoreCase(limpio)) return "MANTENIMIENTO";
+        if ("Ocupada".equalsIgnoreCase(limpio)) return "OCUPADA";
+        if ("Disponible".equalsIgnoreCase(limpio)) return "DISPONIBLE";
+        return limpio.toUpperCase();
     }
 
     public List<TipoHabitacionResponse> listarTodosTipos() {

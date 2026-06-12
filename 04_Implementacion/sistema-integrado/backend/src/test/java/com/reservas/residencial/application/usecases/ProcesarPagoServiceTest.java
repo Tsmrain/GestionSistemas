@@ -214,18 +214,13 @@ class ProcesarPagoServiceTest {
     // Camino 3a CU-03: Pago en efectivo
     // ─────────────────────────────────────────────────────────
     @Test
-    @DisplayName("Camino 3a CU-03 | Pago efectivo: Recepcionista confirma → reserva PAGADA inmediatamente")
+    @DisplayName("Camino 3a CU-03 | Pago efectivo público: queda pendiente hasta confirmación de recepción")
     void caminoAlternativo3a_PagoEfectivo_Exito() {
         // Given
         Long reservaId = 1L;
         Reserva reserva = reservaConId(reservaId, 100.0);
-        Comprobante comprobante = new Comprobante(new Pago());
-        comprobante.setId(5L);
-        comprobante.setNroComprobante("COMP-EF123456");
 
         when(reservaRepository.findById(reservaId)).thenReturn(Optional.of(reserva));
-        when(pagoRepository.findPendingByReservaId(reservaId)).thenReturn(Optional.empty());
-        when(comprobanteRepository.save(any(Comprobante.class))).thenReturn(comprobante);
 
         IniciarPagoRequest request = new IniciarPagoRequest(reservaId, "EFECTIVO");
 
@@ -233,13 +228,16 @@ class ProcesarPagoServiceTest {
         PagoStatusResponse response = procesarPagoService.iniciarProcesoPago(request);
 
         // Then
-        assertEquals("COMPLETADO", response.estado());
-        assertEquals("PAGADA", reserva.getEstado());
-        assertNotNull(reserva.getFechaPago());
-        assertNotNull(reserva.getVentanaCheckIn());
+        assertEquals("PENDIENTE", response.estado());
+        assertEquals("PENDIENTE_PAGO", reserva.getEstado());
+        assertNull(reserva.getFechaPago());
+        assertNull(reserva.getVentanaCheckIn());
         assertNull(response.qrData());
-        verify(pagoRepository).save(any(Pago.class));
-        verify(reservaRepository).save(reserva);
+        assertNull(response.comprobanteId());
+        assertNull(response.nroComprobante());
+        verify(pagoRepository, never()).save(any(Pago.class));
+        verify(reservaRepository, never()).save(any(Reserva.class));
+        verifyNoInteractions(comprobanteRepository);
         verifyNoInteractions(bnbPort);
     }
 

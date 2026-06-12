@@ -1,15 +1,27 @@
 package com.reservas.residencial.application.usecases;
 
+import com.reservas.residencial.application.dto.ItemPreverificacion;
+import com.reservas.residencial.application.dto.PreverificacionRequest;
 import com.reservas.residencial.application.dto.ReservaResponse;
+import com.reservas.residencial.application.ports.out.ConsumoExtraRepositoryPort;
+import com.reservas.residencial.application.ports.out.EgresoRepositoryPort;
 import com.reservas.residencial.application.ports.out.FileStoragePort;
+import com.reservas.residencial.application.ports.out.HabitacionInventarioRepositoryPort;
 import com.reservas.residencial.application.ports.out.HabitacionRepositoryPort;
 import com.reservas.residencial.application.ports.out.HuespedRepositoryPort;
+import com.reservas.residencial.application.ports.out.IncidenciaMantenimientoRepositoryPort;
+import com.reservas.residencial.application.ports.out.InventarioItemRepositoryPort;
 import com.reservas.residencial.application.ports.out.PagoRepositoryPort;
 import com.reservas.residencial.application.ports.out.ReservaRepositoryPort;
+import com.reservas.residencial.application.ports.out.VerificacionCheckoutRepositoryPort;
 import com.reservas.residencial.domain.models.Habitacion;
+import com.reservas.residencial.domain.models.HabitacionInventario;
 import com.reservas.residencial.domain.models.Huesped;
+import com.reservas.residencial.domain.models.InventarioItem;
 import com.reservas.residencial.domain.models.Reserva;
 import com.reservas.residencial.domain.models.TipoHabitacion;
+import com.reservas.residencial.domain.models.VerificacionCheckout;
+import com.reservas.residencial.domain.models.VerificacionDetalle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +56,24 @@ class CheckInServiceTest {
 
     @Mock
     private PagoRepositoryPort pagoRepository;
+
+    @Mock
+    private InventarioItemRepositoryPort itemRepository;
+
+    @Mock
+    private HabitacionInventarioRepositoryPort habitacionInventarioRepository;
+
+    @Mock
+    private VerificacionCheckoutRepositoryPort verificacionCheckoutRepository;
+
+    @Mock
+    private ConsumoExtraRepositoryPort consumoExtraRepository;
+
+    @Mock
+    private EgresoRepositoryPort egresoRepository;
+
+    @Mock
+    private IncidenciaMantenimientoRepositoryPort incidenciaRepository;
 
     @InjectMocks
     private CheckInService checkInService;
@@ -147,5 +178,58 @@ class CheckInServiceTest {
         // La hora de salida estimada debe ser ventanaCheckIn + 12 horas
         LocalDateTime salidaEsperada = reserva.getVentanaCheckIn().plusHours(12);
         assertThat(result.horaSalidaEstimada()).isEqualToIgnoringSeconds(salidaEsperada);
+    }
+
+    @Test
+    void preverificarCheckout_FinalizaTodasLasActivasDeLaHabitacionYEnviaALimpieza() {
+        reserva.setEstado("ACTIVA");
+        Reserva otraActiva = new Reserva();
+        otraActiva.setId(11L);
+        otraActiva.setEstado("ACTIVA");
+        otraActiva.setHabitacion(habitacion);
+        otraActiva.setHuesped(huesped);
+        Reserva pagadaColgada = new Reserva();
+        pagadaColgada.setId(12L);
+        pagadaColgada.setEstado("PAGADA");
+        pagadaColgada.setFechaIngreso(LocalDate.now());
+        pagadaColgada.setHabitacion(habitacion);
+        pagadaColgada.setHuesped(huesped);
+
+        InventarioItem item = new InventarioItem("Toalla", "REUSABLE", 10, 20.0, 30.0, "🧴");
+        item.setId(5L);
+        HabitacionInventario habitacionInventario = new HabitacionInventario(habitacion, item, 1, 1);
+        VerificacionCheckout verificacion = new VerificacionCheckout(reserva, habitacion, "Recepcionista 1", "Juana", true, "");
+        verificacion.setId(20L);
+
+        when(reservaRepository.findById(10L)).thenReturn(Optional.of(reserva));
+        when(habitacionRepository.findById(1L)).thenReturn(Optional.of(habitacion));
+        when(verificacionCheckoutRepository.save(any(VerificacionCheckout.class))).thenReturn(verificacion);
+        when(itemRepository.findById(5L)).thenReturn(Optional.of(item));
+        when(habitacionInventarioRepository.findByHabitacionIdAndItemId(1L, 5L)).thenReturn(Optional.of(habitacionInventario));
+        when(habitacionInventarioRepository.save(any(HabitacionInventario.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(verificacionCheckoutRepository.saveDetalle(any(VerificacionDetalle.class))).thenAnswer(i -> {
+            VerificacionDetalle detalle = i.getArgument(0);
+            detalle.setId(30L);
+            return detalle;
+        });
+        when(reservaRepository.findAllByHabitacionIdAndEstados(1L, List.of("ACTIVA", "PAGADA", "PENDIENTE_PAGO")))
+                .thenReturn(List.of(reserva, otraActiva, pagadaColgada));
+
+        checkInService.preverificarCheckout(new PreverificacionRequest(
+                10L,
+                "Recepcionista 1",
+                "Juana",
+                "",
+                List.of(new ItemPreverificacion(5L, "OK", 0, true))
+        ));
+
+        assertThat(reserva.getEstado()).isEqualTo("FINALIZADA");
+        assertThat(otraActiva.getEstado()).isEqualTo("FINALIZADA");
+        assertThat(pagadaColgada.getEstado()).isEqualTo("CANCELADA");
+        assertThat(habitacion.getEstadoActual()).isEqualTo("Limpieza");
+        verify(reservaRepository).save(reserva);
+        verify(reservaRepository).save(otraActiva);
+        verify(reservaRepository).save(pagadaColgada);
+        verify(habitacionRepository).save(habitacion);
     }
 }
