@@ -1493,6 +1493,7 @@ class RecepcionController {
     _manejarClickAdmin(event) {
         var boton = event.target.closest("[data-admin-action]");
         if (!boton) return;
+        event.preventDefault();
         var action = boton.dataset.adminAction;
         var id = boton.dataset.adminId;
 
@@ -1817,7 +1818,10 @@ class RecepcionController {
 
     _editarAdminCliente(id) {
         var cliente = this._buscarAdmin("clientes", id);
-        if (!cliente) return;
+        if (!cliente) {
+            this._mostrarEstadoAdmin("No se encontró el cliente seleccionado. Recarga el módulo e intenta otra vez.", "error");
+            return;
+        }
         document.getElementById("admin-cliente-id").value = cliente.id;
         document.getElementById("admin-cliente-nombre").value = cliente.nombre || "";
         document.getElementById("admin-cliente-ci").value = cliente.ci || "";
@@ -1825,36 +1829,49 @@ class RecepcionController {
         document.getElementById("admin-cliente-fecha").value = cliente.fechaNacimiento || "";
         document.getElementById("admin-cliente-anverso-actual").value = cliente.urlFotoAnverso || "";
         document.getElementById("admin-cliente-reverso-actual").value = cliente.urlFotoReverso || "";
+        this._marcarModoAdmin("admin-form-cliente", "Editando cliente: " + (cliente.nombre || cliente.ci || cliente.id));
     }
 
     _editarAdminCamarera(id) {
         var camarera = this._buscarAdmin("camareras", id);
-        if (!camarera) return;
+        if (!camarera) {
+            this._mostrarEstadoAdmin("No se encontró la camarera seleccionada. Recarga el módulo e intenta otra vez.", "error");
+            return;
+        }
         document.getElementById("admin-camarera-id").value = camarera.id;
         document.getElementById("admin-camarera-nombre").value = camarera.nombre || "";
         document.getElementById("admin-camarera-celular").value = camarera.celular || "";
         document.getElementById("admin-camarera-activo").value = String(camarera.activo !== false);
+        this._marcarModoAdmin("admin-form-camarera", "Editando camarera: " + (camarera.nombre || camarera.id));
     }
 
     _editarAdminRecepcionista(id) {
         var recepcionista = this._buscarAdmin("recepcionistas", id);
-        if (!recepcionista) return;
+        if (!recepcionista) {
+            this._mostrarEstadoAdmin("No se encontró el usuario de recepción seleccionado. Recarga el módulo e intenta otra vez.", "error");
+            return;
+        }
         document.getElementById("admin-recepcionista-id").value = recepcionista.id;
         document.getElementById("admin-recepcionista-nombre").value = recepcionista.nombre || "";
         document.getElementById("admin-recepcionista-username").value = recepcionista.username || "";
         document.getElementById("admin-recepcionista-password").value = "";
         document.getElementById("admin-recepcionista-activo").value = String(recepcionista.activo !== false);
+        this._marcarModoAdmin("admin-form-recepcionista", "Editando recepción: " + (recepcionista.nombre || recepcionista.username || recepcionista.id));
     }
 
     _editarAdminIncidencia(id) {
         var incidencia = this._buscarAdmin("incidencias", id);
-        if (!incidencia) return;
+        if (!incidencia) {
+            this._mostrarEstadoAdmin("No se encontró la incidencia seleccionada. Recarga el módulo e intenta otra vez.", "error");
+            return;
+        }
         document.getElementById("admin-incidencia-id").value = incidencia.id;
         document.getElementById("admin-incidencia-habitacion").value = incidencia.habitacionId || "";
         document.getElementById("admin-incidencia-item").value = incidencia.itemId || "";
         document.getElementById("admin-incidencia-descripcion").value = incidencia.descripcion || "";
         document.getElementById("admin-incidencia-estado").value = incidencia.estado || "PENDIENTE";
         document.getElementById("admin-incidencia-costo").value = incidencia.costoReparacion || "";
+        this._marcarModoAdmin("admin-form-incidencia", "Editando incidencia #" + incidencia.id);
     }
 
     async _eliminarAdminCliente(id) {
@@ -1912,6 +1929,7 @@ class RecepcionController {
         var reversoActual = document.getElementById("admin-cliente-reverso-actual");
         if (anversoActual) anversoActual.value = "";
         if (reversoActual) reversoActual.value = "";
+        this._marcarModoAdmin("admin-form-cliente", "Nuevo cliente");
     }
 
     _limpiarFormAdminCamarera() {
@@ -1919,6 +1937,7 @@ class RecepcionController {
         if (form) form.reset();
         var id = document.getElementById("admin-camarera-id");
         if (id) id.value = "";
+        this._marcarModoAdmin("admin-form-camarera", "Nueva camarera");
     }
 
     _limpiarFormAdminRecepcionista() {
@@ -1926,6 +1945,7 @@ class RecepcionController {
         if (form) form.reset();
         var id = document.getElementById("admin-recepcionista-id");
         if (id) id.value = "";
+        this._marcarModoAdmin("admin-form-recepcionista", "Nuevo usuario de recepción");
     }
 
     _limpiarFormAdminIncidencia() {
@@ -1933,6 +1953,7 @@ class RecepcionController {
         if (form) form.reset();
         var id = document.getElementById("admin-incidencia-id");
         if (id) id.value = "";
+        this._marcarModoAdmin("admin-form-incidencia", "Nueva incidencia");
     }
 
     _buscarAdmin(tipo, id) {
@@ -1944,7 +1965,28 @@ class RecepcionController {
 
     _setAdminContent(html) {
         var content = document.getElementById("admin-content");
-        if (content) content.innerHTML = html;
+        if (!content) return;
+        content.innerHTML = html;
+        this._vincularBotonesAdmin(content);
+    }
+
+    _vincularBotonesAdmin(content) {
+        var self = this;
+        content.querySelectorAll("[data-admin-action]").forEach(function(boton) {
+            boton.addEventListener("click", function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                self._manejarClickAdmin(event);
+            });
+        });
+    }
+
+    _marcarModoAdmin(formId, mensaje) {
+        var form = document.getElementById(formId);
+        if (!form) return;
+        form.dataset.modo = mensaje;
+        this._mostrarEstadoAdmin(mensaje + ". Completa los datos y presiona Guardar.", "info");
+        form.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
     _mostrarEstadoAdmin(mensaje, tipo) {
