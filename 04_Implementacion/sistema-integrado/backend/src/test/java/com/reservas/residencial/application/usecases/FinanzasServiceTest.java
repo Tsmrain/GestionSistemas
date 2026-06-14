@@ -55,7 +55,7 @@ class FinanzasServiceTest {
 
     @Test
     void registrarEgreso_Exitoso() {
-        EgresoRequest request = new EgresoRequest("Lavado de sabanas", 60.0, "LAVANDERIA", "Admin", null);
+        EgresoRequest request = new EgresoRequest("Lavado de sabanas", 60.0, "LAVANDERIA", "Admin", "Lavandería Central", null);
         when(egresoRepository.save(any(Egreso.class))).thenReturn(egreso);
 
         EgresoResponse result = finanzasService.registrarEgreso(request);

@@ -90,4 +90,9 @@ public class CheckInController {
     public ResponseEntity<PreverificacionResponse> preverificarCheckout(@jakarta.validation.Valid @RequestBody PreverificacionRequest request) {
         return ResponseEntity.ok(checkInService.preverificarCheckout(request));
     }
+
+    @GetMapping("/verificaciones")
+    public ResponseEntity<List<ReporteCheckoutResponse>> listarReportesCheckout() {
+        return ResponseEntity.ok(checkInService.listarReportesCheckout());
+    }
 }

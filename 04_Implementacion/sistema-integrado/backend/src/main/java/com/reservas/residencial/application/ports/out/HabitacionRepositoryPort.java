@@ -1,6 +1,7 @@
 package com.reservas.residencial.application.ports.out;
 
 import com.reservas.residencial.domain.models.Habitacion;
+import com.reservas.residencial.domain.models.TipoHabitacion;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,9 +23,17 @@ public interface HabitacionRepositoryPort {
 
     void deleteById(Long id);
 
-    List<com.reservas.residencial.domain.models.TipoHabitacion> findAllTipos();
+    List<TipoHabitacion> findAllTipos();
 
-    Optional<com.reservas.residencial.domain.models.TipoHabitacion> findTipoById(Long id);
+    Optional<TipoHabitacion> findTipoById(Long id);
+
+    Optional<TipoHabitacion> findTipoByNombre(String nombreTipo);
+
+    TipoHabitacion saveTipo(TipoHabitacion tipo);
+
+    void deleteTipoById(Long id);
+
+    boolean existsByTipoId(Long tipoId);
 
     Optional<Habitacion> findByNumero(String numero);
 }

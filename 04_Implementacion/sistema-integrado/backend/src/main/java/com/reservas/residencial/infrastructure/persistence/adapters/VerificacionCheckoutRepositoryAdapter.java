@@ -34,7 +34,17 @@ public class VerificacionCheckoutRepositoryAdapter implements VerificacionChecko
     }
 
     @Override
+    public List<VerificacionCheckout> findAll() {
+        return repository.findAllByOrderByFechaVerificacionDesc();
+    }
+
+    @Override
     public List<VerificacionCheckout> findByReservaId(Long reservaId) {
         return repository.findByReservaId(reservaId);
+    }
+
+    @Override
+    public List<VerificacionDetalle> findDetallesByVerificacionId(Long verificacionId) {
+        return detalleRepository.findByVerificacionId(verificacionId);
     }
 }

@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface JpaVerificacionCheckoutRepository extends JpaRepository<VerificacionCheckout, Long> {
+    List<VerificacionCheckout> findAllByOrderByFechaVerificacionDesc();
     List<VerificacionCheckout> findByReservaId(Long reservaId);
 }

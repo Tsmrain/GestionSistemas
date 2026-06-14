@@ -3,6 +3,7 @@ package com.reservas.residencial.infrastructure.web;
 import com.reservas.residencial.application.dto.HabitacionDisponibleResponse;
 import com.reservas.residencial.application.dto.HabitacionEstadoResponse;
 import com.reservas.residencial.application.dto.GuardarHabitacionRequest;
+import com.reservas.residencial.application.dto.TipoHabitacionRequest;
 import com.reservas.residencial.application.dto.TipoHabitacionResponse;
 import com.reservas.residencial.application.usecases.DisponibilidadService;
 import com.reservas.residencial.infrastructure.web.dto.ConsultaDisponibilidadRequest;
@@ -61,6 +62,23 @@ public class DisponibilidadController {
     @GetMapping("/tipos")
     public List<TipoHabitacionResponse> listarTipos() {
         return disponibilidadService.listarTodosTipos();
+    }
+
+    @PostMapping("/tipos")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TipoHabitacionResponse crearTipoHabitacion(@Valid @RequestBody TipoHabitacionRequest request) {
+        return disponibilidadService.crearTipoHabitacion(request);
+    }
+
+    @PutMapping("/tipos/{id}")
+    public TipoHabitacionResponse actualizarTipoHabitacion(@PathVariable Long id, @Valid @RequestBody TipoHabitacionRequest request) {
+        return disponibilidadService.actualizarTipoHabitacion(id, request);
+    }
+
+    @DeleteMapping("/tipos/{id}")
+    public ResponseEntity<Void> eliminarTipoHabitacion(@PathVariable Long id) {
+        disponibilidadService.eliminarTipoHabitacion(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping

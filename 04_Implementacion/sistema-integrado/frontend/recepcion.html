@@ -131,6 +131,7 @@
                     <form id="form-registrar-egreso" style="display: flex; flex-direction: column; gap: 12px;">
                         <input id="egreso-descripcion" type="text" placeholder="Descripción (ej: Compra de toallas, lavandería)" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 13px;">
                         <input id="egreso-monto" type="number" step="0.01" placeholder="Monto (Bs)" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 13px;">
+                        <input id="egreso-destinatario" type="text" placeholder="Destino / destinatario (persona o empresa que recibe)" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 13px;">
                         <select id="egreso-categoria" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 13px;">
                             <option value="">Seleccione categoría...</option>
                             <option value="INVENTARIO">Compra de Inventario / Insumos</option>
@@ -208,13 +209,15 @@
             <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:15px; flex-wrap:wrap;">
                 <div>
                     <h2 style="font-size:18px; margin:0; font-weight:600; color:#1a1a1a;">⚙️ Administración / ABM</h2>
-                    <p style="margin:4px 0 0; color:#666; font-size:12px;">Clientes, camareras, usuarios de recepción e incidencias.</p>
+                    <p style="margin:4px 0 0; color:#666; font-size:12px;">Clientes, habitaciones, camareras, usuarios de recepción e incidencias.</p>
                 </div>
                 <div id="admin-tabs" class="finanzas-periodos">
                     <button type="button" data-admin-modulo="clientes" class="activo">Clientes</button>
+                    <button type="button" data-admin-modulo="habitaciones">Habitaciones</button>
                     <button type="button" data-admin-modulo="camareras">Camareras</button>
                     <button type="button" data-admin-modulo="recepcionistas">Recepción</button>
                     <button type="button" data-admin-modulo="incidencias">Incidencias</button>
+                    <button type="button" data-admin-modulo="reportes-checkout">Reportes checkout</button>
                 </div>
             </div>
             <div id="admin-status" class="panel-status" style="display:none"></div>
@@ -222,9 +225,9 @@
         </div>
     </div>
 
-    <script src="views/RecepcionView.js?v=recepcion-admin-abm-3"></script>
+    <script src="views/RecepcionView.js?v=recepcion-admin-abm-12"></script>
     <script src="controllers/ApiClient.js?v=api-client-2"></script>
-    <script src="controllers/RecepcionController.js?v=recepcion-admin-abm-3"></script>
+    <script src="controllers/RecepcionController.js?v=recepcion-admin-abm-12"></script>
 </body>
 
 </html>

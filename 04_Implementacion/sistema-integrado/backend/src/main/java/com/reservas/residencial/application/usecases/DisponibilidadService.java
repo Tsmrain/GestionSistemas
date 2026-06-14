@@ -5,6 +5,7 @@ import com.reservas.residencial.application.dto.HabitacionDisponibleResponse;
 import com.reservas.residencial.application.dto.HabitacionEstadoResponse;
 import com.reservas.residencial.application.dto.TipoHabitacionResponse;
 import com.reservas.residencial.application.dto.GuardarHabitacionRequest;
+import com.reservas.residencial.application.dto.TipoHabitacionRequest;
 import com.reservas.residencial.application.ports.out.HabitacionRepositoryPort;
 import com.reservas.residencial.application.ports.out.IncidenciaMantenimientoRepositoryPort;
 import com.reservas.residencial.application.ports.out.ReservaRepositoryPort;
@@ -13,6 +14,7 @@ import com.reservas.residencial.domain.models.TipoHabitacion;
 import com.reservas.residencial.domain.models.Reserva;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -30,6 +32,7 @@ public class DisponibilidadService {
     private final ReservaRepositoryPort reservaRepository;
     private final IncidenciaMantenimientoRepositoryPort incidenciaRepository;
 
+    @Transactional(readOnly = true)
     public List<HabitacionDisponibleResponse> consultarDisponibilidad(ConsultarDisponibilidadQuery query) {
         String tipoNormalizado = normalizarTipo(query.tipoNombre());
         List<Habitacion> habitaciones = tipoNormalizado == null
@@ -42,6 +45,7 @@ public class DisponibilidadService {
     }
 
     // ✅ NUEVO — lista todas las habitaciones con su estado actual
+    @Transactional(readOnly = true)
     public List<HabitacionEstadoResponse> listarTodasConEstado() {
         return habitacionRepository.findAll()
                 .stream()
@@ -49,6 +53,7 @@ public class DisponibilidadService {
                 .toList();
     }
 
+    @Transactional
     public HabitacionEstadoResponse marcarEnLimpieza(Long habitacionId) {
         Habitacion habitacion = habitacionRepository.findById(habitacionId)
                 .orElseThrow(() -> new IllegalArgumentException("Habitacion no encontrada: " + habitacionId));
@@ -64,6 +69,7 @@ public class DisponibilidadService {
         return toEstadoResponse(habitacionRepository.save(habitacion));
     }
 
+    @Transactional
     public HabitacionEstadoResponse marcarDisponible(Long habitacionId) {
         Habitacion habitacion = habitacionRepository.findById(habitacionId)
                 .orElseThrow(() -> new IllegalArgumentException("Habitacion no encontrada: " + habitacionId));
@@ -166,18 +172,54 @@ public class DisponibilidadService {
         return limpio.toUpperCase();
     }
 
+    @Transactional(readOnly = true)
     public List<TipoHabitacionResponse> listarTodosTipos() {
         return habitacionRepository.findAllTipos().stream()
-                .map(t -> new TipoHabitacionResponse(
-                        t.getId(),
-                        t.getNombreTipo(),
-                        t.getPrecioBase(),
-                        t.getDuracionHoras(),
-                        t.getDescripcion()
-                ))
+                .map(this::toTipoResponse)
                 .toList();
     }
 
+    @Transactional
+    public TipoHabitacionResponse crearTipoHabitacion(TipoHabitacionRequest request) {
+        String nombre = requerido(request.nombreTipo(), "El nombre del tipo de habitación es obligatorio.");
+        habitacionRepository.findTipoByNombre(nombre)
+                .ifPresent(existing -> {
+                    throw new IllegalArgumentException("El tipo de habitación ya existe: " + nombre);
+                });
+
+        TipoHabitacion tipo = new TipoHabitacion();
+        aplicarTipoHabitacion(tipo, request);
+        return toTipoResponse(habitacionRepository.saveTipo(tipo));
+    }
+
+    @Transactional
+    public TipoHabitacionResponse actualizarTipoHabitacion(Long id, TipoHabitacionRequest request) {
+        TipoHabitacion tipo = habitacionRepository.findTipoById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Tipo de habitación no encontrado: " + id));
+        String nombre = requerido(request.nombreTipo(), "El nombre del tipo de habitación es obligatorio.");
+        habitacionRepository.findTipoByNombre(nombre)
+                .ifPresent(existing -> {
+                    if (!existing.getId().equals(id)) {
+                        throw new IllegalArgumentException("El tipo de habitación ya existe: " + nombre);
+                    }
+                });
+
+        aplicarTipoHabitacion(tipo, request);
+        return toTipoResponse(habitacionRepository.saveTipo(tipo));
+    }
+
+    @Transactional
+    public void eliminarTipoHabitacion(Long id) {
+        if (habitacionRepository.findTipoById(id).isEmpty()) {
+            throw new IllegalArgumentException("Tipo de habitación no encontrado: " + id);
+        }
+        if (habitacionRepository.existsByTipoId(id)) {
+            throw new IllegalStateException("No se puede eliminar el tipo porque tiene habitaciones asociadas.");
+        }
+        habitacionRepository.deleteTipoById(id);
+    }
+
+    @Transactional
     public HabitacionEstadoResponse crearHabitacion(GuardarHabitacionRequest request) {
         if (habitacionRepository.findByNumero(request.numero()).isPresent()) {
             throw new IllegalArgumentException("El número de habitación ya existe: " + request.numero());
@@ -194,6 +236,7 @@ public class DisponibilidadService {
         return toEstadoResponse(habitacionRepository.save(habitacion));
     }
 
+    @Transactional
     public HabitacionEstadoResponse actualizarHabitacion(Long id, GuardarHabitacionRequest request) {
         Habitacion habitacion = habitacionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Habitación no encontrada: " + id));
@@ -215,6 +258,7 @@ public class DisponibilidadService {
         return toEstadoResponse(habitacionRepository.save(habitacion));
     }
 
+    @Transactional
     public void eliminarHabitacion(Long id) {
         if (!habitacionRepository.findById(id).isPresent()) {
             throw new IllegalArgumentException("Habitación no encontrada: " + id);
@@ -223,5 +267,33 @@ public class DisponibilidadService {
             throw new IllegalStateException("No se puede eliminar la habitación porque tiene reservas asociadas.");
         }
         habitacionRepository.deleteById(id);
+    }
+
+    private void aplicarTipoHabitacion(TipoHabitacion tipo, TipoHabitacionRequest request) {
+        tipo.setNombreTipo(requerido(request.nombreTipo(), "El nombre del tipo de habitación es obligatorio."));
+        tipo.setPrecioBase(request.precioBase());
+        tipo.setDuracionHoras(request.duracionHoras());
+        tipo.setDescripcion(limpiar(request.descripcion()));
+    }
+
+    private TipoHabitacionResponse toTipoResponse(TipoHabitacion tipo) {
+        return new TipoHabitacionResponse(
+                tipo.getId(),
+                tipo.getNombreTipo(),
+                tipo.getPrecioBase(),
+                tipo.getDuracionHoras(),
+                tipo.getDescripcion()
+        );
+    }
+
+    private String requerido(String value, String mensaje) {
+        if (value == null || value.trim().isBlank()) {
+            throw new IllegalArgumentException(mensaje);
+        }
+        return value.trim();
+    }
+
+    private String limpiar(String value) {
+        return value == null ? null : value.trim();
     }
 }

@@ -346,6 +346,49 @@ public class CheckInService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public List<ReporteCheckoutResponse> listarReportesCheckout() {
+        return verificacionCheckoutRepository.findAll().stream()
+                .map(this::toReporteCheckoutResponse)
+                .toList();
+    }
+
+    private ReporteCheckoutResponse toReporteCheckoutResponse(VerificacionCheckout verificacion) {
+        List<ReporteCheckoutResponse.DetalleReporteCheckoutResponse> detalles = verificacionCheckoutRepository
+                .findDetallesByVerificacionId(verificacion.getId())
+                .stream()
+                .map(detalle -> new ReporteCheckoutResponse.DetalleReporteCheckoutResponse(
+                        detalle.getId(),
+                        detalle.getItem().getId(),
+                        detalle.getItem().getNombre(),
+                        detalle.getEstadoReportado(),
+                        detalle.getCantidad(),
+                        detalle.getCargoAplicado(),
+                        detalle.getCobrado()
+                ))
+                .toList();
+
+        Double totalCargos = detalles.stream()
+                .filter(detalle -> Boolean.TRUE.equals(detalle.cobrado()))
+                .map(ReporteCheckoutResponse.DetalleReporteCheckoutResponse::cargoAplicado)
+                .filter(cargo -> cargo != null)
+                .reduce(0.0, Double::sum);
+
+        return new ReporteCheckoutResponse(
+                verificacion.getId(),
+                verificacion.getReserva().getId(),
+                verificacion.getHabitacion().getId(),
+                verificacion.getHabitacion().getNumero(),
+                verificacion.getFechaVerificacion(),
+                verificacion.getRecepcionista(),
+                verificacion.getNombreCamarera(),
+                verificacion.getConforme(),
+                verificacion.getObservaciones(),
+                totalCargos,
+                detalles
+        );
+    }
+
     private void limpiarReservasAbiertasDeHabitacion(Long habitacionId, Long reservaCheckoutId) {
         reservaRepository.findAllByHabitacionIdAndEstados(habitacionId, List.of("ACTIVA", "PAGADA", "PENDIENTE_PAGO"))
                 .stream()

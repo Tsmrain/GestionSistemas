@@ -434,6 +434,9 @@ class RecepcionController {
     }
 
     static _normalizarEstado(estado) {
+        if (estado === null || estado === undefined) return "DISPONIBLE";
+        var estadoOriginal = String(estado).trim();
+        var estadoKey = estadoOriginal.toUpperCase();
         var estados = {
             "Disponible": "DISPONIBLE",
             "DISPONIBLE": "DISPONIBLE",
@@ -450,7 +453,7 @@ class RecepcionController {
             "MANTENIMIENTO": "MANTENIMIENTO"
         };
 
-        return estados[estado] || "DISPONIBLE";
+        return estados[estadoOriginal] || estados[estadoKey] || estadoOriginal || "DISPONIBLE";
     }
 
     static _normalizarEstadoTarjeta(estado) {
@@ -1366,6 +1369,8 @@ class RecepcionController {
     async _registrarEgreso() {
         var desc = document.getElementById("egreso-descripcion").value.trim();
         var monto = parseFloat(document.getElementById("egreso-monto").value) || 0.0;
+        var destinatarioInput = document.getElementById("egreso-destinatario");
+        var destinoDestinatario = destinatarioInput ? destinatarioInput.value.trim() : "";
         var cat = document.getElementById("egreso-categoria").value;
         var compInput = document.getElementById("egreso-comprobante");
         var comp = compInput && compInput.files && compInput.files.length > 0 ? compInput.files[0] : null;
@@ -1376,6 +1381,7 @@ class RecepcionController {
             formData.append("monto", String(monto));
             formData.append("categoria", cat);
             formData.append("recepcionista", this.recepcionista.nombre);
+            if (destinoDestinatario) formData.append("destinoDestinatario", destinoDestinatario);
             if (comp) formData.append("comprobante", comp);
 
             var response = await fetch(ApiClient.url("/api/finanzas/egresos"), {
@@ -1432,6 +1438,14 @@ class RecepcionController {
                 var recepcionistas = await this._fetchJsonAdmin("/api/admin/recepcionistas");
                 this.adminDatos.recepcionistas = recepcionistas;
                 this._renderAdminRecepcionistas(recepcionistas);
+            } else if (this.adminModulo === "habitaciones") {
+                var datosHabitaciones = await Promise.all([
+                    this._fetchJsonAdmin("/api/v1/habitaciones"),
+                    this._fetchJsonAdmin("/api/v1/habitaciones/tipos")
+                ]);
+                this.adminDatos.habitaciones = datosHabitaciones[0];
+                this.adminDatos.tiposHabitacion = datosHabitaciones[1];
+                this._renderAdminHabitaciones(datosHabitaciones[0], datosHabitaciones[1]);
             } else if (this.adminModulo === "incidencias") {
                 var datos = await Promise.all([
                     this._fetchJsonAdmin("/api/admin/incidencias"),
@@ -1442,6 +1456,10 @@ class RecepcionController {
                 this.adminDatos.habitaciones = datos[1];
                 this.adminDatos.items = datos[2];
                 this._renderAdminIncidencias(datos[0], datos[1], datos[2]);
+            } else if (this.adminModulo === "reportes-checkout") {
+                var reportes = await this._fetchJsonAdmin("/api/admin/reportes-checkout");
+                this.adminDatos.reportesCheckout = reportes;
+                this._renderAdminReportesCheckout(reportes);
             }
             this._mostrarEstadoAdmin("", "info");
         } catch (error) {
@@ -1485,6 +1503,12 @@ class RecepcionController {
             this._guardarAdminCamarera(form);
         } else if (form.dataset.adminForm === "recepcionista") {
             this._guardarAdminRecepcionista(form);
+        } else if (form.dataset.adminForm === "habitacion") {
+            this._guardarAdminHabitacion(form);
+        } else if (form.dataset.adminForm === "tipo-habitacion") {
+            this._guardarAdminTipoHabitacion(form);
+        } else if (form.dataset.adminForm === "estado-habitacion") {
+            this._guardarAdminEstadoHabitacion(form);
         } else if (form.dataset.adminForm === "incidencia") {
             this._guardarAdminIncidencia(form);
         }
@@ -1522,6 +1546,24 @@ class RecepcionController {
             this._darBajaAdminRecepcionista(id);
         } else if (action === "nuevo-recepcionista") {
             this._limpiarFormAdminRecepcionista();
+        } else if (action === "editar-habitacion-completa") {
+            this._editarAdminHabitacionCompleta(id);
+        } else if (action === "editar-habitacion-admin") {
+            this._editarAdminHabitacion(id);
+        } else if (action === "limpiar-atributos-habitacion") {
+            this._limpiarFormAdminHabitacion();
+        } else if (action === "editar-estado-habitacion-global") {
+            this._editarEstadoHabitacionGlobal(decodeURIComponent(boton.dataset.adminEstado || ""));
+        } else if (action === "eliminar-estado-habitacion-global") {
+            this._eliminarEstadoHabitacionGlobal(decodeURIComponent(boton.dataset.adminEstado || ""));
+        } else if (action === "nuevo-estado-habitacion") {
+            this._limpiarFormAdminEstadoHabitacion();
+        } else if (action === "editar-tipo-habitacion") {
+            this._editarAdminTipoHabitacion(id);
+        } else if (action === "eliminar-tipo-habitacion") {
+            this._eliminarAdminTipoHabitacion(id);
+        } else if (action === "nuevo-tipo-habitacion") {
+            this._limpiarFormAdminTipoHabitacion();
         } else if (action === "editar-incidencia") {
             this._editarAdminIncidencia(id);
         } else if (action === "baja-incidencia") {
@@ -1668,6 +1710,167 @@ class RecepcionController {
         `);
     }
 
+    _renderAdminHabitaciones(habitaciones, tipos) {
+        tipos = tipos || [];
+        var tipoOptions = tipos.map((tipo) => `
+            <option value="${tipo.id}">${this._escapeHtml(tipo.nombreTipo)} · Bs ${(tipo.precioBase || 0).toFixed(2)} · ${tipo.duracionHoras || 0}h</option>
+        `).join("");
+        var habitacionOptions = (habitaciones || []).map((habitacion) => `
+            <option value="${habitacion.id}" data-numero="${this._escapeHtml(habitacion.numero)}">Hab. ${this._escapeHtml(habitacion.numero)}</option>
+        `).join("");
+        var estadosHabitacion = this._estadosHabitacionDisponibles(habitaciones);
+        var estadoOptions = estadosHabitacion.map((estado) => `
+            <option value="${this._escapeHtml(estado)}">${this._escapeHtml(estado)}</option>
+        `).join("");
+        var estadoRows = estadosHabitacion.map((estado) => {
+            var habitacionesConEstado = (habitaciones || []).filter((habitacion) => {
+                return this._estadoHabitacionParaRequest(habitacion.estado || habitacion.estadoActual) === estado;
+            });
+            return `
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:10px; font-weight:700;">${this._escapeHtml(estado)}</td>
+                    <td style="padding:10px;">${habitacionesConEstado.length}</td>
+                    <td style="padding:10px;">${this._escapeHtml(habitacionesConEstado.map((habitacion) => habitacion.numero).join(", ") || "-")}</td>
+                    <td style="padding:10px; text-align:center;">
+                        <button type="button" data-admin-action="editar-estado-habitacion-global" data-admin-estado="${encodeURIComponent(estado)}" style="${this._adminBtnStyle("blue")}">Editar</button>
+                        <button type="button" data-admin-action="eliminar-estado-habitacion-global" data-admin-estado="${encodeURIComponent(estado)}" style="${this._adminBtnStyle("red")}">Eliminar</button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+        var habitacionRows = (habitaciones || []).map((habitacion) => {
+            var tipo = habitacion.tipo || {};
+            var tipoId = tipo.id || "";
+            var estado = this._estadoHabitacionParaRequest(habitacion.estado || habitacion.estadoActual || "-");
+            var editarTipoBtn = tipoId ? `
+                <button type="button" data-admin-action="editar-tipo-habitacion" data-admin-id="${tipoId}" title="Editar nombre, precio y duración de esta tarifa" style="${this._adminMiniBtnStyle("blue")}">Editar tarifa</button>
+            ` : "";
+            return `
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:10px; font-weight:700;">${this._escapeHtml(habitacion.numero)}</td>
+                    <td style="padding:10px;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <span>${this._escapeHtml(tipo.nombreTipo || "-")}</span>
+                            ${editarTipoBtn}
+                        </div>
+                    </td>
+                    <td style="padding:10px;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <span>Bs ${((tipo.precioBase || 0)).toFixed(2)}</span>
+                            ${editarTipoBtn}
+                        </div>
+                    </td>
+                    <td style="padding:10px;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <span>${tipo.duracionHoras || "-"}h</span>
+                            ${editarTipoBtn}
+                        </div>
+                    </td>
+                    <td style="padding:10px;">
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <span>${this._escapeHtml(estado)}</span>
+                            <button type="button" data-admin-action="editar-habitacion-admin" data-admin-id="${habitacion.id}" title="Editar estado operativo" style="${this._adminMiniBtnStyle("blue")}">Editar estado</button>
+                        </div>
+                    </td>
+                    <td style="padding:10px; text-align:center;">
+                        <button type="button" data-admin-action="editar-habitacion-completa" data-admin-id="${habitacion.id}" style="${this._adminBtnStyle("blue")}">Editar todo</button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+        var tipoRows = tipos.map((tipo) => `
+            <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:10px; font-weight:700;">${this._escapeHtml(tipo.nombreTipo)}</td>
+                <td style="padding:10px;">Bs ${((tipo.precioBase || 0)).toFixed(2)}</td>
+                <td style="padding:10px;">${tipo.duracionHoras || 0}h</td>
+                <td style="padding:10px;">${this._escapeHtml(tipo.descripcion || "-")}</td>
+                <td style="padding:10px; text-align:center;">
+                    <button type="button" data-admin-action="editar-tipo-habitacion" data-admin-id="${tipo.id}" style="${this._adminBtnStyle("blue")}">Editar</button>
+                    <button type="button" data-admin-action="eliminar-tipo-habitacion" data-admin-id="${tipo.id}" style="${this._adminBtnStyle("red")}">Eliminar</button>
+                </td>
+            </tr>
+        `).join("");
+
+        this._setAdminContent(`
+            ${this._adminSectionTitle("Habitaciones", "Catálogo de atributos independientes y asignación a habitaciones existentes.")}
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; align-items:start;">
+                <div style="${this._adminCardStyle()}">
+                    <h4 style="margin:0 0 10px; font-size:14px; color:#333;">Asignar atributos a habitación</h4>
+                    <form id="admin-form-habitacion" data-admin-form="habitacion" style="${this._adminFormGridStyle()}">
+                        <select id="admin-habitacion-id" required style="${this._adminInputStyle()}">
+                            <option value="">Seleccione habitación existente...</option>
+                            ${habitacionOptions}
+                        </select>
+                        <select id="admin-habitacion-tipo" required style="${this._adminInputStyle()}">
+                            <option value="">Seleccione tipo...</option>
+                            ${tipoOptions}
+                        </select>
+                        <select id="admin-habitacion-estado" required style="${this._adminInputStyle()}">
+                            <option value="">Seleccione estado...</option>
+                            ${estadoOptions}
+                        </select>
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" style="${this._adminBtnStyle("purple")}">Guardar</button>
+                            <button type="button" data-admin-action="limpiar-atributos-habitacion" style="${this._adminBtnStyle("gray")}">Limpiar</button>
+                        </div>
+                    </form>
+                </div>
+                <div style="${this._adminCardStyle()}">
+                    <h4 style="margin:0 0 10px; font-size:14px; color:#333;">Tipo / tarifa independiente</h4>
+                    <form id="admin-form-tipo-habitacion" data-admin-form="tipo-habitacion" style="${this._adminFormGridStyle()}">
+                        <input id="admin-tipo-habitacion-id" type="hidden">
+                        <input id="admin-tipo-habitacion-nombre" type="text" placeholder="Nombre tipo" required style="${this._adminInputStyle()}">
+                        <input id="admin-tipo-habitacion-precio" type="number" min="0" step="0.01" placeholder="Precio Bs" required style="${this._adminInputStyle()}">
+                        <input id="admin-tipo-habitacion-horas" type="number" min="1" step="1" placeholder="Horas" required style="${this._adminInputStyle()}">
+                        <input id="admin-tipo-habitacion-descripcion" type="text" placeholder="Descripción" style="${this._adminInputStyle()}">
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" style="${this._adminBtnStyle("purple")}">Guardar</button>
+                            <button type="button" data-admin-action="nuevo-tipo-habitacion" style="${this._adminBtnStyle("gray")}">Nuevo</button>
+                        </div>
+                    </form>
+                </div>
+                <div style="${this._adminCardStyle()}">
+                    <h4 style="margin:0 0 10px; font-size:14px; color:#333;">Estado independiente</h4>
+                    <form id="admin-form-estado-habitacion" data-admin-form="estado-habitacion" style="${this._adminFormGridStyle()}">
+                        <input id="admin-estado-habitacion-original" type="hidden">
+                        <input id="admin-estado-habitacion-nombre" type="text" placeholder="Nombre estado, ej: Pruebas" required style="${this._adminInputStyle()}">
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" style="${this._adminBtnStyle("purple")}">Guardar</button>
+                            <button type="button" data-admin-action="nuevo-estado-habitacion" style="${this._adminBtnStyle("gray")}">Nuevo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            ${this._adminTable(`
+                <tr style="border-bottom:2px solid #eee; color:#555;">
+                    <th style="padding:10px; text-align:left;">Estado existente</th>
+                    <th style="padding:10px; text-align:left;">Habitaciones</th>
+                    <th style="padding:10px; text-align:left;">Números</th>
+                    <th style="padding:10px; text-align:center;">Acciones</th>
+                </tr>
+            `, estadoRows || this._adminEmptyRow(4, "Sin estados registrados."))}
+            ${this._adminTable(`
+                <tr style="border-bottom:2px solid #eee; color:#555;">
+                    <th style="padding:10px; text-align:left;">Número</th>
+                    <th style="padding:10px; text-align:left;">Tipo</th>
+                    <th style="padding:10px; text-align:left;">Precio</th>
+                    <th style="padding:10px; text-align:left;">Duración</th>
+                    <th style="padding:10px; text-align:left;">Estado</th>
+                    <th style="padding:10px; text-align:center;">Acciones</th>
+                </tr>
+            `, habitacionRows || this._adminEmptyRow(6, "Sin habitaciones registradas."))}
+            ${this._adminTable(`
+                <tr style="border-bottom:2px solid #eee; color:#555;">
+                    <th style="padding:10px; text-align:left;">Tipo</th>
+                    <th style="padding:10px; text-align:left;">Precio</th>
+                    <th style="padding:10px; text-align:left;">Duración</th>
+                    <th style="padding:10px; text-align:left;">Descripción</th>
+                    <th style="padding:10px; text-align:center;">Acciones</th>
+                </tr>
+            `, tipoRows || this._adminEmptyRow(5, "Sin tipos de habitación registrados."))}
+        `);
+    }
+
     _renderAdminIncidencias(incidencias, habitaciones, items) {
         var habitacionOptions = habitaciones.map((habitacion) => {
             var tipoNombre = habitacion.tipo && habitacion.tipo.nombreTipo ? habitacion.tipo.nombreTipo : (habitacion.tipoNombre || "");
@@ -1682,6 +1885,7 @@ class RecepcionController {
                 <td style="padding:10px;">Hab. ${this._escapeHtml(incidencia.numeroHabitacion)}</td>
                 <td style="padding:10px;">${this._escapeHtml(incidencia.nombreItem || "Estructural")}</td>
                 <td style="padding:10px;">${this._escapeHtml(incidencia.descripcion)}</td>
+                <td style="padding:10px;">${this._escapeHtml(incidencia.seguimiento || "-")}</td>
                 <td style="padding:10px;">${this._escapeHtml(incidencia.recepcionistaReporta || "-")}</td>
                 <td style="padding:10px;">${this._badgeIncidencia(incidencia.estado)}</td>
                 <td style="padding:10px;">${this._escapeHtml(this._formatearFechaHoraAdmin(incidencia.fechaReporte))}</td>
@@ -1706,6 +1910,7 @@ class RecepcionController {
                         ${itemOptions}
                     </select>
                     <input id="admin-incidencia-descripcion" type="text" placeholder="Descripción del daño" required style="${this._adminInputStyle()}">
+                    <textarea id="admin-incidencia-seguimiento" placeholder="Seguimiento / acciones realizadas" style="${this._adminInputStyle()} height:70px; padding:10px; resize:vertical;"></textarea>
                     <select id="admin-incidencia-estado" style="${this._adminInputStyle()}">
                         <option value="PENDIENTE">Pendiente</option>
                         <option value="REPARADO">Reparado</option>
@@ -1723,12 +1928,81 @@ class RecepcionController {
                     <th style="padding:10px; text-align:left;">Habitación</th>
                     <th style="padding:10px; text-align:left;">Objeto</th>
                     <th style="padding:10px; text-align:left;">Descripción</th>
+                    <th style="padding:10px; text-align:left;">Seguimiento</th>
                     <th style="padding:10px; text-align:left;">Reporta</th>
                     <th style="padding:10px; text-align:left;">Estado</th>
                     <th style="padding:10px; text-align:left;">Fecha</th>
                     <th style="padding:10px; text-align:center;">Acciones</th>
                 </tr>
-            `, rows || this._adminEmptyRow(7, "Sin incidencias registradas."))}
+            `, rows || this._adminEmptyRow(8, "Sin incidencias registradas."))}
+        `);
+    }
+
+    _renderAdminReportesCheckout(reportes) {
+        var rows = (reportes || []).map((reporte) => {
+            var detalles = (reporte.detalles || []).map((detalle) => `
+                <tr style="border-bottom:1px solid #f1f1f1;">
+                    <td style="padding:8px;">${this._escapeHtml(detalle.nombreItem || "-")}</td>
+                    <td style="padding:8px;">${this._escapeHtml(this._estadoReporteCheckout(detalle.estadoReportado))}</td>
+                    <td style="padding:8px;">${detalle.cantidad || 0}</td>
+                    <td style="padding:8px;">${detalle.cobrado ? "Sí" : "No"}</td>
+                    <td style="padding:8px;">Bs ${((detalle.cargoAplicado || 0)).toFixed(2)}</td>
+                </tr>
+            `).join("");
+
+            return `
+                <tr style="border-bottom:1px solid #eee; vertical-align:top;">
+                    <td style="padding:10px; font-weight:700;">#${reporte.id}</td>
+                    <td style="padding:10px;">Hab. ${this._escapeHtml(reporte.numeroHabitacion || reporte.habitacionId || "-")}</td>
+                    <td style="padding:10px;">Reserva #${this._escapeHtml(reporte.reservaId || "-")}</td>
+                    <td style="padding:10px;">${this._escapeHtml(this._formatearFechaHoraAdmin(reporte.fechaVerificacion))}</td>
+                    <td style="padding:10px;">${this._escapeHtml(reporte.nombreCamarera || "-")}</td>
+                    <td style="padding:10px;">${this._escapeHtml(reporte.recepcionista || "-")}</td>
+                    <td style="padding:10px;">${reporte.conforme ? this._badgeTexto("Conforme", "#dcfce7", "#166534") : this._badgeTexto("Con observaciones", "#fff1f2", "#b42318")}</td>
+                    <td style="padding:10px;">Bs ${((reporte.totalCargosExtra || 0)).toFixed(2)}</td>
+                </tr>
+                <tr style="border-bottom:2px solid #e5e7eb;">
+                    <td colspan="8" style="padding:0 10px 14px 10px;">
+                        <div style="background:#fafafa; border:1px solid #eee; border-radius:10px; padding:12px;">
+                            <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
+                                <strong style="font-size:13px;">Lectura del reporte</strong>
+                                <span style="font-size:12px; color:#666;">La recepcionista revisa este detalle antes de cerrar/derivar incidencias.</span>
+                            </div>
+                            <p style="margin:0 0 10px; color:#555; font-size:12px;"><strong>Observaciones:</strong> ${this._escapeHtml(reporte.observaciones || "Sin observaciones")}</p>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%; border-collapse:collapse; font-size:12px; background:#fff;">
+                                    <thead>
+                                        <tr style="background:#f5f5f5; color:#555;">
+                                            <th style="padding:8px; text-align:left;">Objeto</th>
+                                            <th style="padding:8px; text-align:left;">Estado reportado</th>
+                                            <th style="padding:8px; text-align:left;">Cantidad</th>
+                                            <th style="padding:8px; text-align:left;">Cobrar</th>
+                                            <th style="padding:8px; text-align:left;">Cargo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${detalles || this._adminEmptyRow(5, "Sin detalle de objetos.")}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        this._setAdminContent(`
+            ${this._adminSectionTitle("Reportes checkout", "Historial que recepción debe leer después de cada revisión de salida.")}
+            ${this._adminTable(`
+                <tr style="border-bottom:2px solid #eee; color:#555;">
+                    <th style="padding:10px; text-align:left;">Reporte</th>
+                    <th style="padding:10px; text-align:left;">Habitación</th>
+                    <th style="padding:10px; text-align:left;">Reserva</th>
+                    <th style="padding:10px; text-align:left;">Fecha</th>
+                    <th style="padding:10px; text-align:left;">Camarera</th>
+                    <th style="padding:10px; text-align:left;">Recepción</th>
+                    <th style="padding:10px; text-align:left;">Resultado</th>
+                    <th style="padding:10px; text-align:left;">Cargos</th>
+                </tr>
+            `, rows || this._adminEmptyRow(8, "Sin reportes de check-out registrados."))}
         `);
     }
 
@@ -1793,6 +2067,88 @@ class RecepcionController {
         }
     }
 
+    async _guardarAdminHabitacion(form) {
+        try {
+            var id = document.getElementById("admin-habitacion-id").value;
+            var tipoId = document.getElementById("admin-habitacion-tipo").value;
+            if (!id) {
+                this._mostrarEstadoAdmin("Selecciona una habitación existente para editar sus atributos.", "error");
+                return;
+            }
+            var habitacion = this._buscarAdmin("habitaciones", id);
+            if (!habitacion) {
+                this._mostrarEstadoAdmin("No se encontró la habitación seleccionada. Recarga el módulo e intenta otra vez.", "error");
+                return;
+            }
+            var payload = {
+                numero: habitacion.numero,
+                tipoId: tipoId ? parseInt(tipoId, 10) : null,
+                estadoActual: document.getElementById("admin-habitacion-estado").value.trim()
+            };
+            await this._enviarAdmin("/api/v1/habitaciones/" + id, "PUT", payload);
+            this._mostrarEstadoAdmin("Atributos de habitación guardados correctamente.", "success");
+            form.reset();
+            this._cargarAdministracion();
+            this._cargarHabitaciones();
+        } catch (error) {
+            this._mostrarEstadoAdmin(error.message || "No se pudo guardar la habitación.", "error");
+        }
+    }
+
+    async _guardarAdminTipoHabitacion(form) {
+        try {
+            var id = document.getElementById("admin-tipo-habitacion-id").value;
+            var payload = {
+                nombreTipo: document.getElementById("admin-tipo-habitacion-nombre").value.trim(),
+                precioBase: parseFloat(document.getElementById("admin-tipo-habitacion-precio").value) || 0,
+                duracionHoras: parseInt(document.getElementById("admin-tipo-habitacion-horas").value, 10) || 0,
+                descripcion: document.getElementById("admin-tipo-habitacion-descripcion").value.trim()
+            };
+            await this._enviarAdmin(id ? "/api/v1/habitaciones/tipos/" + id : "/api/v1/habitaciones/tipos", id ? "PUT" : "POST", payload);
+            this._mostrarEstadoAdmin("Tipo de habitación guardado correctamente.", "success");
+            form.reset();
+            this._cargarAdministracion();
+            this._cargarHabitaciones();
+        } catch (error) {
+            this._mostrarEstadoAdmin(error.message || "No se pudo guardar el tipo de habitación.", "error");
+        }
+    }
+
+    async _guardarAdminEstadoHabitacion(form) {
+        try {
+            var original = document.getElementById("admin-estado-habitacion-original").value.trim();
+            var nombre = document.getElementById("admin-estado-habitacion-nombre").value.trim();
+            if (!nombre) {
+                this._mostrarEstadoAdmin("El nombre del estado es obligatorio.", "error");
+                return;
+            }
+
+            if (!original) {
+                this._agregarEstadoAlCatalogo(nombre);
+                this._mostrarEstadoAdmin("Estado creado correctamente. Ya puede asignarse a una habitación.", "success");
+                form.reset();
+                this._cargarAdministracion();
+                return;
+            }
+
+            if (original === nombre) {
+                this._mostrarEstadoAdmin("Estado guardado correctamente.", "success");
+                form.reset();
+                this._cargarAdministracion();
+                return;
+            }
+
+            var habitaciones = this._habitacionesPorEstadoAdmin(original);
+            if (!confirm("¿Renombrar el estado '" + original + "' a '" + nombre + "' en " + habitaciones.length + " habitación(es)?")) return;
+
+            this._renombrarEstadoEnCatalogo(original, nombre);
+            await this._actualizarEstadoHabitacionesAdmin(habitaciones, nombre, "Estado renombrado correctamente.");
+            form.reset();
+        } catch (error) {
+            this._mostrarEstadoAdmin(error.message || "No se pudo guardar el estado.", "error");
+        }
+    }
+
     async _guardarAdminIncidencia(form) {
         try {
             var id = document.getElementById("admin-incidencia-id").value;
@@ -1801,6 +2157,7 @@ class RecepcionController {
                 habitacionId: parseInt(document.getElementById("admin-incidencia-habitacion").value, 10),
                 itemId: itemId ? parseInt(itemId, 10) : null,
                 descripcion: document.getElementById("admin-incidencia-descripcion").value.trim(),
+                seguimiento: document.getElementById("admin-incidencia-seguimiento").value.trim(),
                 recepcionistaReporta: this.recepcionista && this.recepcionista.nombre ? this.recepcionista.nombre : "Recepción",
                 estado: document.getElementById("admin-incidencia-estado").value,
                 costoReparacion: parseFloat(document.getElementById("admin-incidencia-costo").value) || 0,
@@ -1859,6 +2216,162 @@ class RecepcionController {
         this._marcarModoAdmin("admin-form-recepcionista", "Editando recepción: " + (recepcionista.nombre || recepcionista.username || recepcionista.id));
     }
 
+    _editarAdminHabitacion(id) {
+        var habitacion = this._buscarAdmin("habitaciones", id);
+        if (!habitacion) {
+            this._mostrarEstadoAdmin("No se encontró la habitación seleccionada. Recarga el módulo e intenta otra vez.", "error");
+            return;
+        }
+        this._cargarFormAdminHabitacion(habitacion);
+        this._marcarModoAdmin("admin-form-habitacion", "Editando atributos de Hab. " + (habitacion.numero || habitacion.id));
+    }
+
+    _editarAdminHabitacionCompleta(id) {
+        var habitacion = this._buscarAdmin("habitaciones", id);
+        if (!habitacion) {
+            this._mostrarEstadoAdmin("No se encontró la habitación seleccionada. Recarga el módulo e intenta otra vez.", "error");
+            return;
+        }
+        this._cargarFormAdminHabitacion(habitacion);
+        if (habitacion.tipo && habitacion.tipo.id) {
+            this._cargarFormAdminTipoHabitacion(habitacion.tipo);
+        }
+        this._mostrarEstadoAdmin(
+            "Editando Hab. " + (habitacion.numero || habitacion.id) + ": puedes cambiar estado, tipo asignado, nombre de tarifa, precio y duración.",
+            "info"
+        );
+        var form = document.getElementById("admin-form-habitacion");
+        if (form) form.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    _cargarFormAdminHabitacion(habitacion) {
+        document.getElementById("admin-habitacion-id").value = habitacion.id;
+        document.getElementById("admin-habitacion-tipo").value = habitacion.tipo && habitacion.tipo.id ? habitacion.tipo.id : "";
+        document.getElementById("admin-habitacion-estado").value = this._estadoHabitacionParaRequest(habitacion.estado || habitacion.estadoActual);
+    }
+
+    _editarEstadoHabitacionGlobal(estadoActual) {
+        if (!estadoActual) return;
+        document.getElementById("admin-estado-habitacion-original").value = estadoActual;
+        document.getElementById("admin-estado-habitacion-nombre").value = estadoActual;
+        this._marcarModoAdmin("admin-form-estado-habitacion", "Editando estado: " + estadoActual);
+    }
+
+    async _eliminarEstadoHabitacionGlobal(estadoActual) {
+        if (!estadoActual) return;
+        if (estadoActual === "Disponible") {
+            this._mostrarEstadoAdmin("No se puede eliminar Disponible porque es el estado base al liberar habitaciones.", "error");
+            return;
+        }
+        var habitaciones = this._habitacionesPorEstadoAdmin(estadoActual);
+        if (!confirm("¿Eliminar el estado '" + estadoActual + "'? Las " + habitaciones.length + " habitación(es) pasarán a Disponible.")) return;
+
+        this._eliminarEstadoDelCatalogo(estadoActual);
+        await this._actualizarEstadoHabitacionesAdmin(habitaciones, "Disponible", "Estado eliminado. Habitaciones cambiadas a Disponible.");
+    }
+
+    _habitacionesPorEstadoAdmin(estado) {
+        return (this.adminDatos.habitaciones || []).filter((habitacion) => {
+            return this._estadoHabitacionParaRequest(habitacion.estado || habitacion.estadoActual) === estado;
+        });
+    }
+
+    async _actualizarEstadoHabitacionesAdmin(habitaciones, nuevoEstado, mensajeExito) {
+        try {
+            await Promise.all(habitaciones.map((habitacion) => {
+                var tipoId = habitacion.tipo && habitacion.tipo.id ? habitacion.tipo.id : null;
+                return this._enviarAdmin("/api/v1/habitaciones/" + habitacion.id, "PUT", {
+                    numero: habitacion.numero,
+                    tipoId: tipoId,
+                    estadoActual: nuevoEstado
+                });
+            }));
+            this._mostrarEstadoAdmin(mensajeExito, "success");
+            this._cargarAdministracion();
+            this._cargarHabitaciones();
+        } catch (error) {
+            this._mostrarEstadoAdmin(error.message || "No se pudo actualizar el estado.", "error");
+        }
+    }
+
+    _obtenerCatalogoEstadosHabitacion() {
+        var estadosPorDefecto = [
+            "Disponible",
+            "Limpieza",
+            "Mantenimiento",
+            "Ocupada",
+            "Pruebas",
+            "Habitación para cumpleañero",
+            "Reservada para evento"
+        ];
+        try {
+            var raw = localStorage.getItem("catalogoEstadosHabitacion");
+            var guardados = raw ? JSON.parse(raw) : null;
+            if (Array.isArray(guardados) && guardados.length) {
+                return guardados.filter((estado) => typeof estado === "string" && estado.trim()).map((estado) => estado.trim());
+            }
+        } catch (error) {
+            localStorage.removeItem("catalogoEstadosHabitacion");
+        }
+        return estadosPorDefecto;
+    }
+
+    _guardarCatalogoEstadosHabitacion(estados) {
+        var limpios = [];
+        (estados || []).forEach((estado) => {
+            var limpio = String(estado || "").trim();
+            if (limpio && !limpios.includes(limpio)) {
+                limpios.push(limpio);
+            }
+        });
+        localStorage.setItem("catalogoEstadosHabitacion", JSON.stringify(limpios));
+    }
+
+    _agregarEstadoAlCatalogo(estadoNuevo) {
+        var catalogo = this._obtenerCatalogoEstadosHabitacion();
+        var limpio = String(estadoNuevo || "").trim();
+        if (limpio && !catalogo.includes(limpio)) {
+            catalogo.push(limpio);
+        }
+        this._guardarCatalogoEstadosHabitacion(catalogo);
+    }
+
+    _renombrarEstadoEnCatalogo(estadoActual, nuevoEstado) {
+        var existe = false;
+        var catalogo = this._obtenerCatalogoEstadosHabitacion().map((estado) => {
+            if (estado === estadoActual) {
+                existe = true;
+                return nuevoEstado;
+            }
+            return estado;
+        });
+        if (!existe) catalogo.push(nuevoEstado);
+        this._guardarCatalogoEstadosHabitacion(catalogo);
+    }
+
+    _eliminarEstadoDelCatalogo(estadoActual) {
+        var catalogo = this._obtenerCatalogoEstadosHabitacion().filter((estado) => estado !== estadoActual);
+        this._guardarCatalogoEstadosHabitacion(catalogo);
+    }
+
+    _editarAdminTipoHabitacion(id) {
+        var tipo = this._buscarAdmin("tiposHabitacion", id);
+        if (!tipo) {
+            this._mostrarEstadoAdmin("No se encontró el tipo seleccionado. Recarga el módulo e intenta otra vez.", "error");
+            return;
+        }
+        this._cargarFormAdminTipoHabitacion(tipo);
+        this._marcarModoAdmin("admin-form-tipo-habitacion", "Editando tipo/tarifa: " + (tipo.nombreTipo || tipo.id));
+    }
+
+    _cargarFormAdminTipoHabitacion(tipo) {
+        document.getElementById("admin-tipo-habitacion-id").value = tipo.id;
+        document.getElementById("admin-tipo-habitacion-nombre").value = tipo.nombreTipo || "";
+        document.getElementById("admin-tipo-habitacion-precio").value = tipo.precioBase || "";
+        document.getElementById("admin-tipo-habitacion-horas").value = tipo.duracionHoras || "";
+        document.getElementById("admin-tipo-habitacion-descripcion").value = tipo.descripcion || "";
+    }
+
     _editarAdminIncidencia(id) {
         var incidencia = this._buscarAdmin("incidencias", id);
         if (!incidencia) {
@@ -1869,6 +2382,7 @@ class RecepcionController {
         document.getElementById("admin-incidencia-habitacion").value = incidencia.habitacionId || "";
         document.getElementById("admin-incidencia-item").value = incidencia.itemId || "";
         document.getElementById("admin-incidencia-descripcion").value = incidencia.descripcion || "";
+        document.getElementById("admin-incidencia-seguimiento").value = incidencia.seguimiento || "";
         document.getElementById("admin-incidencia-estado").value = incidencia.estado || "PENDIENTE";
         document.getElementById("admin-incidencia-costo").value = incidencia.costoReparacion || "";
         this._marcarModoAdmin("admin-form-incidencia", "Editando incidencia #" + incidencia.id);
@@ -1904,6 +2418,18 @@ class RecepcionController {
             this._cargarAdministracion();
         } catch (error) {
             this._mostrarEstadoAdmin(error.message || "No se pudo dar de baja recepción.", "error");
+        }
+    }
+
+    async _eliminarAdminTipoHabitacion(id) {
+        if (!confirm("¿Eliminar este tipo de habitación? Si está en uso, el sistema no lo permitirá.")) return;
+        try {
+            await this._enviarAdmin("/api/v1/habitaciones/tipos/" + id, "DELETE");
+            this._mostrarEstadoAdmin("Tipo de habitación eliminado.", "success");
+            this._cargarAdministracion();
+            this._cargarHabitaciones();
+        } catch (error) {
+            this._mostrarEstadoAdmin(error.message || "No se pudo eliminar el tipo de habitación.", "error");
         }
     }
 
@@ -1946,6 +2472,28 @@ class RecepcionController {
         var id = document.getElementById("admin-recepcionista-id");
         if (id) id.value = "";
         this._marcarModoAdmin("admin-form-recepcionista", "Nuevo usuario de recepción");
+    }
+
+    _limpiarFormAdminHabitacion() {
+        var form = document.getElementById("admin-form-habitacion");
+        if (form) form.reset();
+        this._marcarModoAdmin("admin-form-habitacion", "Editor de atributos limpio");
+    }
+
+    _limpiarFormAdminTipoHabitacion() {
+        var form = document.getElementById("admin-form-tipo-habitacion");
+        if (form) form.reset();
+        var id = document.getElementById("admin-tipo-habitacion-id");
+        if (id) id.value = "";
+        this._marcarModoAdmin("admin-form-tipo-habitacion", "Nuevo tipo de habitación");
+    }
+
+    _limpiarFormAdminEstadoHabitacion() {
+        var form = document.getElementById("admin-form-estado-habitacion");
+        if (form) form.reset();
+        var original = document.getElementById("admin-estado-habitacion-original");
+        if (original) original.value = "";
+        this._marcarModoAdmin("admin-form-estado-habitacion", "Nuevo estado de habitación");
     }
 
     _limpiarFormAdminIncidencia() {
@@ -2064,6 +2612,15 @@ class RecepcionController {
         return "height:34px; padding:0 12px; border:none; border-radius:8px; background:" + color + "; color:" + textColor + "; font-family:'Montserrat',sans-serif; font-weight:600; font-size:12px; cursor:pointer; margin:2px;";
     }
 
+    _adminMiniBtnStyle(tipo) {
+        var colores = {
+            blue: { bg: "#eef2ff", color: "#4338ca", border: "#c7d2fe" },
+            gray: { bg: "#f5f5f5", color: "#555", border: "#e0e0e0" }
+        };
+        var color = colores[tipo] || colores.gray;
+        return "height:24px; padding:0 8px; border:1px solid " + color.border + "; border-radius:999px; background:" + color.bg + "; color:" + color.color + "; font-family:'Montserrat',sans-serif; font-weight:700; font-size:10px; cursor:pointer; white-space:nowrap;";
+    }
+
     _badgeIncidencia(estado) {
         var estados = {
             PENDIENTE: { texto: "Pendiente", bg: "#fff7ed", color: "#c2410c" },
@@ -2072,6 +2629,40 @@ class RecepcionController {
         };
         var data = estados[estado] || estados.PENDIENTE;
         return `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:${data.bg}; color:${data.color}; font-weight:600;">${data.texto}</span>`;
+    }
+
+    _badgeTexto(texto, bg, color) {
+        return `<span style="display:inline-block; padding:4px 10px; border-radius:999px; background:${bg}; color:${color}; font-weight:600;">${this._escapeHtml(texto)}</span>`;
+    }
+
+    _estadoReporteCheckout(estado) {
+        var estados = {
+            OK: "Conforme / está bien",
+            FALTANTE: "Falta en habitación",
+            "DAÑADO": "Dañado o roto"
+        };
+        return estados[estado] || estado || "-";
+    }
+
+    _estadoHabitacionParaRequest(estado) {
+        if (!estado) return "Disponible";
+        var normalizado = String(estado).trim().toUpperCase();
+        if (normalizado === "DISPONIBLE") return "Disponible";
+        if (normalizado === "LIMPIEZA" || normalizado === "EN LIMPIEZA") return "Limpieza";
+        if (normalizado === "MANTENIMIENTO") return "Mantenimiento";
+        if (normalizado === "OCUPADA" || normalizado === "ACTIVA") return "Ocupada";
+        return String(estado).trim();
+    }
+
+    _estadosHabitacionDisponibles(habitaciones) {
+        var estados = this._obtenerCatalogoEstadosHabitacion();
+        (habitaciones || []).forEach((habitacion) => {
+            var estado = this._estadoHabitacionParaRequest(habitacion.estado || habitacion.estadoActual);
+            if (estado && !estados.includes(estado)) {
+                estados.push(estado);
+            }
+        });
+        return estados;
     }
 
     _formatearFechaHoraAdmin(value) {

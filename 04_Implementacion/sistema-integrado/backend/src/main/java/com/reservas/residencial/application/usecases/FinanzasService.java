@@ -52,6 +52,7 @@ public class FinanzasService {
                 request.monto(),
                 request.categoria(),
                 request.recepcionista(),
+                request.destinoDestinatario(),
                 urlComprobante
         );
         egreso = egresoRepository.save(egreso);
@@ -141,6 +142,7 @@ public class FinanzasService {
                 egreso.getCategoria(),
                 egreso.getFecha(),
                 egreso.getRecepcionista(),
+                egreso.getDestinoDestinatario(),
                 egreso.getUrlComprobante()
         );
     }

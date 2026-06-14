@@ -66,6 +66,26 @@ public class HabitacionRepositoryAdapter implements HabitacionRepositoryPort {
     }
 
     @Override
+    public Optional<TipoHabitacion> findTipoByNombre(String nombreTipo) {
+        return tipoRepository.findByNombreTipo(nombreTipo);
+    }
+
+    @Override
+    public TipoHabitacion saveTipo(TipoHabitacion tipo) {
+        return tipoRepository.save(tipo);
+    }
+
+    @Override
+    public void deleteTipoById(Long id) {
+        tipoRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsByTipoId(Long tipoId) {
+        return repository.existsByTipoId(tipoId);
+    }
+
+    @Override
     public Optional<Habitacion> findByNumero(String numero) {
         return repository.findByNumero(numero);
     }

@@ -8,7 +8,9 @@ import com.reservas.residencial.application.dto.IncidenciaAdminRequest;
 import com.reservas.residencial.application.dto.IncidenciaResponse;
 import com.reservas.residencial.application.dto.RecepcionistaAdminRequest;
 import com.reservas.residencial.application.dto.RecepcionistaAdminResponse;
+import com.reservas.residencial.application.dto.ReporteCheckoutResponse;
 import com.reservas.residencial.application.usecases.AdministracionService;
+import com.reservas.residencial.application.usecases.CheckInService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,6 +33,7 @@ import java.util.List;
 public class AdministracionController {
 
     private final AdministracionService administracionService;
+    private final CheckInService checkInService;
 
     @GetMapping("/clientes")
     public ResponseEntity<List<ClienteResponse>> listarClientes(
@@ -106,6 +109,11 @@ public class AdministracionController {
     @GetMapping("/incidencias")
     public ResponseEntity<List<IncidenciaResponse>> listarIncidencias() {
         return ResponseEntity.ok(administracionService.listarIncidencias());
+    }
+
+    @GetMapping("/reportes-checkout")
+    public ResponseEntity<List<ReporteCheckoutResponse>> listarReportesCheckout() {
+        return ResponseEntity.ok(checkInService.listarReportesCheckout());
     }
 
     @PostMapping("/incidencias")

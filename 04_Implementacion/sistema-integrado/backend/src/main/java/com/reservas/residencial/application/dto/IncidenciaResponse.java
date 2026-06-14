@@ -9,6 +9,7 @@ public record IncidenciaResponse(
         Long itemId,
         String nombreItem,
         String descripcion,
+        String seguimiento,
         LocalDateTime fechaReporte,
         String recepcionistaReporta,
         String estado,

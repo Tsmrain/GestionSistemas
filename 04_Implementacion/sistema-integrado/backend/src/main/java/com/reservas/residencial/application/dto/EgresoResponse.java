@@ -9,5 +9,6 @@ public record EgresoResponse(
         String categoria,
         LocalDateTime fecha,
         String recepcionista,
+        String destinoDestinatario,
         String urlComprobante
 ) {}

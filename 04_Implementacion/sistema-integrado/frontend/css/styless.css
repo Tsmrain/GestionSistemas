@@ -3287,6 +3287,10 @@ body.recepcion-page {
     border-left-color: #9E9E9E;
 }
 
+.hab-card.personalizado {
+    border-left-color: #0ea5e9;
+}
+
 .hab-numero {
     font-size: 24px;
     font-weight: 600;
@@ -3331,6 +3335,11 @@ body.recepcion-page {
 .hab-card.limpieza .hab-badge {
     background: #F5F5F5;
     color: #616161;
+}
+
+.hab-card.personalizado .hab-badge {
+    background: #e0f2fe;
+    color: #075985;
 }
 
 .hab-hora {

@@ -275,6 +275,7 @@ public class InventarioService {
                 incidencia.getItem() != null ? incidencia.getItem().getId() : null,
                 incidencia.getItem() != null ? incidencia.getItem().getNombre() : "ESTRUCTURAL / OTRO",
                 incidencia.getDescripcion(),
+                incidencia.getSeguimiento(),
                 incidencia.getFechaReporte(),
                 incidencia.getRecepcionistaReporta(),
                 incidencia.getEstado(),

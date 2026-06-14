@@ -48,6 +48,8 @@ public interface JpaHabitacionRepository extends JpaRepository<Habitacion, Long>
 
     java.util.Optional<Habitacion> findByNumero(String numero);
 
+    boolean existsByTipoId(Long tipoId);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Habitacion h set h.estadoActual = :estadoActual where h.id = :id")
     void updateEstadoActual(@Param("id") Long id, @Param("estadoActual") String estadoActual);

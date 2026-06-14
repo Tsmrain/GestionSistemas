@@ -19,9 +19,9 @@ class RecepcionView {
             card.setAttribute("data-estado", hab.estado);
 
             card.innerHTML =
-                '<div class="hab-numero">' + hab.numero + '</div>' +
-                '<div class="hab-tipo">' + hab.tipo.nombreTipo + '</div>' +
-                '<div class="hab-badge">' + this.#obtenerEtiqueta(hab.estado) + '</div>' +
+                '<div class="hab-numero">' + this.#escapeHtml(hab.numero) + '</div>' +
+                '<div class="hab-tipo">' + this.#escapeHtml(hab.tipo.nombreTipo) + '</div>' +
+                '<div class="hab-badge">' + this.#escapeHtml(this.#obtenerEtiqueta(hab.estado)) + '</div>' +
                 '<div class="hab-hora">' + this.#obtenerInfo(hab) + '</div>' +
                 this.#obtenerAlertasHabitacion(hab) +
                 '<div class="hab-admin-buttons">' +
@@ -109,9 +109,17 @@ class RecepcionView {
             var item = document.createElement("button");
             item.type = "button";
             item.className = "resultado-reserva";
+            var fotoAnverso = this._assetUrl(reserva.huesped.urlFotoAnverso || "");
+            var fotoReverso = this._assetUrl(reserva.huesped.urlFotoReverso || "");
+            var carnetHtml =
+                '<span style="display:flex; align-items:center; gap:8px;">' +
+                (fotoAnverso ? '<img src="' + fotoAnverso + '" alt="CI anverso" style="width:46px; height:32px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">' : '<span style="font-size:10px; color:#999;">Sin anverso</span>') +
+                (fotoReverso ? '<img src="' + fotoReverso + '" alt="CI reverso" style="width:46px; height:32px; object-fit:cover; border-radius:6px; border:1px solid #ddd;">' : '<span style="font-size:10px; color:#999;">Sin reverso</span>') +
+                '</span>';
             item.innerHTML =
                 '<span><strong>#' + reserva.id + '</strong> ' + reserva.huesped.nombre + '</span>' +
-                '<span>Hab. ' + reserva.habitacion.numero + ' · ' + reserva.estado + '</span>';
+                '<span>Hab. ' + reserva.habitacion.numero + ' · ' + reserva.estado + '</span>' +
+                carnetHtml;
             item.addEventListener("click", function () {
                 callback(reserva);
             });
@@ -276,7 +284,7 @@ class RecepcionView {
             "LIMPIEZA": "limpieza",
             "MANTENIMIENTO": "limpieza"
         };
-        return clases[estado] || "disponible";
+        return clases[estado] || "personalizado";
     }
 
     // Privado — obtiene la etiqueta segun el estado
@@ -309,9 +317,6 @@ class RecepcionView {
     }
 
     #obtenerAccion(estado) {
-        if (estado === "DISPONIBLE" || estado === "ACTIVA") {
-            return '<button class="hab-accion" data-accion="limpieza" type="button">Limpieza</button>';
-        }
         if (estado === "LIMPIEZA" || estado === "MANTENIMIENTO") {
             return '<button class="hab-accion" data-accion="disponible" type="button">Disponible</button>';
         }
@@ -366,7 +371,14 @@ class RecepcionView {
         var titulo = esEdicion ? "Editar Habitación" : "Nueva Habitación";
         var numeroVal = esEdicion ? habitacionData.numero : "";
         var tipoIdVal = esEdicion ? habitacionData.tipoId : "";
-        var estadoVal = esEdicion ? habitacionData.estado : "DISPONIBLE";
+        var estadoVal = this.#estadoHabitacionLegible(esEdicion ? habitacionData.estado : "Disponible");
+        var estadosCatalogo = this.#obtenerCatalogoEstadosHabitacion();
+        if (estadoVal && !estadosCatalogo.includes(estadoVal)) {
+            estadosCatalogo.push(estadoVal);
+        }
+        var opcionesEstados = estadosCatalogo
+            .map(estado => `<option value="${this.#escapeHtml(estado)}" ${estado === estadoVal ? "selected" : ""}>${this.#escapeHtml(estado)}</option>`)
+            .join("");
 
         var opcionesTipos = tipos.map(t => 
             `<option value="${t.id}" ${tipoIdVal == t.id ? "selected" : ""}>${t.nombreTipo} (Bs ${t.precioBase})</option>`
@@ -390,9 +402,7 @@ class RecepcionView {
                     <div style="display: flex; flex-direction: column; gap: 5px;">
                         <label for="hab-form-estado" style="font-size: 12px; font-weight: 600; color: #555;">Estado Actual</label>
                         <select id="hab-form-estado" required style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #e0e0e0; border-radius: 8px;">
-                            <option value="Disponible" ${estadoVal === "DISPONIBLE" || estadoVal === "Disponible" ? "selected" : ""}>Disponible</option>
-                            <option value="Limpieza" ${estadoVal === "LIMPIEZA" || estadoVal === "Limpieza" ? "selected" : ""}>En Limpieza</option>
-                            <option value="Mantenimiento" ${estadoVal === "MANTENIMIENTO" || estadoVal === "Mantenimiento" ? "selected" : ""}>Mantenimiento</option>
+                            ${opcionesEstados}
                         </select>
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end;">
@@ -532,11 +542,12 @@ class RecepcionView {
                 
                 var compUrl = this._assetUrl(e.urlComprobante || "");
                 var compHtml = compUrl ? ` <a href="${compUrl}" target="_blank" style="text-decoration:none;">📄</a>` : "";
+                var destinoHtml = e.destinoDestinatario ? ` · Destino: ${e.destinoDestinatario}` : "";
 
                 itemDiv.innerHTML = `
                     <div>
                         <strong>Bs ${e.monto.toFixed(2)}</strong> - <span style="color:#555;">${e.descripcion}</span>
-                        <div style="font-size: 10px; color:#aaa; margin-top:2px;">Categoría: ${e.categoria} · Por: ${e.recepcionista} · ${fechaStr}${compHtml}</div>
+                        <div style="font-size: 10px; color:#aaa; margin-top:2px;">Categoría: ${e.categoria}${destinoHtml} · Por: ${e.recepcionista} · ${fechaStr}${compHtml}</div>
                     </div>
                 `;
                 egresosLista.appendChild(itemDiv);
@@ -627,6 +638,49 @@ class RecepcionView {
         return url;
     }
 
+    #escapeHtml(value) {
+        return String(value === null || value === undefined ? "" : value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    #obtenerCatalogoEstadosHabitacion() {
+        var estadosPorDefecto = [
+            "Disponible",
+            "Limpieza",
+            "Mantenimiento",
+            "Ocupada",
+            "Pruebas",
+            "Habitación para cumpleañero",
+            "Reservada para evento"
+        ];
+        try {
+            var raw = localStorage.getItem("catalogoEstadosHabitacion");
+            var guardados = raw ? JSON.parse(raw) : null;
+            if (Array.isArray(guardados) && guardados.length) {
+                return guardados
+                    .filter(estado => typeof estado === "string" && estado.trim())
+                    .map(estado => estado.trim());
+            }
+        } catch (error) {
+            localStorage.removeItem("catalogoEstadosHabitacion");
+        }
+        return estadosPorDefecto;
+    }
+
+    #estadoHabitacionLegible(estado) {
+        if (!estado) return "Disponible";
+        var normalizado = String(estado).trim().toUpperCase();
+        if (normalizado === "DISPONIBLE") return "Disponible";
+        if (normalizado === "LIMPIEZA" || normalizado === "EN LIMPIEZA") return "Limpieza";
+        if (normalizado === "MANTENIMIENTO") return "Mantenimiento";
+        if (normalizado === "OCUPADA" || normalizado === "ACTIVA") return "Ocupada";
+        return String(estado).trim();
+    }
+
     mostrarModalPreverificacionCheckout(reserva, itemsInventario, camareras, onVerificado) {
         if (typeof camareras === "function") {
             onVerificado = camareras;
@@ -637,15 +691,21 @@ class RecepcionView {
         overlay.id = "modal-preverificacion-checkout";
 
         var listRows = itemsInventario.map(item => `
-            <div class="preverif-row" data-item-id="${item.itemId}" style="display:grid; grid-template-columns: 2fr 1.5fr 1fr 1fr; gap:10px; align-items:center; border-bottom:1px solid #f0f0f0; padding: 8px 0;">
-                <span style="font-size:13px; font-weight:500;">${item.emoji} ${item.nombreItem}</span>
-                <select class="preverif-estado" style="height:32px; border:1px solid #ccc; border-radius:6px; font-size:12px; font-family:'Montserrat',sans-serif;">
-                    <option value="OK">OK (Conforme)</option>
-                    <option value="FALTANTE">Faltante</option>
-                    <option value="DAÑADO">Dañado</option>
+            <div class="preverif-row" data-item-id="${item.itemId}" style="display:grid; grid-template-columns: minmax(170px,1.4fr) minmax(170px,1fr) 92px minmax(150px,.8fr); gap:12px; align-items:center; border-bottom:1px solid #ececec; padding: 12px 0;">
+                <div style="min-width:0;">
+                    <div style="font-size:13px; font-weight:700; color:#222; line-height:1.25;">${item.emoji || "📦"} ${this.#escapeHtml(item.nombreItem)}</div>
+                    <div style="font-size:11px; color:#888; margin-top:3px;">Esperado: ${item.cantidadEsperada || 1}</div>
+                </div>
+                <select class="preverif-estado" aria-label="Estado encontrado" style="height:38px; border:1px solid #ccc; border-radius:8px; font-size:12px; padding:0 10px; font-family:'Montserrat',sans-serif; background:#fff;">
+                    <option value="OK">Conforme / está bien</option>
+                    <option value="FALTANTE">Falta en habitación</option>
+                    <option value="DAÑADO">Dañado o roto</option>
                 </select>
-                <input class="preverif-cantidad" type="number" value="1" min="1" max="${item.cantidadEsperada}" style="height:32px; border:1px solid #ccc; border-radius:6px; font-size:12px; padding:0 5px; font-family:'Montserrat',sans-serif;">
-                <label style="font-size:11px; display:flex; align-items:center; gap:3px;"><input class="preverif-cobrar" type="checkbox" checked> Cobrar</label>
+                <input class="preverif-cantidad" aria-label="Cantidad encontrada" type="number" value="${item.cantidadEsperada || 1}" min="0" max="${item.cantidadEsperada || 999}" style="height:38px; border:1px solid #ccc; border-radius:8px; font-size:12px; padding:0 8px; font-family:'Montserrat',sans-serif;">
+                <label style="font-size:12px; display:flex; align-items:center; gap:8px; color:#444; line-height:1.25;">
+                    <input class="preverif-cobrar" type="checkbox" checked>
+                    Cobrar si falta/está dañado
+                </label>
             </div>
         `).join("");
         var camarerasOptions = (camareras || []).map(camarera => `
@@ -661,27 +721,33 @@ class RecepcionView {
         `;
 
         overlay.innerHTML = `
-            <div class="modal" style="max-width: 500px; width:100%;">
-                <h2 class="modal-titulo">📋 Pre-verificación de Habitación ${reserva.habitacion.numero}</h2>
-                <p style="font-size:12px; color:#666; margin: 5px 0 15px;">Completa el checklist dictado por walkie-talkie por la camarera.</p>
+            <div class="modal" style="max-width: 720px; width:100%; padding:28px;">
+                <h2 class="modal-titulo" style="margin-bottom:6px;">📋 Revisión antes del check-out · Habitación ${reserva.habitacion.numero}</h2>
+                <p style="font-size:13px; color:#666; margin: 0 0 16px; line-height:1.45;">Registra lo que reporta la camarera antes de liberar la habitación. Si hay faltantes o daños, se genera la incidencia y el posible cobro.</p>
                 
                 <div style="margin-bottom:15px; display:flex; flex-direction:column; gap:5px; text-align:left;">
-                    <label for="preverif-camarera" style="font-size:12px; font-weight:600; color:#555;">Nombre de la camarera (Walkie-talkie)</label>
+                    <label for="preverif-camarera" style="font-size:12px; font-weight:700; color:#555;">Camarera que reporta la revisión</label>
                     ${camareraField}
                 </div>
 
-                <div style="max-height:220px; overflow-y:auto; margin-bottom:15px; text-align:left; border:1px solid #eee; padding:10px; border-radius:8px; background:#fafafa;">
+                <div style="display:grid; grid-template-columns:minmax(170px,1.4fr) minmax(170px,1fr) 92px minmax(150px,.8fr); gap:12px; align-items:center; text-align:left; padding:10px 12px; border:1px solid #e5e7eb; border-bottom:0; border-radius:10px 10px 0 0; background:#f8fafc; color:#555; font-size:11px; font-weight:800; text-transform:uppercase;">
+                    <span>Objeto revisado</span>
+                    <span>Estado encontrado</span>
+                    <span>Cantidad</span>
+                    <span>Cobro</span>
+                </div>
+                <div style="max-height:260px; overflow-y:auto; margin-bottom:15px; text-align:left; border:1px solid #e5e7eb; padding:0 12px; border-radius:0 0 10px 10px; background:#fff;">
                     ${listRows}
                 </div>
 
                 <div style="margin-bottom:15px; display:flex; flex-direction:column; gap:5px; text-align:left;">
-                    <label for="preverif-obs" style="font-size:12px; font-weight:600; color:#555;">Observaciones adicionales</label>
-                    <textarea id="preverif-obs" placeholder="Ninguna" style="width: 100%; height:60px; padding:8px 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px; resize:none;"></textarea>
+                    <label for="preverif-obs" style="font-size:12px; font-weight:700; color:#555;">Observaciones de recepción</label>
+                    <textarea id="preverif-obs" placeholder="Ej: huésped acepta cobro, se revisó con camarera, queda pendiente mantenimiento..." style="width: 100%; height:72px; padding:10px 12px; border:1px solid #e0e0e0; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:13px; resize:none;"></textarea>
                 </div>
 
                 <div style="display:flex; gap:10px; justify-content:flex-end;">
                     <button type="button" id="btn-cancelar-preverif" style="background:#e0e0e0; color:#333; height:40px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Cancelar</button>
-                    <button type="button" id="btn-guardar-preverif" style="background:#7F77DD; color:#fff; height:40px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Enviar Reporte</button>
+                    <button type="button" id="btn-guardar-preverif" style="background:#7F77DD; color:#fff; height:40px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">Confirmar revisión y continuar</button>
                 </div>
             </div>
         `;
@@ -1013,7 +1079,6 @@ class RecepcionView {
         if (estadoLower === "disponible") {
             actionButtonsHtml += `
                 <button type="button" id="btn-ingreso-puerta" style="background:#2E7D32; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">💵 Ingreso en Puerta</button>
-                <button type="button" id="btn-estado-limpieza" style="background:#0D47A1; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🧹 Iniciar Limpieza</button>
                 <button type="button" id="btn-estado-mantenimiento" style="background:#E65100; color:#fff; height:38px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'Montserrat',sans-serif; font-size:12px; padding:0 15px;">🔧 Reportar Incidencia</button>
             `;
         } else if (estadoLower === "activa" || estadoLower === "ocupada" || estadoLower === "pagada") {
@@ -1121,14 +1186,6 @@ class RecepcionView {
                 callbacks.onEliminarItem(itemId, overlay);
             });
         });
-
-        var btnLimpieza = document.getElementById("btn-estado-limpieza");
-        if (btnLimpieza) {
-            btnLimpieza.addEventListener("click", () => {
-                overlay.remove();
-                callbacks.onCambiarEstado("limpieza");
-            });
-        }
 
         var btnDisponible = document.getElementById("btn-estado-disponible");
         if (btnDisponible) {

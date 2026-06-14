@@ -9,5 +9,7 @@ public interface VerificacionCheckoutRepositoryPort {
     VerificacionCheckout save(VerificacionCheckout verificacion);
     VerificacionDetalle saveDetalle(VerificacionDetalle detalle);
     Optional<VerificacionCheckout> findById(Long id);
+    List<VerificacionCheckout> findAll();
     List<VerificacionCheckout> findByReservaId(Long reservaId);
+    List<VerificacionDetalle> findDetallesByVerificacionId(Long verificacionId);
 }

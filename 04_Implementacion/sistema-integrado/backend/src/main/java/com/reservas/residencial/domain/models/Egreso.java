@@ -31,14 +31,22 @@ public class Egreso {
     @Column(nullable = false)
     private String recepcionista;
 
+    @Column(name = "destino_destinatario")
+    private String destinoDestinatario;
+
     @Column(name = "url_comprobante")
     private String urlComprobante;
 
     public Egreso(String descripcion, Double monto, String categoria, String recepcionista, String urlComprobante) {
+        this(descripcion, monto, categoria, recepcionista, null, urlComprobante);
+    }
+
+    public Egreso(String descripcion, Double monto, String categoria, String recepcionista, String destinoDestinatario, String urlComprobante) {
         this.descripcion = descripcion;
         this.monto = monto;
         this.categoria = categoria;
         this.recepcionista = recepcionista;
+        this.destinoDestinatario = destinoDestinatario;
         this.urlComprobante = urlComprobante;
         this.fecha = LocalDateTime.now();
     }

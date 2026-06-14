@@ -18,5 +18,7 @@ public record EgresoRequest(
         @NotBlank(message = "El recepcionista es obligatorio")
         String recepcionista,
 
+        String destinoDestinatario,
+
         String urlComprobante
 ) {}

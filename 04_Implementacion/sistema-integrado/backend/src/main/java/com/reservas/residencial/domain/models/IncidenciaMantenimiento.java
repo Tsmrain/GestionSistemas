@@ -27,6 +27,9 @@ public class IncidenciaMantenimiento {
     @Column(nullable = false)
     private String descripcion;
 
+    @Column(columnDefinition = "TEXT")
+    private String seguimiento;
+
     @Column(name = "fecha_reporte", nullable = false)
     private LocalDateTime fechaReporte;
 

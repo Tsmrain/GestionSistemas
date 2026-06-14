@@ -40,8 +40,9 @@ public class FinanzasController {
             @RequestParam("monto") Double monto,
             @RequestParam("categoria") String categoria,
             @RequestParam("recepcionista") String recepcionista,
+            @RequestParam(value = "destinoDestinatario", required = false) String destinoDestinatario,
             @RequestParam(value = "comprobante", required = false) MultipartFile comprobante) {
-        EgresoRequest request = new EgresoRequest(descripcion, monto, categoria, recepcionista, null);
+        EgresoRequest request = new EgresoRequest(descripcion, monto, categoria, recepcionista, destinoDestinatario, null);
         return ResponseEntity.ok(finanzasService.registrarEgreso(request, comprobante));
     }
 }

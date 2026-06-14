@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS egresos (
     categoria VARCHAR(50) NOT NULL,
     fecha TIMESTAMP NOT NULL DEFAULT NOW(),
     recepcionista VARCHAR(100) NOT NULL,
+    destino_destinatario VARCHAR(150),
     url_comprobante TEXT
 );
 
@@ -183,6 +184,7 @@ CREATE TABLE IF NOT EXISTS incidencias_mantenimiento (
     habitacion_id BIGINT NOT NULL REFERENCES habitaciones(id) ON DELETE CASCADE,
     item_id BIGINT REFERENCES inventario_items(id) ON DELETE CASCADE,
     descripcion TEXT NOT NULL,
+    seguimiento TEXT,
     fecha_reporte TIMESTAMP NOT NULL DEFAULT NOW(),
     recepcionista_reporta VARCHAR(100) NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',

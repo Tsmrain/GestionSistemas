@@ -199,6 +199,7 @@ public class AdministracionService {
         String reporta = estaVacio(request.recepcionistaReporta()) ? "Recepción" : request.recepcionistaReporta().trim();
 
         IncidenciaMantenimiento incidencia = new IncidenciaMantenimiento(habitacion, item, descripcion, reporta);
+        incidencia.setSeguimiento(limpiar(request.seguimiento()));
         incidencia = incidenciaRepository.save(incidencia);
         sincronizarEstadoHabitacionPorIncidencias(habitacion);
         return toIncidenciaResponse(incidencia);
@@ -218,6 +219,7 @@ public class AdministracionService {
         }
         incidencia.setItem(buscarItemOpcional(request.itemId()));
         incidencia.setDescripcion(requerido(request.descripcion(), "La descripción de la incidencia es obligatoria."));
+        incidencia.setSeguimiento(limpiar(request.seguimiento()));
         if (!estaVacio(request.recepcionistaReporta())) {
             incidencia.setRecepcionistaReporta(request.recepcionistaReporta().trim());
         }
@@ -260,6 +262,9 @@ public class AdministracionService {
         incidencia.setEstado(ESTADO_DE_BAJA);
         incidencia.setFechaResolucion(LocalDateTime.now());
         incidencia.setRecepcionistaResuelve(estaVacio(recepcionista) ? "Recepción" : recepcionista.trim());
+        if (estaVacio(incidencia.getSeguimiento())) {
+            incidencia.setSeguimiento("Dada de baja por " + incidencia.getRecepcionistaResuelve());
+        }
         incidenciaRepository.save(incidencia);
         sincronizarEstadoHabitacionPorIncidencias(incidencia.getHabitacion());
     }
@@ -355,6 +360,7 @@ public class AdministracionService {
                 incidencia.getItem() != null ? incidencia.getItem().getId() : null,
                 incidencia.getItem() != null ? incidencia.getItem().getNombre() : "ESTRUCTURAL / OTRO",
                 incidencia.getDescripcion(),
+                incidencia.getSeguimiento(),
                 incidencia.getFechaReporte(),
                 incidencia.getRecepcionistaReporta(),
                 incidencia.getEstado(),

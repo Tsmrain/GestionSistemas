@@ -4,6 +4,7 @@ public record IncidenciaAdminRequest(
         Long habitacionId,
         Long itemId,
         String descripcion,
+        String seguimiento,
         String recepcionistaReporta,
         String estado,
         Double costoReparacion,
