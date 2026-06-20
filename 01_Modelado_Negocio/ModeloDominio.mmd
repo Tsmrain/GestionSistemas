@@ -20,6 +20,7 @@ classDiagram
         celular
         urlFotoAnverso
         urlFotoReverso
+        fechaNacimiento
     }
 
     class Habitacion {
@@ -53,9 +54,113 @@ classDiagram
         fechaEmision
     }
 
+    class Recepcionista {
+        id
+        nombre
+        username
+        password
+        activo
+    }
+
+    class Camarera {
+        id
+        nombre
+        celular
+        activo
+    }
+
+    class InventarioItem {
+        id
+        nombre
+        tipo
+        stockActual
+        precioCompra
+        precioVenta
+        emoji
+    }
+
+    class HabitacionInventario {
+        id
+        cantidadEsperada
+        cantidadActual
+        estadoVerificacion
+    }
+
+    class IncidenciaMantenimiento {
+        id
+        descripcion
+        seguimiento
+        fechaReporte
+        recepcionistaReporta
+        estado
+        costoReparacion
+        fechaResolucion
+        recepcionistaResuelve
+    }
+
+    class ConsumoExtra {
+        id
+        itemsJson
+        total
+        estado
+        qrData
+        fechaCreacion
+        fechaPago
+    }
+
+    class VentaInsumo {
+        id
+        habitacionId
+        numeroHabitacion
+        cliente
+        ubicacion
+        itemsJson
+        total
+        estado
+        fecha
+        recepcionista
+    }
+
+    class VerificacionCheckout {
+        id
+        fechaVerificacion
+        recepcionista
+        nombreCamarera
+        conforme
+        observaciones
+    }
+
+    class VerificacionDetalle {
+        id
+        estadoReportado
+        cantidad
+        cargoAplicado
+        cobrado
+    }
+
+    class Egreso {
+        id
+        descripcion
+        monto
+        categoria
+        fecha
+        recepcionista
+        destinoDestinatario
+        urlComprobante
+    }
+
     Huesped "1" -- "*" Reserva : Realiza
     Huesped "0..1" -- "*" Reserva : Acompaña en
     Habitacion "1" -- "*" Reserva : Asignada a
     Reserva "1" -- "*" Pago : Registra
     TipoHabitacion "1" -- "*" Habitacion : Categoriza
     Pago "1" -- "1" Comprobante : Respalda
+    Habitacion "1" -- "*" HabitacionInventario : Posee
+    InventarioItem "1" -- "*" HabitacionInventario : Incluido en
+    Habitacion "1" -- "*" IncidenciaMantenimiento : Sufre
+    InventarioItem "0..1" -- "*" IncidenciaMantenimiento : Afectado por
+    Reserva "1" -- "*" ConsumoExtra : Genera
+    VerificacionCheckout "*" -- "1" Reserva : Valida
+    VerificacionCheckout "*" -- "1" Habitacion : Realizado en
+    VerificacionCheckout "1" -- "*" VerificacionDetalle : Contiene
+    InventarioItem "1" -- "*" VerificacionDetalle : Verificado en
