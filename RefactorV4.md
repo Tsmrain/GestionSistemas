@@ -359,8 +359,10 @@ El cliente realiza una solicitud de servicio, selecciona el tipo de habitación,
 
 | Actor (Cliente) | Respuestas del Sistema |
 |---|---|
-| **1.** El cliente inicia la solicitud introduciendo su nombre, cédula de identidad (CI), servicio solicitado, fecha, hora de entrada y cantidad de horas a utilizar. | **2.** Se verifica que no haya otra solicitud en conflicto.<br>**3.** Verifica que el tipo de habitación seleccionado exista y se muestra la información asociada.<br>**4.** Verifica que el nombre y CI no presenten duplicidad conflictiva en el proceso y se solicita el pago al cliente. |
-| **5.** El cliente ingresa la copia del comprobante de pago en el sistema (QR o transferencia). | **6.** El sistema verifica que el pago se haya realizado correctamente mediante la integración bancaria.<br>**7.** Se verifica la disponibilidad de la habitación en la fecha y horario solicitado, se asigna el tipo de habitación, se muestra el servicio final y se confirma la reserva. |
+| **1.** El cliente inicia la solicitud introduciendo su nombre, cédula de identidad (CI), servicio solicitado, fecha, hora de entrada y cantidad de horas a utilizar. | **2.** El sistema verifica que no haya otra solicitud en conflicto y que el tipo de habitación exista, mostrando su información y características. |
+| **3.** El cliente confirma los datos de la solicitud. | **4.** El sistema verifica que el nombre y CI no presenten duplicidades conflictivas y solicita el pago de la tarifa correspondiente. |
+| **5.** El cliente realiza la transacción (QR/transferencia) e ingresa el comprobante de pago en el sistema. | **6.** El sistema verifica que el pago se haya realizado correctamente mediante la validación con la aplicación del banco. |
+| **7.** El cliente confirma la reserva. | **8.** El sistema verifica que la fecha y horario sigan disponibles, realiza la asignación física de la habitación, muestra la confirmación del servicio y efectúa la reserva. |
 
 #### Caminos Alternativos
 * **Paso 2 (Conflicto de Solicitud):** Si ya existe la solicitud, se procede a realizar modificaciones en el tiempo de uso o se procede a eliminar la reserva.
