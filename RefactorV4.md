@@ -9,14 +9,14 @@
     * [Dirección General](#direccion-general)
     * [Operaciones](#operaciones)
     * [Finanzas](#finanzas)
-5. [Procesos y su Clasificación](#procesos-y-su-clasificacion)
-6. [Entradas](#entradas)
-7. [Salidas](#salidas)
-8. [Relaciones entre Procesos](#relaciones-entre-procesos)
-9. [Retroalimentación](#retroalimentacion)
-10. [Ambiente](#ambiente)
-11. [Tipo de Sistema](#tipo-de-sistema)
-12. [UML](#uml)
+5. [Procesos y su Clasificación](#5-procesos-y-su-clasificacion)
+6. [Entradas](#6-entradas)
+7. [Salidas](#7-salidas)
+8. [Relaciones entre Procesos](#8-relaciones-entre-procesos)
+9. [Retroalimentación](#9-retroalimentacion)
+10. [Ambiente](#10-ambiente)
+11. [Tipo de Sistema](#11-tipo-de-sistema)
+12. [UML](#12-uml)
     * [Caso de Uso: Promocionar Servicios](#caso-de-uso-promocionar-servicios)
     * [Caso de Uso: Contactar Establecimiento](#caso-de-uso-contactar-establecimiento)
     * [Caso de Uso: Solicitar Servicio](#caso-de-uso-solicitar-servicio)
@@ -190,3 +190,185 @@ El personal de la organización está estructurado jerárquicamente en tres áre
 * Gestión de la caja general y procesamiento de transacciones financieras diarias.
 * Registro sistemático de ingresos, egresos y control de efectivo.
 * Elaboración de reportes periódicos de flujo de caja.
+
+---
+
+## 5. Procesos y su Clasificación
+
+Los procesos del sistema se clasifican bajo el enfoque de teoría general de sistemas en procesos de caja negra (procesamiento externo y de interfaz) y procesos de caja blanca (lógica interna y flujo detallado).
+
+### Caja Negra (Black Box)
+* **P_AdminRealizaReserva:** Recibe la información del cliente junto con el tipo de habitación deseada, procesa el requerimiento y genera la confirmación de reserva correspondiente.
+* **P_ClienteContactaEstablecimiento:** Captura las solicitudes de los clientes recibidas a través de los diferentes canales de comunicación (redes sociales o de manera presencial) y proporciona la información detallada sobre los servicios disponibles.
+* **P_AdminGestionarTiempoExtra:** Monitorea de forma continua el tiempo de estadía de los huéspedes y determina si aplican cobros adicionales por horas de uso excedidas.
+* **P_ProcesarPago:** Gestiona las transacciones financieras por los medios autorizados (código QR o dinero en efectivo) y emite el comprobante de pago digital o físico.
+* **P_VerificarSalida:** Confirma la devolución de los accesorios entregados al inicio de la estadía (tarjetas, controles remotos) y procede a liberar la habitación en el sistema.
+
+### Caja Blanca (White Box)
+* **P_GestionarHabitaciones:** Actualiza y controla en tiempo real los estados de ocupación, disponibilidad y mantenimiento de las habitaciones.
+* **P_EntregarAccesorios:** Controla la distribución física y el retorno de las tarjetas de acceso y los dispositivos de control electrónico.
+* **P_GestionarLimpieza:** Coordina la asignación de tareas del personal de limpieza y actualiza la disponibilidad de las habitaciones una vez higienizadas.
+* **P_RegistrarEstado:** Mantiene un registro histórico y actualizado de las condiciones físicas de las habitaciones y de cualquier observación reportada.
+* **P_GenerarInformeTurno:** Consolida de manera periódica toda la información operativa y financiera capturada durante cada turno de trabajo de 8 horas.
+* **P_GestionarConsumos:** Administra los consumos de servicios adicionales y la selección de bebidas provenientes de la conservadora exterior ("hora loca").
+* **P_ControlarSeguridad:** Supervisa permanentemente los accesos al establecimiento y maneja de forma proactiva cualquier situación de conflicto o incidente reportado.
+
+---
+
+## 6. Entradas
+
+El flujo de información hacia el sistema se organiza en entradas secuenciales (estructuradas e indispensables para el proceso básico) y entradas aleatorias (asíncronas o sujetas a incidentes).
+
+### Entradas Secuenciales
+* **E_InformacionCliente:** Datos de identificación (nombre, cédula de identidad) y contacto del huésped.
+* **E_TipoHabitacion:** Selección de la categoría de habitación y sus características requeridas por el cliente.
+* **E_RegistroAccesorios:** Registro y control de la entrega de tarjetas magnéticas y controles remotos de dispositivos.
+* **E_InformeTurno:** Consolidación de actividades, ingresos y egresos registrados por periodo laboral.
+
+### Entradas Aleatorias
+* **E_SolicitudLimpieza:** Requerimiento asíncrono de servicio de limpieza de habitación tras la salida del cliente o por demanda.
+* **E_RegistroConsumos:** Reportes de solicitudes de productos adicionales de consumo y bebidas de la conservadora.
+* **E_IncidenteSeguridad:** Notificación y reporte de situaciones de conflicto o imprevistos de seguridad en las instalaciones.
+* **E_TiempoExtra:** Registro automático o manual de la extensión del tiempo de estadía acordado.
+
+---
+
+## 7. Salidas
+
+Los resultados y productos de información generados por el sistema comprenden:
+* **S_ConfirmacionReserva:** Estado y detalles de la reserva realizada.
+* **S_ComprobantePago:** Registro de transacción y monto cobrado.
+* **S_EstadoHabitacion:** Condición actual y disponibilidad de la habitación.
+* **S_ReporteTurno:** Resumen operativo y financiero consolidado.
+* **S_ControlAccesorios:** Estado y registro de devolución de dispositivos y tarjetas.
+* **S_InformeLimpieza:** Reporte de condiciones del cuarto y observaciones de limpieza.
+
+---
+
+## 8. Relaciones entre Procesos
+
+Las interacciones entre los componentes del sistema se catalogan según su naturaleza de acoplamiento.
+
+### Relaciones Simbióticas
+Estas relaciones son indispensables para el funcionamiento y la supervivencia mutua de ambos procesos:
+* **P_GestionarLimpieza $\rightarrow$ P_ActualizarEstado**
+  * *Interdependencia:* La limpieza requiere la actualización inmediata del estado en el registro; el estado depende de la confirmación final de la limpieza.
+* **P_ControlarAccesos $\rightarrow$ P_GestionarLimpieza**
+  * *Interdependencia:* El personal de limpieza requiere acceso con una tarjeta especial de servicio; el control de accesos valida su autorización correspondiente.
+* **P_VerificarInventario $\rightarrow$ P_RegistrarEstado**
+  * *Interdependencia:* La verificación final de inventario condiciona el estado registrado; el inventario a su vez requiere actualizarse conforme al estado reportado.
+
+### Relaciones Sinérgicas
+Estas relaciones no son críticas para la supervivencia individual de los procesos, pero su integración genera un valor y desempeño superior para el sistema global:
+* **P_GestionarLimpieza $\rightarrow$ P_GenerarReportes**
+  * *Efecto Sinérgico:* La limpieza provee datos reales para la generación de reportes; a su vez, la analítica de los reportes ayuda a optimizar las rutas y horarios de limpieza.
+* **P_ComunicarWalkie $\rightarrow$ P_GestionarLimpieza**
+  * *Efecto Sinérgico:* La comunicación por radio mejora la eficiencia de la limpieza al reducir tiempos de espera; la limpieza brinda actualización instantánea de su estado mediante la comunicación radial.
+* **P_GestionarLimpieza $\rightarrow$ P_GestionarMantenimiento**
+  * *Efecto Sinérgico:* Durante las labores de limpieza se detectan de manera temprana fallas en la infraestructura, facilitando la intervención oportuna de mantenimiento.
+
+---
+
+## 9. Retroalimentación
+
+La retroalimentación regula el comportamiento del sistema para garantizar la estabilidad y mejora continua.
+
+### Retroalimentación Simbiótica
+* **P_RealizarReserva $\rightarrow$ P_GestionarHabitaciones:** Envía información actualizada de disponibilidad para evitar sobreventas.
+* **P_ProcesarPago $\rightarrow$ P_GenerarInformeTurno:** Control financiero inmediato y verificación diaria en caja.
+* **P_EntregarAccesorios $\rightarrow$ P_VerificarSalida:** Control de inventario físico y garantía de devolución de accesorios al check-out.
+
+### Retroalimentación Sinérgica
+* **P_GestionarLimpieza $\rightarrow$ P_RegistrarEstado:** Mejora los controles de calidad evaluando el estado final de las habitaciones de forma sistemática.
+* **P_GestionarConsumos $\rightarrow$ P_GenerarInformeTurno:** Optimización en la reposición de existencias en base a consumos reales.
+* **P_ControlarSeguridad $\rightarrow$ P_GestionarHabitaciones:** Incremento de la fiabilidad y la calidad percibida en la asignación segura del espacio.
+
+---
+
+## 10. Ambiente
+
+El sistema opera en un entorno hotelero 24/7 y está sujeto a factores internos y externos.
+
+### Ambiente Interno
+* Red local integrada que vincula recepción, limpieza y administración.
+* Sistema de control electrónico de accesos mediante tarjetas magnéticas.
+* Infraestructura de comunicación interna (walkie-talkies).
+* Sistema de monitoreo de tiempos de estadía y estados de habitaciones.
+
+### Ambiente Externo
+* Interfaz y comunicación con pasarelas de pago y banca digital (QR/efectivo).
+* Conexión con canales digitales y redes sociales para la captación y promoción.
+* Normativas de hospedaje y reglamentaciones municipales vigentes.
+* Fluctuaciones y picos en la demanda según la temporada.
+
+### Limitaciones del Sistema
+* Capacidad física instalada (número finito de habitaciones).
+* Disponibilidad de personal distribuido en turnos de 8 horas.
+* Tiempos físicos de respuesta para labores de mantenimiento complejo.
+* Requisitos y leyes de seguridad, protección de datos y privacidad de los huéspedes.
+
+---
+
+## 11. Tipo de Sistema
+
+El sistema es principalmente un **TPS (Transaction Processing System - Sistema de Procesamiento de Transacciones)** con elementos integrados de **MIS (Management Information System - Sistema de Información para la Administración)**.
+
+* **Justificación:** El sistema requiere un procesamiento transaccional de alta robustez para dar soporte a las operaciones diarias del establecimiento (check-in, check-out, asignación de accesorios, cobros y cambios de estado de habitaciones). A su vez, se complementa con un componente de tipo MIS que consolida los reportes financieros por turno y el estado del inventario para la toma de decisiones administrativas y estratégicas por parte de la Dirección General.
+
+---
+
+## 12. UML
+
+A continuación se detalla la priorización y descripción de los casos de uso identificados para el sistema:
+
+| Caso de Uso | Actor | Prioridad | Descripción |
+|---|---|---|---|
+| **Contactar Establecimiento** | Sistema | Alta | El sistema gestiona las solicitudes de información entrantes por diferentes canales (redes sociales, presencial). |
+| **Solicitar Servicio** | Cliente | Alta | Permite a los clientes solicitar habitaciones y servicios, verificar su disponibilidad y procesar los pagos correspondientes. |
+| **Gestionar Reservas** | Recepcionista | Alta | Administra el flujo completo del proceso de reserva de habitaciones y la emisión de confirmaciones. |
+| **Gestionar Tipo de Habitaciones** | Administrador | Alta | Permite configurar los tipos de habitaciones del motel, definiendo sus características y tarifas por hora. |
+| **Gestionar Habitaciones** | Recepcionista | Alta | Controla y visualiza el estado físico y de disponibilidad de las habitaciones en tiempo real. |
+| **Gestionar Pagos** | Recepcionista | Alta | Procesa las transacciones de pago de los clientes y genera los comprobantes correspondientes. |
+| **Controlar Accesos** | Recepcionista | Alta | Administra la programación, asignación y devolución de tarjetas magnéticas y accesorios. |
+| **Gestionar Limpieza** | Personal de Limpieza | Alta | Coordina las tareas de higienización de habitaciones y reporta la liberación de las mismas al encargado. |
+| **Generar Informes** | Administrador | Media | Produce los reportes financieros y operativos globales para la toma de decisiones. |
+| **Gestionar Consumos** | Recepcionista | Media | Controla el consumo de bebidas y productos adicionales dentro y fuera de la habitación. |
+| **Monitorear Seguridad** | Personal de Seguridad | Alta | Supervisa los accesos y áreas comunes, gestionando incidentes o situaciones de conflicto. |
+
+---
+
+### CASO DE USO: Solicitar Servicio
+
+#### Actores
+* **Primario:** Cliente
+
+#### Tipo
+* Primario / Alta Prioridad
+
+#### Propósito
+Permitir al cliente realizar la solicitud de servicios de alojamiento de forma digital o presencial, garantizando que el proceso de reserva y asignación de habitaciones se gestione sin conflictos de disponibilidad.
+
+#### Resumen
+El cliente realiza una solicitud de servicio, selecciona el tipo de habitación, verifica la disponibilidad, ingresa sus datos personales, confirma la solicitud y realiza el pago. El sistema gestiona el proceso para garantizar la reserva sin inconvenientes.
+
+#### Precondición
+* El cliente debe estar registrado en el sistema.
+* Los datos del cliente deben estar completos y actualizados.
+
+#### Curso Básico de Acción
+
+| Actor (Cliente) | Respuestas del Sistema |
+|---|---|
+| **1.** El cliente inicia la solicitud introduciendo su nombre, cédula de identidad (CI), servicio solicitado, fecha, hora de entrada y cantidad de horas a utilizar. | **2.** Se verifica que no haya otra solicitud en conflicto.<br>**3.** Verifica que el tipo de habitación seleccionado exista y se muestra la información asociada.<br>**4.** Verifica que el nombre y CI no presenten duplicidad conflictiva en el proceso y se solicita el pago al cliente. |
+| **5.** El cliente ingresa la copia del comprobante de pago en el sistema (QR o transferencia). | **6.** El sistema verifica que el pago se haya realizado correctamente mediante la integración bancaria.<br>**7.** Se verifica la disponibilidad de la habitación en la fecha y horario solicitado, se asigna el tipo de habitación, se muestra el servicio final y se confirma la reserva. |
+
+#### Caminos Alternativos
+* **Paso 2 (Conflicto de Solicitud):** Si ya existe la solicitud, se procede a realizar modificaciones en el tiempo de uso o se procede a eliminar la reserva.
+* **Paso 3 (Inexistencia del Servicio):** Si el servicio no está disponible o no existe, vuelve a introducir el tipo de servicio o se sale del sistema.
+* **Paso 4 (Registro Existente):** Si la información del cliente existe, se muestra el historial del cliente.
+* **Paso 6 (Falla en el Pago):** Si el pago no se realiza correctamente, el cliente puede eliminar la transacción o volver a intentar realizar el pago.
+* **Paso 7 (Habitación No Disponible):** Si el horario y la habitación no están disponibles, el sistema notifica al cliente y permite intentar nuevamente o salir del sistema.
+
+#### Postcondición
+* La solicitud queda registrada y confirmada en el sistema.
+* Los servicios solicitados están reservados y la habitación queda bloqueada para su uso.
