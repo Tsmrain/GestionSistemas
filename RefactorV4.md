@@ -1,174 +1,192 @@
-CAPÍTULO 1: INTRODUCCIÓN ......................................................................................2
-1. REQUISITOS DEL PROYECTO / EXPLICACIÓN DEL SISTEMA ACTUAL......................... 3
-2. OBJETIVO GENERAL .............................................................................................. 5
-3. OBJETIVO ESPECIFICO .......................................................................................... 5
-4. ORGANIGRAMA Y FUNCIONES...............................................................................6
-5. PROCESOS Y SU CLASIFICACIÓN...........................................................................9
-6. ENTRADAS............................................................................................................9
-7. SALIDAS ............................................................................................................. 10
-8. RELACIONES ENTRE PROCESOS.......................................................................... 10
-9. RETROALIMENTACIÓN......................................................................................... 11
-10. AMBIENTE......................................................................................................... 11
-11. TIPO DE SISTEMA............................................................................................... 12
-12. UML.................................................................................................................. 12
-CASO DE USO: Promocionar Servicios .................................................................. 13
-CASO DE USO: Contactar Establecimiento............................................................ 19
-CASO DE USO: Solicitar Servicio ........................................................................... 26
-CASO DE USO: Gestionar Reserva......................................................................... 31
-CASO DE USO: Gestionar Tipos de Habitación ....................................................... 31
-CASO DE USO: Gestionar Habitaciones................................................................. 31
-CASO DE USO: Procesar Check-In/Out.................................................................. 31
-ACTORES: ........................................................................................................ 31
-TIPO:................................................................................................................ 31
-PROPÓSITO:..................................................................................................... 31
-RESUMEN: ....................................................................................................... 31
-PRECONDICIÓN:.............................................................................................. 31
-CURSO BÁSICO:............................................................................................... 31
-Check-Out: ...................................................................................................... 31
+# CAPÍTULO 1: INTRODUCCIÓN
 
-CAMINOS ALTERNATIVOS: ................................................................................ 31
-POSTCONDICIÓN:............................................................................................ 31
-CASO DE USO: Gestionar Pagos ........................................................................... 31
-CASO DE USO: Controlar Accesos ........................................................................ 31
-CASO DE USO: Gestionar Limpieza ....................................................................... 31
-CASO DE USO: Generar Informes.......................................................................... 31
-CASO DE USO: Gestionar Consumos .................................................................... 31
-CASO DE USO: Monitorear Seguridad.................................................................... 31
-MODELO DE DOMINIO DEL SISTEMA........................................................................ 31
-CASO DE USO DEL SISTEMA .................................................................................... 31
-DIAGRAMA DE ACTIVIDAD DEL SISTEMA................................................................... 31
-DIAGRAMA DE PAQUETES DEL SISTEMA................................................................... 31
-DIAGRAMA DE ACTIVIDAD: Caso de uso principal – Realizar Reserva.......................... 31
-Actividad de Objeto: Muestra el ciclo de vida de una habitación ................................. 31
-ANEXOS .................................................................................                                 31
+## Índice de Contenidos
 
-CAPÍTULO 1: INTRODUCCIÓN
+1. [Requisitos del Proyecto / Explicación del Sistema Actual](#1-requisitos-del-proyecto--explicacion-del-sistema-actual)
+2. [Objetivo General](#2-objetivo-general)
+3. [Objetivo Específico](#3-objetivo-especifico)
+4. [Organigrama y Funciones](#4-organigrama-y-funciones)
+    * [Dirección General](#direccion-general)
+    * [Operaciones](#operaciones)
+    * [Finanzas](#finanzas)
+5. [Procesos y su Clasificación](#procesos-y-su-clasificacion)
+6. [Entradas](#entradas)
+7. [Salidas](#salidas)
+8. [Relaciones entre Procesos](#relaciones-entre-procesos)
+9. [Retroalimentación](#retroalimentacion)
+10. [Ambiente](#ambiente)
+11. [Tipo de Sistema](#tipo-de-sistema)
+12. [UML](#uml)
+    * [Caso de Uso: Promocionar Servicios](#caso-de-uso-promocionar-servicios)
+    * [Caso de Uso: Contactar Establecimiento](#caso-de-uso-contactar-establecimiento)
+    * [Caso de Uso: Solicitar Servicio](#caso-de-uso-solicitar-servicio)
+    * [Caso de Uso: Gestionar Reserva](#caso-de-uso-gestionar-reserva)
+    * [Caso de Uso: Gestionar Tipos de Habitación](#caso-de-uso-gestionar-tipos-de-habitacion)
+    * [Caso de Uso: Gestionar Habitaciones](#caso-de-uso-gestionar-habitaciones)
+    * [Caso de Uso: Procesar Check-In/Out](#caso-de-uso-procesar-check-inout)
+        * [Actores](#actores)
+        * [Tipo](#tipo)
+        * [Propósito](#proposito)
+        * [Resumen](#resumen)
+        * [Precondición](#precondicion)
+        * [Curso Básico](#curso-basico)
+        * [Check-Out](#check-out)
+        * [Caminos Alternativos](#caminos-alternativos)
+        * [Postcondición](#postcondicion)
+    * [Caso de Uso: Gestionar Pagos](#caso-de-uso-gestionar-pagos)
+    * [Caso de Uso: Controlar Accesos](#caso-de-uso-controlar-accesos)
+    * [Caso de Uso: Gestionar Limpieza](#caso-de-uso-gestionar-limpieza)
+    * [Caso de Uso: Generar Informes](#caso-de-uso-generar-informes)
+    * [Caso de Uso: Gestionar Consumos](#caso-de-uso-gestionar-consumos)
+    * [Caso de Uso: Monitorear Seguridad](#caso-de-uso-monitorear-seguridad)
+* [Modelo de Dominio del Sistema](#modelo-de-dominio-del-sistema)
+* [Caso de Uso del Sistema](#caso-de-uso-del-sistema)
+* [Diagrama de Actividad del Sistema](#diagrama-de-actividad-del-sistema)
+* [Diagrama de Paquetes del Sistema](#diagrama-de-paquetes-del-sistema)
+* [Diagrama de Actividad: Caso de uso principal – Realizar Reserva](#diagrama-de-actividad-caso-de-uso-principal--realizar-reserva)
+* [Actividad de Objeto: Muestra el ciclo de vida de una habitación](#actividad-de-objeto-muestra-el-ciclo-de-vida-de-una-habitacion)
+* [Anexos](#anexos)
 
-1. REQUISITOS DEL PROYECTO / EXPLICACIÓN DEL
-SISTEMA ACTUAL
-El sistema actual de servicios de alojamiento temporal en Santa Cruz opera de manera
-tradicional, con diferentes niveles de digitalización según la categoría del establecimiento.
-Para contactar al establecimiento PREMIUM, existen varios métodos como:
-● Personalmente
-● Redes Sociales (Facebook, Instagram, TikTok, etc.)
-Las personas pueden acceder a cualquier red social para encontrar el número de contacto
-y la ubicación. Una vez que tengas el contacto, envías un mensaje y el empleado/a te
-enviará los precios con las características de cada habitación:
-● Normal [150bs/12hrs]: A/C, cama de 2 plazas
-● VIP [180bs/12hrs]: A/C, cama de 3 plazas, comida
-● Super VIP [240bs/12hrs]: Cama de 3 plazas, jacuzzi, servicio de habitación,
-consumos, Internet, A/C
-Una vez seleccionado el tipo de habitación, se procede a tomar los datos del cliente.
+---
 
-La información se rellena secuencialmente al hacer la reserva.
-Si decides no reservar y llegas directamente al establecimiento, los datos se toman
-manualmente en ese momento.
-Una vez realizado el pago, llegas a la recepción e indicas si tienes una reserva y a nombre
-de quién. Si no tienes reserva, procedes a pedir una habitación y pagas, ya sea por
-transacción QR o en efectivo. Una vez completado el pago, el recepcionista entrega a los
-clientes sus respectivos accesorios para ingresar a la habitación, como la tarjeta de
-acceso y los controles para la TV, el Telecable y el aire acondicionado.
-En el caso de tener una reserva tipo suites, el recepcionista informa a los clientes sobre la
-"hora loca", que consiste en una conservadora ubicada afuera, donde pueden elegir las
-bebidas que deseen. La conservadora contiene diferentes tipos de tragos para que los
-clientes puedan seleccionar según su preferencia.
-A la hora de salida, los clientes deben llevar consigo la tarjeta de acceso y los controles de
-la TV, TV cable y aire acondicionado, y cerrar la puerta. Minutos después de que los
-clientes hayan salido, el personal de limpieza ingresa a la habitación para realizar su
+## 1. Requisitos del Proyecto / Explicación del Sistema Actual
 
-trabajo. Para ingresar ellos maneja una tarjeta especial para poder ingresar a las
-habitaciones.
-Una vez terminada la limpieza de la habitación, el personal avisa al encargado a través de
-su "walkie-talkie".
-El encargado actualiza su cuaderno donde lleva un registro detallado del estado de las
-habitaciones, incluyendo cualquier observación relevante sobre la limpieza o el
-mantenimiento.
-En caso de que surja algún conflicto o inconveniente con un cliente, el encargado
-contacta inmediatamente al personal de seguridad para resolver la situación de manera
-rápida y eficiente, garantizando la seguridad y el bienestar de todos los huéspedes.
-Al finalizar cada turno de 8 horas, los recepcionistas deben presentar un informe con los
-gastos totales. Existen tres turnos: madrugada, tarde y noche.
-En caso de que el cliente se pase de la hora, se le cobrará por el tiempo extra utilizado.
-El tiempo corre independientemente de si el cliente está o no en el establecimiento.
-La única manera de obtener una devolución es si la habitación está en malas condiciones
-y no hay otras habitaciones disponibles para reemplazarla.
-No se aceptan cancelaciones de reservas.
+El sistema actual de servicios de alojamiento temporal en Santa Cruz opera de manera tradicional, con diferentes niveles de digitalización según la categoría del establecimiento.
 
-REPORTE POR TURNO
+### Métodos de Contacto
+Para contactar al establecimiento **PREMIUM**, existen varios métodos:
+* **Personalmente:** Acudiendo de forma física al establecimiento.
+* **Redes Sociales:** A través de plataformas como Facebook, Instagram, TikTok, entre otras.
 
-Turno Fecha Responsable Total habitación Total accesorios Total consumos Total
+Las personas pueden acceder a cualquier red social para encontrar el número de contacto y la ubicación. Una vez establecido el contacto, se envía un mensaje y el personal de atención envía los precios con las características de cada tipo de habitación:
+* **Normal [150 Bs. / 12 hrs.]:** Aire acondicionado (A/C) y cama de 2 plazas.
+* **VIP [180 Bs. / 12 hrs.]:** Aire acondicionado (A/C), cama de 3 plazas y comida incluida.
+* **Super VIP [240 Bs. / 12 hrs.]:** Cama de 3 plazas, jacuzzi, servicio de habitación, consumos incluidos, acceso a Internet y aire acondicionado (A/C).
 
-Libro Diario
+### Proceso de Reserva y Registro
+Una vez seleccionado el tipo de habitación, se procede a registrar los datos del cliente:
+* **Con reserva:** La información se rellena de forma secuencial al momento de realizar la reserva previa.
+* **Sin reserva (Llegada directa):** Si el cliente decide no reservar y llega directamente al establecimiento, los datos son registrados manualmente en recepción en ese instante.
 
-Responsable Fecha Na Habitación Consumos Accesorios Total
+### Proceso de Ingreso (Check-In)
+Una vez realizado el pago, el cliente se presenta en recepción e indica si cuenta con una reserva y el nombre del titular. En caso de no tener reserva:
+1. Solicita una habitación disponible.
+2. Realiza el pago correspondiente (ya sea mediante transferencia QR o en efectivo).
+3. Tras confirmar el pago, el recepcionista hace entrega de los accesorios de acceso a la habitación, tales como la tarjeta de acceso y los controles remotos de la televisión, TV por cable y aire acondicionado.
 
-2. OBJETIVO GENERAL
-Diseñar un sistema de información el cual facilite la gestión de reservas de moteles
+> [!NOTE]
+> En el caso de reservas de tipo **Suites**, el recepcionista informa a los clientes sobre la *"hora loca"*, que consiste en una conservadora ubicada en el exterior de la habitación. Los clientes pueden seleccionar libremente y según su preferencia los diferentes tipos de tragos y bebidas que se encuentren en ella.
 
-3. OBJETIVO ESPECIFICO
-Los siguientes objetivos fueron tomados basados en los requisitos, encuestas y
-entrevistas
-El levantamiento de requerimientos se enfocará en recopilar información sobre los
-procesos actuales relacionados con la gestión de reservas en Santa Cruz. Esto incluye
-identificar las necesidades de los clientes, personal. Se utilizarán entrevistas y encuestas
-para comprender mejor los problemas actuales y establecer una base sólida para el
-desarrollo del sistema.
-El análisis consistirá en modelar (UML) para visualizar la interacción del sistema. Se
-identificarán los procesos, entradas, salidas, retroalimentación y los puntos de mejora.
-El diseño desarrollaremos una plataforma que integre la gestión de moteles
-(habitaciones, reservas, pagos, reportes de habitaciones) Las interfaces permitirán a los
-moteles gestionar habitaciones, controlar accesos y generar reportes financieros.
+### Proceso de Salida (Check-Out) y Limpieza
+Al momento de la salida, los clientes deben llevar consigo la tarjeta de acceso y los controles remotos (TV, cable y A/C), cerrar la puerta y entregarlos en recepción.
+* **Procedimiento de Limpieza:** Minutos después de la salida del cliente, el personal de limpieza ingresa a la habitación utilizando una tarjeta magnética especial asignada para este fin.
+* **Notificación de Finalización:** Al concluir las tareas de limpieza e higiene, el personal notifica al encargado a través de su radio transmisor (*walkie-talkie*).
+* **Actualización del Estado:** El encargado actualiza el cuaderno de registro físico, anotando detalladamente el estado actual de la habitación y cualquier observación relevante sobre limpieza o mantenimiento.
 
-4. ORGANIGRAMA Y FUNCIONES
+### Incidentes y Seguridad
+En caso de presentarse algún conflicto o inconveniente con un huésped, el encargado se comunica de inmediato con el personal de seguridad para resolver la situación de forma rápida, eficiente y segura, garantizando el bienestar general en el establecimiento.
 
-Dirección General
-Director General:
-● Toma de decisiones estratégicas.
-● Supervisión general de todas las operaciones.
-● Establecimiento de políticas y procedimientos.
-● Coordinación con los administradores de operaciones y finanzas.
-Operaciones
-Admin Operaciones:
-● Supervisión de todas las actividades operativas.
-● Coordinación de horarios y turnos.
-● Asegurar que los estándares de calidad se mantengan.
-● Resolución de problemas operativos diarios.
-Soporte (Supervisor 24/7):
-● Supervisión de las actividades de soporte en todo momento.
-● Gestión de incidencias y soporte técnico.
-● Asistencia a los empleados en caso de problemas operativos.
+### Reportes e Informes Financieros
+Al concluir cada turno laboral de 8 horas, los recepcionistas están obligados a presentar un informe detallado con los gastos y cobros totales. El personal se distribuye en tres turnos rotativos:
+* Turno Madrugada
+* Turno Tarde
+* Turno Noche
 
-Empleado Nuevo (Control de Calidad):
-● Inspección y verificación de la calidad de los servicios.
-● Asegurarse de que se cumplan los estándares de limpieza y mantenimiento.
-● Reporte de cualquier desviación y sugerencias de mejora.
-Recepción (Turno Mañana y Turno Noche):
-● Check-in y check-out de clientes.
-● Gestión de reservas y atención al cliente.
-● Manejo de pagos y facturación.
-Seguridad (Turno Mañana y Turno Noche):
-● Vigilancia y protección de las instalaciones.
-● Control de acceso y monitoreo de cámaras de seguridad.
-● Respuesta a emergencias y resolución de conflictos.
-Empleado Nuevo (Limpieza):
-● Limpieza de habitaciones y áreas comunes.
-● Mantenimiento de los estándares de higiene.
-● Reporte de cualquier problema o necesidad de mantenimiento.
-Empleado Nuevo (Mantenimiento):
-● Realización de reparaciones y mantenimiento general.
-● Inspección regular de instalaciones y equipos.
-● Coordinación con otros departamentos para resolver problemas técnicos.
-Finanzas
-Admin Finanzas:
-● Supervisión de todas las actividades financieras.
-● Gestión de presupuestos y contabilidad.
-● Coordinación de pagos y cobranzas.
-Contabilidad (Inventario):
+### Políticas de Reserva y Uso del Servicio
+* **Cargos por tiempo extra:** En caso de que el cliente exceda el tiempo límite de su estadía, se le cobrará una tarifa adicional por el tiempo extra utilizado. Cabe destacar que el tiempo de ocupación transcurre independientemente de si el cliente permanece físicamente en la habitación o se encuentra fuera del establecimiento.
+* **Políticas de devolución:** La única causal de devolución de dinero es si la habitación asignada se encuentra en malas condiciones y no existe otra habitación de categoría equivalente o superior disponible para su reemplazo.
+* **Políticas de cancelación:** Bajo ninguna circunstancia se aceptan cancelaciones de reservas.
 
-● Registro y control de inventarios.
-● Auditoría de existencias y pedidos de reabastecimiento.
-● Preparación de informes financieros relacionados con inventarios.
-Pagos (Caja/Pago):
-● Gestión de caja y manejo de transacciones diarias.
-● Registro de ingresos y egresos.
-● Preparación de reportes de flujo de caja.
+### Plantillas de Informes Financieros
+
+#### Reporte por Turno
+| Turno | Fecha | Responsable | Total Habitación | Total Accesorios | Total Consumos | Total |
+|---|---|---|---|---|---|---|
+| | | | | | | |
+
+#### Libro Diario
+| Responsable | Fecha | Nro. Habitación | Consumos | Accesorios | Total |
+|---|---|---|---|---|---|
+| | | | | | |
+
+---
+
+## 2. Objetivo General
+Diseñar un sistema de información que facilite y optimice la gestión de reservas de moteles.
+
+---
+
+## 3. Objetivo Específico
+Los siguientes objetivos específicos se establecieron con base en los requisitos levantados, encuestas y entrevistas realizadas:
+* **Levantamiento de Requerimientos:** Recopilar información detallada sobre los procesos actuales relacionados con la gestión de reservas de alojamiento en Santa Cruz. Esto incluye identificar las necesidades clave tanto de los clientes como del personal operativo mediante entrevistas y encuestas, estableciendo una base sólida para el desarrollo del software.
+* **Análisis del Sistema:** Modelar el comportamiento y la estructura del sistema utilizando Lenguaje de Modelado Unificado (UML) para visualizar las interacciones. Se definirán con precisión los procesos, las entradas, las salidas, los bucles de retroalimentación y las oportunidades de mejora operativa.
+* **Diseño del Sistema:** Desarrollar una plataforma integrada para la gestión integral de moteles (administración de habitaciones, reservas, procesamiento de pagos y reportes de estado). Las interfaces diseñadas permitirán a los establecimientos controlar los accesos, administrar habitaciones y generar informes financieros de manera automatizada.
+
+---
+
+## 4. Organigrama y Funciones
+
+El personal de la organización está estructurado jerárquicamente en tres áreas principales: Dirección General, Operaciones y Finanzas.
+
+### Dirección General
+
+#### Director General
+* Toma de decisiones estratégicas de la empresa.
+* Supervisión general de todas las operaciones del establecimiento.
+* Establecimiento de políticas internas y manuales de procedimientos.
+* Coordinación directa con los administradores de operaciones y finanzas.
+
+### Operaciones
+
+#### Administrador de Operaciones
+* Supervisión de todas las actividades operativas del día a día.
+* Planificación y coordinación de horarios y turnos de personal.
+* Asegurar el cumplimiento de los estándares de calidad definidos.
+* Resolución de problemas y eventualidades operativas diarias.
+
+#### Soporte (Supervisor 24/7)
+* Supervisión continua de las actividades de soporte en todo momento.
+* Gestión y resolución de incidencias técnicas y operativas.
+* Brindar asistencia inmediata a los empleados ante problemas en el turno.
+
+#### Control de Calidad (Empleado Nuevo)
+* Inspección minuciosa y verificación de la calidad de los servicios prestados.
+* Garantizar el cumplimiento estricto de los estándares de higiene, limpieza y mantenimiento.
+* Reportar desviaciones operativas y proponer acciones de mejora continua.
+
+#### Recepción (Turno Mañana / Turno Noche)
+* Gestión de los procesos de registro de entrada (*Check-in*) y salida (*Check-out*).
+* Atención al cliente y administración de reservas en el sistema.
+* Control, cobro y facturación de servicios y consumos.
+
+#### Seguridad (Turno Mañana / Turno Noche)
+* Vigilancia activa y protección física de toda la infraestructura.
+* Monitoreo del sistema de cámaras y control estricto de accesos.
+* Intervención ante emergencias y mediación en la resolución de conflictos.
+
+#### Limpieza (Empleado Nuevo)
+* Limpieza profunda, desinfección y preparación de habitaciones y áreas comunes.
+* Mantenimiento riguroso de los estándares de higiene exigidos.
+* Reportar inmediatamente desperfectos o necesidades de mantenimiento en las habitaciones.
+
+#### Mantenimiento (Empleado Nuevo)
+* Ejecución de reparaciones generales y mantenimiento preventivo de la infraestructura.
+* Inspección periódica de los equipos e instalaciones clave (aire acondicionado, jacuzzi, etc.).
+* Coordinación interdisciplinar para la resolución ágil de fallas técnicas.
+
+### Finanzas
+
+#### Administrador de Finanzas
+* Supervisión general de las actividades y la salud financiera de la organización.
+* Elaboración y control de presupuestos y contabilidad general.
+* Coordinación y validación de las cuentas de cobros y pagos.
+
+#### Contabilidad (Inventario)
+* Registro, control y auditoría de inventarios de insumos, accesorios y consumos.
+* Supervisión del nivel de existencias y generación de pedidos de reabastecimiento.
+* Elaboración de informes de costos y valor de los inventarios.
+
+#### Pagos (Caja/Pago)
+* Gestión de la caja general y procesamiento de transacciones financieras diarias.
+* Registro sistemático de ingresos, egresos y control de efectivo.
+* Elaboración de reportes periódicos de flujo de caja.
