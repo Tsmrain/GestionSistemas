@@ -16,19 +16,49 @@
 9. [Retroalimentación](#9-retroalimentacion)
 10. [Ambiente](#10-ambiente)
 11. [Tipo de Sistema](#11-tipo-de-sistema)
-12. [UML](#12-uml)
+12. [UML: Casos de Uso Detallados](#12-uml)
     * [CU-01: Consultar Disponibilidad](#cu-01-consultar-disponibilidad)
+        * [Figura 1: Diagrama de Caso de Uso - CU-01](#figura-1-diagrama-de-caso-de-uso---cu-01-consultar-disponibilidad)
+        * [Figura 2: Diagrama de Clases de Interfaz - CU-01](#figura-2-diagrama-de-clases-de-interfaz---cu-01-consultar-disponibilidad)
+        * [Figura 3: Diagrama de Secuencia - CU-01](#figura-3-diagrama-de-secuencia---cu-01-consultar-disponibilidad)
+        * [Figura 4: Diagrama de Colaboración - CU-01](#figura-4-diagrama-de-colaboracion---cu-01-consultar-disponibilidad)
+        * [Figura 5: Diagrama de Paquetes - CU-01](#figura-5-diagrama-de-paquetes---cu-01-consultar-disponibilidad)
     * [CU-02: Registrar Reserva](#cu-02-registrar-reserva)
+        * [Figura 6: Diagrama de Caso de Uso - CU-02](#figura-6-diagrama-de-caso-de-uso---cu-02-registrar-reserva)
+        * [Figura 7: Diagrama de Clases de Interfaz - CU-02](#figura-7-diagrama-de-clases-de-interfaz---cu-02-registrar-reserva)
+        * [Figura 8: Diagrama de Secuencia - CU-02](#figura-8-diagrama-de-secuencia---cu-02-registrar-reserva)
+        * [Figura 9: Diagrama de Colaboración - CU-02](#figura-9-diagrama-de-colaboracion---cu-02-registrar-reserva)
+        * [Figura 10: Diagrama de Paquetes - CU-02](#figura-10-diagrama-de-paquetes---cu-02-registrar-reserva)
     * [CU-03: Procesar Pago](#cu-03-procesar-pago)
-    * [CU-04: Realizar Check-in](#cu-04-realizar-check-in)
+        * [Figura 11: Diagrama de Caso de Uso - CU-03](#figura-11-diagrama-de-caso-de-uso---cu-03-procesar-pago)
+        * [Figura 12: Diagrama de Clases de Interfaz - CU-03](#figura-12-diagrama-de-clases-de-interfaz---cu-03-procesar-pago)
+        * [Figura 13: Diagrama de Secuencia - CU-03](#figura-13-diagrama-de-secuencia---cu-03-procesar-pago)
+        * [Figura 14: Diagrama de Colaboración - CU-03](#figura-14-diagrama-de-colaboracion---cu-03-procesar-pago)
+        * [Figura 15: Diagrama de Paquetes - CU-03](#figura-15-diagrama-de-paquetes---cu-03-procesar-pago)
+    * [CU-04: Realizar Check-in y Flujo Físico](#cu-04-realizar-check-in)
+        * [Figura 16: Diagrama de Caso de Uso - CU-04](#figura-16-diagrama-de-caso-de-uso---cu-04-realizar-check-in-y-flujo-fisico)
+        * [Figura 17: Diagrama de Clases de Interfaz - CU-04](#figura-17-diagrama-de-clases-de-interfaz---cu-04-realizar-check-in-y-flujo-fisico)
+        * [Figura 18: Diagrama de Secuencia - CU-04](#figura-18-diagrama-de-secuencia---cu-04-realizar-check-in-y-flujo-fisico)
+        * [Figura 19: Diagrama de Colaboración - CU-04](#figura-19-diagrama-de-colaboracion---cu-04-realizar-check-in-y-flujo-fisico)
+        * [Figura 20: Diagrama de Paquetes - CU-04](#figura-20-diagrama-de-paquetes---cu-04-realizar-check-in-y-flujo-fisico)
     * [CU-05: Acceso por QR en Puerta](#cu-05-acceso-por-qr-en-puerta)
+        * [Figura 21: Diagrama de Caso de Uso - CU-05](#figura-21-diagrama-de-caso-de-uso---cu-05-acceso-por-qr-en-puerta)
+        * [Figura 22: Diagrama de Clases de Interfaz - CU-05](#figura-22-diagrama-de-clases-de-interfaz---cu-05-acceso-por-qr-en-puerta)
+        * [Figura 23: Diagrama de Secuencia - CU-05](#figura-23-diagrama-de-secuencia---cu-05-acceso-por-qr-en-puerta)
+        * [Figura 24: Diagrama de Colaboración - CU-05](#figura-24-diagrama-de-colaboracion---cu-05-acceso-por-qr-en-puerta)
+        * [Figura 25: Diagrama de Paquetes - CU-05](#figura-25-diagrama-de-paquetes---cu-05-acceso-por-qr-en-puerta)
     * [CU-06: Pago de Consumo Extra](#cu-06-pago-de-consumo-extra)
-* [Modelo de Dominio del Sistema](#modelo-de-dominio-del-sistema)
-* [Caso de Uso del Sistema](#caso-de-uso-del-sistema)
-* [Diagrama de Actividad del Sistema](#diagrama-de-actividad-del-sistema)
-* [Diagrama de Paquetes del Sistema](#diagrama-de-paquetes-del-sistema)
-* [Diagrama de Actividad: Caso de uso principal – Realizar Reserva](#diagrama-de-actividad-caso-de-uso-principal--realizar-reserva)
-* [Actividad de Objeto: Muestra el ciclo de vida de una habitación](#actividad-de-objeto-muestra-el-ciclo-de-vida-de-una-habitacion)
+        * [Figura 26: Diagrama de Caso de Uso - CU-06](#figura-26-diagrama-de-caso-de-uso---cu-06-pago-de-consumo-extra)
+        * [Figura 27: Diagrama de Clases de Interfaz - CU-06](#figura-27-diagrama-de-clases-de-interfaz---cu-06-pago-de-consumo-extra)
+        * [Figura 28: Diagrama de Secuencia - CU-06](#figura-28-diagrama-de-secuencia---cu-06-pago-de-consumo-extra)
+        * [Figura 29: Diagrama de Colaboración - CU-06](#figura-29-diagrama-de-colaboracion---cu-06-pago-de-consumo-extra)
+        * [Figura 30: Diagrama de Paquetes - CU-06](#figura-30-diagrama-de-paquetes---cu-06-pago-de-consumo-extra)
+* [Modelo de Dominio del Sistema (Figura 31)](#modelo-de-dominio-del-sistema)
+* [Caso de Uso del Sistema (Figura 32)](#caso-de-uso-del-sistema)
+* [Diagrama de Actividad del Sistema (Figura 33)](#diagrama-de-actividad-del-sistema)
+* [Diagrama de Paquetes del Sistema (Figura 34)](#diagrama-de-paquetes-del-sistema)
+* [Diagrama de Actividad: Caso de uso principal – Realizar Reserva (Figura 35)](#diagrama-de-actividad-caso-de-uso-principal--realizar-reserva)
+* [Actividad de Objeto: Ciclo de vida de una habitación (Figura 36)](#actividad-de-objeto-muestra-el-ciclo-de-vida-de-una-habitacion)
 * [Anexos](#anexos)
 
 ---
@@ -352,7 +382,12 @@ El cliente ingresa la fecha, hora de ingreso y la categoría de habitación requ
 
 ##### Diagramas UML (PlantUML)
 
-###### 1. Diagrama de Caso de Uso
+##### Figura 1: Diagrama de Caso de Uso - CU-01 Consultar Disponibilidad
+
+**Figura 1**
+
+*Diagrama de Caso de Uso del caso de uso CU-01 (consultar disponibilidad).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -364,8 +399,14 @@ rectangle "Sistema Residencial" {
 Cliente --> CU01
 @enduml
 ```
+*Nota.* Muestra la relación y alcance de los actores con el caso de uso CU-01 (consultar disponibilidad).
 
-###### 2. Diagrama de Clases de Interfaz
+##### Figura 2: Diagrama de Clases de Interfaz - CU-01 Consultar Disponibilidad
+
+**Figura 2**
+
+*Diagrama de Clases de Interfaz del caso de uso CU-01 (consultar disponibilidad).*
+
 ```plantuml
 @startuml
 class DisponibilidadView <<boundary>> {
@@ -405,8 +446,14 @@ note top of DisponibilidadController : GRASP Controller
 note top of DisponibilidadServiceImpl : GRASP Information Expert
 @enduml
 ```
+*Nota.* Muestra la estructura estática de clases e interfaces (CU-01) con estereotipos ICONIX.
 
-###### 3. Diagrama de Secuencia
+##### Figura 3: Diagrama de Secuencia - CU-01 Consultar Disponibilidad
+
+**Figura 3**
+
+*Diagrama de Secuencia del caso de uso CU-01 (consultar disponibilidad).*
+
 ```plantuml
 @startuml
 autonumber
@@ -434,8 +481,14 @@ View --> Cliente : visualizar resultados
 deactivate View
 @enduml
 ```
+*Nota.* Flujo temporal y de ejecución de objetos en el caso de uso CU-01 con lifelines ICONIX.
 
-###### 4. Diagrama de Colaboración
+##### Figura 4: Diagrama de Colaboración - CU-01 Consultar Disponibilidad
+
+**Figura 4**
+
+*Diagrama de Colaboración del caso de uso CU-01 (consultar disponibilidad).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -451,8 +504,14 @@ Ctrl --> Serv : 1.1.1: buscarHabitacionesDisponibles(query)
 Serv --> Repo : 1.1.1.1: findByEstado("Disponible")
 @enduml
 ```
+*Nota.* Colaboración de objetos (diagrama de robustez ICONIX) con numeración de llamadas anidadas.
 
-###### 5. Diagrama de Paquetes
+##### Figura 5: Diagrama de Paquetes - CU-01 Consultar Disponibilidad
+
+**Figura 5**
+
+*Diagrama de Paquetes del caso de uso CU-01 (consultar disponibilidad).*
+
 ```plantuml
 @startuml
 package "Presentación (Frontend)" <<layer>> {
@@ -474,6 +533,7 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 "Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
+*Nota.* Organización en capas de desarrollo para el caso de uso CU-01.
 
 ---
 
@@ -511,7 +571,12 @@ El cliente (o el recepcionista) selecciona una habitación disponible en un hora
 
 ##### Diagramas UML (PlantUML)
 
-###### 1. Diagrama de Caso de Uso
+##### Figura 6: Diagrama de Caso de Uso - CU-02 Registrar Reserva
+
+**Figura 6**
+
+*Diagrama de Caso de Uso del caso de uso CU-02 (registrar reserva).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -525,8 +590,14 @@ Cliente --> CU02
 Recepcionista --> CU02
 @enduml
 ```
+*Nota.* Muestra la relación y alcance de los actores con el caso de uso CU-02 (registrar reserva).
 
-###### 2. Diagrama de Clases de Interfaz
+##### Figura 7: Diagrama de Clases de Interfaz - CU-02 Registrar Reserva
+
+**Figura 7**
+
+*Diagrama de Clases de Interfaz del caso de uso CU-02 (registrar reserva).*
+
 ```plantuml
 @startuml
 class ReservaView <<boundary>> {
@@ -567,8 +638,14 @@ note top of ReservaController : GRASP Controller
 note top of ReservaServiceImpl : GRASP Creator (creates Reserva)
 @enduml
 ```
+*Nota.* Muestra la estructura estática de clases e interfaces (CU-02) con estereotipos ICONIX.
 
-###### 3. Diagrama de Secuencia
+##### Figura 8: Diagrama de Secuencia - CU-02 Registrar Reserva
+
+**Figura 8**
+
+*Diagrama de Secuencia del caso de uso CU-02 (registrar reserva).*
+
 ```plantuml
 @startuml
 autonumber
@@ -598,8 +675,14 @@ View --> Actor : visualizar identificador
 deactivate View
 @enduml
 ```
+*Nota.* Flujo temporal y de ejecución de objetos en el caso de uso CU-02 con lifelines ICONIX.
 
-###### 4. Diagrama de Colaboración
+##### Figura 9: Diagrama de Colaboración - CU-02 Registrar Reserva
+
+**Figura 9**
+
+*Diagrama de Colaboración del caso de uso CU-02 (registrar reserva).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -615,8 +698,14 @@ Ctrl --> Serv : 1.1.1: crearReserva(command)
 Serv --> Repo : 1.1.1.1: save(r)
 @enduml
 ```
+*Nota.* Colaboración de objetos (diagrama de robustez ICONIX) con numeración de llamadas anidadas.
 
-###### 5. Diagrama de Paquetes
+##### Figura 10: Diagrama de Paquetes - CU-02 Registrar Reserva
+
+**Figura 10**
+
+*Diagrama de Paquetes del caso de uso CU-02 (registrar reserva).*
+
 ```plantuml
 @startuml
 package "Presentación (Frontend)" <<layer>> {
@@ -638,6 +727,7 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 "Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
+*Nota.* Organización en capas de desarrollo para el caso de uso CU-02.
 
 ---
 
@@ -677,7 +767,12 @@ Con base en una reserva pendiente, el sistema presenta los métodos de pago auto
 
 ##### Diagramas UML (PlantUML)
 
-###### 1. Diagrama de Caso de Uso
+##### Figura 11: Diagrama de Caso de Uso - CU-03 Procesar Pago
+
+**Figura 11**
+
+*Diagrama de Caso de Uso del caso de uso CU-03 (procesar pago).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -693,8 +788,14 @@ Recepcionista --> CU03
 CU03 --> BNB
 @enduml
 ```
+*Nota.* Muestra la relación y alcance de los actores con el caso de uso CU-03 (procesar pago).
 
-###### 2. Diagrama de Clases de Interfaz
+##### Figura 12: Diagrama de Clases de Interfaz - CU-03 Procesar Pago
+
+**Figura 12**
+
+*Diagrama de Clases de Interfaz del caso de uso CU-03 (procesar pago).*
+
 ```plantuml
 @startuml
 class PagoView <<boundary>> {
@@ -747,8 +848,14 @@ ReservaRepository ..> Pago : <<use>>
 note top of PagoController : GRASP Controller
 @enduml
 ```
+*Nota.* Muestra la estructura estática de clases e interfaces (CU-03) con estereotipos ICONIX.
 
-###### 3. Diagrama de Secuencia
+##### Figura 13: Diagrama de Secuencia - CU-03 Procesar Pago
+
+**Figura 13**
+
+*Diagrama de Secuencia del caso de uso CU-03 (procesar pago).*
+
 ```plantuml
 @startuml
 autonumber
@@ -804,8 +911,14 @@ end
 deactivate View
 @enduml
 ```
+*Nota.* Flujo temporal y de ejecución de objetos en el caso de uso CU-03 con lifelines ICONIX.
 
-###### 4. Diagrama de Colaboración
+##### Figura 14: Diagrama de Colaboración - CU-03 Procesar Pago
+
+**Figura 14**
+
+*Diagrama de Colaboración del caso de uso CU-03 (procesar pago).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -828,8 +941,14 @@ Serv --> BNB : 2.1.1.1: consultarEstado(qrId)
 Serv --> Repo : [pago completado] 2.1.1.2: save(r)
 @enduml
 ```
+*Nota.* Colaboración de objetos (diagrama de robustez ICONIX) con numeración de llamadas anidadas.
 
-###### 5. Diagrama de Paquetes
+##### Figura 15: Diagrama de Paquetes - CU-03 Procesar Pago
+
+**Figura 15**
+
+*Diagrama de Paquetes del caso de uso CU-03 (procesar pago).*
+
 ```plantuml
 @startuml
 package "Presentación (Frontend)" <<layer>> {
@@ -854,6 +973,7 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 "Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
+*Nota.* Organización en capas de desarrollo para el caso de uso CU-03.
 
 ---
 
@@ -894,7 +1014,12 @@ El recepcionista verifica la reserva activa o procesa una llegada directa, reali
 
 ##### Diagramas UML (PlantUML)
 
-###### 1. Diagrama de Caso de Uso
+##### Figura 16: Diagrama de Caso de Uso - CU-04 Realizar Check-in y Flujo Físico
+
+**Figura 16**
+
+*Diagrama de Caso de Uso del caso de uso CU-04 (realizar check-in y flujo físico).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -908,8 +1033,14 @@ Recepcionista --> CU04
 Camarera --> CU04
 @enduml
 ```
+*Nota.* Muestra la relación y alcance de los actores con el caso de uso CU-04 (realizar check-in y flujo físico).
 
-###### 2. Diagrama de Clases de Interfaz
+##### Figura 17: Diagrama de Clases de Interfaz - CU-04 Realizar Check-in y Flujo Físico
+
+**Figura 17**
+
+*Diagrama de Clases de Interfaz del caso de uso CU-04 (realizar check-in y flujo físico).*
+
 ```plantuml
 @startuml
 class RecepcionView <<boundary>> {
@@ -963,8 +1094,14 @@ HabitacionRepository ..> Habitacion : <<use>>
 note top of RecepcionController : GRASP Controller
 @enduml
 ```
+*Nota.* Muestra la estructura estática de clases e interfaces (CU-04) con estereotipos ICONIX.
 
-###### 3. Diagrama de Secuencia
+##### Figura 18: Diagrama de Secuencia - CU-04 Realizar Check-in y Flujo Físico
+
+**Figura 18**
+
+*Diagrama de Secuencia del caso de uso CU-04 (realizar check-in y flujo físico).*
+
 ```plantuml
 @startuml
 autonumber
@@ -1001,8 +1138,14 @@ View --> Recepcionista : entrega de accesorios
 deactivate View
 @enduml
 ```
+*Nota.* Flujo temporal y de ejecución de objetos en el caso de uso CU-04 con lifelines ICONIX.
 
-###### 4. Diagrama de Colaboración
+##### Figura 19: Diagrama de Colaboración - CU-04 Realizar Check-in y Flujo Físico
+
+**Figura 19**
+
+*Diagrama de Colaboración del caso de uso CU-04 (realizar check-in y flujo físico).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -1021,8 +1164,14 @@ Serv --> Repo : 1.1.1.2: actualizarEstado(habitacionId, "OCUPADA")
 Serv --> ResRepo : 1.1.1.3: save(r)
 @enduml
 ```
+*Nota.* Colaboración de objetos (diagrama de robustez ICONIX) con numeración de llamadas anidadas.
 
-###### 5. Diagrama de Paquetes
+##### Figura 20: Diagrama de Paquetes - CU-04 Realizar Check-in y Flujo Físico
+
+**Figura 20**
+
+*Diagrama de Paquetes del caso de uso CU-04 (realizar check-in y flujo físico).*
+
 ```plantuml
 @startuml
 package "Presentación (Frontend)" <<layer>> {
@@ -1046,6 +1195,7 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 "Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
+*Nota.* Organización en capas de desarrollo para el caso de uso CU-04.
 
 ---
 
@@ -1084,7 +1234,12 @@ El cliente presenta su código QR de acceso al sensor de la puerta asignada. El 
 
 ##### Diagramas UML (PlantUML)
 
-###### 1. Diagrama de Caso de Uso
+##### Figura 21: Diagrama de Caso de Uso - CU-05 Acceso por QR en Puerta
+
+**Figura 21**
+
+*Diagrama de Caso de Uso del caso de uso CU-05 (acceso por qr en puerta).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -1098,8 +1253,14 @@ Cliente --> CU05
 CU05 --> Sistema
 @enduml
 ```
+*Nota.* Muestra la relación y alcance de los actores con el caso de uso CU-05 (acceso por qr en puerta).
 
-###### 2. Diagrama de Clases de Interfaz
+##### Figura 22: Diagrama de Clases de Interfaz - CU-05 Acceso por QR en Puerta
+
+**Figura 22**
+
+*Diagrama de Clases de Interfaz del caso de uso CU-05 (acceso por qr en puerta).*
+
 ```plantuml
 @startuml
 class PuertaView <<boundary>> {
@@ -1146,8 +1307,14 @@ ReservaRepository ..> Reserva : <<use>>
 note top of PuertaController : GRASP Controller
 @enduml
 ```
+*Nota.* Muestra la estructura estática de clases e interfaces (CU-05) con estereotipos ICONIX.
 
-###### 3. Diagrama de Secuencia
+##### Figura 23: Diagrama de Secuencia - CU-05 Acceso por QR en Puerta
+
+**Figura 23**
+
+*Diagrama de Secuencia del caso de uso CU-05 (acceso por qr en puerta).*
+
 ```plantuml
 @startuml
 autonumber
@@ -1191,8 +1358,14 @@ end
 deactivate View
 @enduml
 ```
+*Nota.* Flujo temporal y de ejecución de objetos en el caso de uso CU-05 con lifelines ICONIX.
 
-###### 4. Diagrama de Colaboración
+##### Figura 24: Diagrama de Colaboración - CU-05 Acceso por QR en Puerta
+
+**Figura 24**
+
+*Diagrama de Colaboración del caso de uso CU-05 (acceso por qr en puerta).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -1211,8 +1384,14 @@ Serv --> HabRepo : [acceso válido] 1.1.1.2: actualizarEstado(habitacionId, "OCU
 Serv --> ResRepo : [acceso válido] 1.1.1.3: save(r)
 @enduml
 ```
+*Nota.* Colaboración de objetos (diagrama de robustez ICONIX) con numeración de llamadas anidadas.
 
-###### 5. Diagrama de Paquetes
+##### Figura 25: Diagrama de Paquetes - CU-05 Acceso por QR en Puerta
+
+**Figura 25**
+
+*Diagrama de Paquetes del caso de uso CU-05 (acceso por qr en puerta).*
+
 ```plantuml
 @startuml
 package "Presentación (Frontend)" <<layer>> {
@@ -1236,6 +1415,7 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 "Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
+*Nota.* Organización en capas de desarrollo para el caso de uso CU-05.
 
 ---
 
@@ -1274,7 +1454,12 @@ Durante la estadía, el huésped selecciona productos adicionales disponibles en
 
 ##### Diagramas UML (PlantUML)
 
-###### 1. Diagrama de Caso de Uso
+##### Figura 26: Diagrama de Caso de Uso - CU-06 Pago de Consumo Extra
+
+**Figura 26**
+
+*Diagrama de Caso de Uso del caso de uso CU-06 (pago de consumo extra).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -1288,8 +1473,14 @@ Cliente --> CU06
 CU06 --> BNB
 @enduml
 ```
+*Nota.* Muestra la relación y alcance de los actores con el caso de uso CU-06 (pago de consumo extra).
 
-###### 2. Diagrama de Clases de Interfaz
+##### Figura 27: Diagrama de Clases de Interfaz - CU-06 Pago de Consumo Extra
+
+**Figura 27**
+
+*Diagrama de Clases de Interfaz del caso de uso CU-06 (pago de consumo extra).*
+
 ```plantuml
 @startuml
 class TabletView <<boundary>> {
@@ -1342,8 +1533,14 @@ ConsumoRepository ..> ConsumoExtra : <<use>>
 note top of ConsumoController : GRASP Controller
 @enduml
 ```
+*Nota.* Muestra la estructura estática de clases e interfaces (CU-06) con estereotipos ICONIX.
 
-###### 3. Diagrama de Secuencia
+##### Figura 28: Diagrama de Secuencia - CU-06 Pago de Consumo Extra
+
+**Figura 28**
+
+*Diagrama de Secuencia del caso de uso CU-06 (pago de consumo extra).*
+
 ```plantuml
 @startuml
 autonumber
@@ -1401,8 +1598,14 @@ View --> Cliente : visualizar pantalla de éxito
 deactivate View
 @enduml
 ```
+*Nota.* Flujo temporal y de ejecución de objetos en el caso de uso CU-06 con lifelines ICONIX.
 
-###### 4. Diagrama de Colaboración
+##### Figura 29: Diagrama de Colaboración - CU-06 Pago de Consumo Extra
+
+**Figura 29**
+
+*Diagrama de Colaboración del caso de uso CU-06 (pago de consumo extra).*
+
 ```plantuml
 @startuml
 left to right direction
@@ -1426,8 +1629,14 @@ Serv --> BNB : 2.1.1.1: consultarEstado(qrId)
 Serv --> Repo : [pago completado] 2.1.1.2: save(c.pagar())
 @enduml
 ```
+*Nota.* Colaboración de objetos (diagrama de robustez ICONIX) con numeración de llamadas anidadas.
 
-###### 5. Diagrama de Paquetes
+##### Figura 30: Diagrama de Paquetes - CU-06 Pago de Consumo Extra
+
+**Figura 30**
+
+*Diagrama de Paquetes del caso de uso CU-06 (pago de consumo extra).*
+
 ```plantuml
 @startuml
 package "Presentación (Frontend)" <<layer>> {
@@ -1452,6 +1661,7 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 "Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
+*Nota.* Organización en capas de desarrollo para el caso de uso CU-06.
 
 ---
 
@@ -1465,9 +1675,13 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 
 ---
 
-## Modelo de Dominio del Sistema
+## Modelo de Dominio del Sistema (Figura 31)
 
-El siguiente diagrama de clases representa el modelo de dominio del Residencial, el cual correlaciona directamente con la estructura de entidades relacionales e implementación en Java:
+##### Figura 31: Modelo de Dominio del Sistema
+
+**Figura 31**
+
+*Modelo de dominio del sistema.*
 
 ```mermaid
 classDiagram
@@ -1602,12 +1816,17 @@ classDiagram
     InventarioItem "0..1" -- "*" IncidenciaMantenimiento : Afectado por
     Reserva "1" -- "*" ConsumoExtra : Genera
 ```
+*Nota.* Modelo de dominio relacional del sistema residencial que correlaciona directamente con la base de datos e implementación en Spring Boot.
 
 ---
 
-## Caso de Uso del Sistema
+## Caso de Uso del Sistema (Figura 32)
 
-A continuación se esquematiza el mapa de casos de uso y la interacción de los actores en el sistema integrado:
+##### Figura 32: Caso de Uso del Sistema
+
+**Figura 32**
+
+*Mapa general de casos de uso del sistema.*
 
 ```mermaid
 flowchart LR
@@ -1640,12 +1859,17 @@ flowchart LR
     CU03 --> API_Banco
     CU06 --> API_Banco
 ```
+*Nota.* Mapa de actores y casos de uso del sistema integrado.
 
 ---
 
-## Diagrama de Actividad del Sistema
+## Diagrama de Actividad del Sistema (Figura 33)
 
-Describe el flujo general de control que rige la interacción del negocio desde la consulta del cliente hasta la liberación de la habitación:
+##### Figura 33: Diagrama de Actividad del Sistema
+
+**Figura 33**
+
+*Diagrama de actividades del flujo de negocio global.*
 
 ```mermaid
 flowchart TD
@@ -1676,12 +1900,17 @@ flowchart TD
     V --> W[Habitación pasa a estado DISPONIBLE]
     W --> End
 ```
+*Nota.* Flujo de trabajo secuencial desde la consulta inicial hasta el check-out e higiene de habitaciones.
 
 ---
 
-## Diagrama de Paquetes del Sistema
+## Diagrama de Paquetes del Sistema (Figura 34)
 
-El sistema implementa una arquitectura limpia y desacoplada estructurada en las siguientes capas de paquetes lógicos:
+##### Figura 34: Diagrama de Paquetes del Sistema
+
+**Figura 34**
+
+*Arquitectura de paquetes del sistema completo.*
 
 ```mermaid
 flowchart TD
@@ -1716,12 +1945,17 @@ flowchart TD
     Backend_Infrastructure --> Backend_Domain
     Backend_Infrastructure --> Database
 ```
+*Nota.* Representación de las capas lógicas y el flujo de dependencias de la arquitectura limpia.
 
 ---
 
-## Diagrama de Actividad: Caso de uso principal – Realizar Reserva
+## Diagrama de Actividad: Caso de uso principal – Realizar Reserva (Figura 35)
 
-Flujo secuencial detallado del caso de uso principal (integración de CU-01, CU-02 y CU-03):
+##### Figura 35: Diagrama de Actividad: Caso de uso principal – Realizar Reserva
+
+**Figura 35**
+
+*Diagrama de actividades para realizar reserva.*
 
 ```mermaid
 flowchart TD
@@ -1749,12 +1983,17 @@ flowchart TD
     ReservaEfectivo --> Exito
     Exito --> FinSuccess([Fin Exitoso])
 ```
+*Nota.* Detalle del flujo de control y decisiones en el proceso de reserva, registro y pago.
 
 ---
 
-## Actividad de Objeto: Muestra el ciclo de vida de una habitación
+## Actividad de Objeto: Ciclo de vida de una habitación (Figura 36)
 
-El estado de una habitación está condicionado por los eventos operativos ejecutados en los casos de uso:
+##### Figura 36: Actividad de Objeto: Ciclo de vida de una habitación
+
+**Figura 36**
+
+*Diagrama de estados para el ciclo de vida de una habitación.*
 
 ```mermaid
 stateDiagram-v2
@@ -1767,6 +2006,7 @@ stateDiagram-v2
     Disponible --> Mantenimiento : Reporte de Daños o Desviación de Calidad (CU-04)
     Mantenimiento --> Disponible : Resolución y Cierre de Incidencia (CU-04)
 ```
+*Nota.* Transiciones de estado (Disponible, Ocupada, En Limpieza, Mantenimiento) del recurso principal.
 
 ---
 
