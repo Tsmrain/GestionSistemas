@@ -1683,138 +1683,115 @@ package "Infraestructura (Backend Infra)" <<layer>> {
 
 *Modelo de dominio del sistema.*
 
-```mermaid
-classDiagram
-    class Reserva {
-        id: Long
-        montoTotal: Double
-        fechaCreacion: Date
-        fechaIngreso: Date
-        cantidadBloques: Integer
-        estado: String
-        fechaPago: Timestamp
-        ventanaCheckIn: Timestamp
-        horaIngreso: Timestamp
-        horaSalidaEstimada: Timestamp
-        recepcionista: String
-    }
+```plantuml
+@startuml
+hide methods
+hide circle
 
-    class Huesped {
-        id: Long
-        nombre: String
-        ci: String
-        celular: String
-        urlFotoAnverso: String
-        urlFotoReverso: String
-        fechaNacimiento: Date
-    }
+class Huesped {
+  nombre
+  ci
+  celular
+  fechaNacimiento
+}
 
-    class Habitacion {
-        id: Long
-        numero: String
-        estadoActual: String
-        version: Long
-    }
+class Reserva {
+  montoTotal
+  fechaCreacion
+  fechaIngreso
+  cantidadBloques
+  estado
+  horaIngreso
+  horaSalidaEstimada
+}
 
-    class TipoHabitacion {
-        id: Long
-        nombreTipo: String
-        precioBase: Double
-        duracionHoras: Integer
-        descripcion: String
-    }
+class Habitacion {
+  numero
+  estadoActual
+}
 
-    class Pago {
-        id: Long
-        monto: Double
-        metodo: String
-        estado: String
-        externalId: String
-        fechaCreacion: Timestamp
-        fechaExpiracion: Timestamp
-    }
+class TipoHabitacion {
+  nombreTipo
+  precioBase
+  duracionHoras
+  descripcion
+}
 
-    class Comprobante {
-        id: Long
-        nroComprobante: String
-        fechaEmision: Timestamp
-    }
+class Pago {
+  monto
+  metodo
+  estado
+  fechaCreacion
+}
 
-    class Recepcionista {
-        id: Long
-        nombre: String
-        username: String
-        activo: Boolean
-    }
+class Comprobante {
+  nroComprobante
+  fechaEmision
+}
 
-    class Camarera {
-        id: Long
-        nombre: String
-        celular: String
-        activo: Boolean
-    }
+class Recepcionista {
+  nombre
+  username
+  activo
+}
 
-    class InventarioItem {
-        id: Long
-        nombre: String
-        tipo: String
-        stockActual: Integer
-        precioCompra: Double
-        precioVenta: Double
-        emoji: String
-    }
+class Camarera {
+  nombre
+  celular
+  activo
+}
 
-    class HabitacionInventario {
-        id: Long
-        cantidadEsperada: Integer
-        cantidadActual: Integer
-        estadoVerificacion: String
-    }
+class InventarioItem {
+  nombre
+  tipo
+  stockActual
+  precioVenta
+  emoji
+}
 
-    class IncidenciaMantenimiento {
-        id: Long
-        descripcion: String
-        seguimiento: String
-        fechaReporte: Timestamp
-        recepcionistaReporta: String
-        estado: String
-        costoReparacion: Double
-        fechaResolucion: Timestamp
-        recepcionistaResuelve: String
-    }
+class HabitacionInventario {
+  cantidadEsperada
+  cantidadActual
+  estadoVerificacion
+}
 
-    class ConsumoExtra {
-        id: Long
-        itemsJson: String
-        total: Double
-        estado: String
-        qrData: String
-        fechaCreacion: Timestamp
-        fechaPago: Timestamp
-    }
+class IncidenciaMantenimiento {
+  descripcion
+  seguimiento
+  fechaReporte
+  estado
+  costoReparacion
+}
 
-    class Egreso {
-        id: Long
-        descripcion: String
-        monto: Double
-        categoria: String
-        fecha: Timestamp
-        recepcionista: String
-        destinoDestinatario: String
-        urlComprobante: String
-    }
+class ConsumoExtra {
+  itemsJson
+  total
+  estado
+  fechaCreacion
+}
 
-    Huesped "1" -- "*" Reserva : Realiza
-    Huesped "0..1" -- "*" Reserva : Acompaña en
-    Habitacion "1" -- "*" Reserva : Asignada a
-    Reserva "1" -- "*" Pago : Registra
-    TipoHabitacion "1" -- "*" Habitacion : Categoriza
-    Pago "1" -- "1" Comprobante : Respalda
-    Habitacion "1" -- "*" HabitacionInventario : Posee
-    InventarioItem "1" -- "*" HabitacionInventario : Incluido en
-    Habitacion "1" -- "*" IncidenciaMantenimiento : Sufre
-    InventarioItem "0..1" -- "*" IncidenciaMantenimiento : Afectado por
-    Reserva "1" -- "*" ConsumoExtra : Genera
+class Egreso {
+  descripcion
+  monto
+  categoria
+  fecha
+}
+
+Huesped "1" -- "*" Reserva : realiza >
+Huesped "0..1" -- "*" Reserva : acompaña en >
+Habitacion "1" -- "*" Reserva : asignada a >
+Reserva "1" -- "*" Pago : registra >
+TipoHabitacion "1" -- "*" Habitacion : categoriza >
+Pago "1" -- "1" Comprobante : respalda >
+Habitacion "1" -- "*" HabitacionInventario : posee >
+InventarioItem "1" -- "*" HabitacionInventario : incluido en >
+Habitacion "1" -- "*" IncidenciaMantenimiento : sufre >
+InventarioItem "0..1" -- "*" IncidenciaMantenimiento : afectado por >
+Reserva "1" -- "*" ConsumoExtra : genera >
+Recepcionista "1" -- "*" Reserva : gestiona >
+Camarera "1" -- "*" Habitacion : limpia >
+Recepcionista "1" -- "*" Egreso : registra >
+@enduml
 ```
 *Nota.* Modelo de dominio relacional del sistema residencial que correlaciona directamente con la base de datos e implementación en Spring Boot.
 
@@ -1828,36 +1805,40 @@ classDiagram
 
 *Mapa general de casos de uso del sistema.*
 
-```mermaid
-flowchart LR
-    Cliente((Cliente / Huésped))
-    Recepcionista((Recepcionista))
-    Camarera((Camarera))
-    API_Banco((API Banco BNB))
+```plantuml
+@startuml
+left to right direction
+skinparam actorStyle hollow
 
-    subgraph Sistema Residencial
-        CU01(CU-01: Consultar Disponibilidad)
-        CU02(CU-02: Registrar Reserva)
-        CU03(CU-03: Procesar Pago)
-        CU04(CU-04: Realizar Check-in)
-        CU05(CU-05: Acceso por QR en Puerta)
-        CU06(CU-06: Pago de Consumo Extra)
-    end
+actor "Cliente" as Cliente <<actor>>
+actor "Recepcionista" as Recepcionista <<actor>>
+actor "Camarera" as Camarera <<actor>>
+rectangle "API Banco BNB" as BNB <<system>>
 
-    Cliente --> CU01
-    Cliente --> CU02
-    Cliente --> CU03
-    Cliente --> CU05
-    Cliente --> CU06
+rectangle "Sistema Residencial" {
+  usecase "CU-01: Consultar Disponibilidad" as CU01
+  usecase "CU-02: Registrar Reserva" as CU02
+  usecase "CU-03: Procesar Pago" as CU03
+  usecase "CU-04: Realizar Check-in y Flujo Físico" as CU04
+  usecase "CU-05: Acceso por QR en Puerta" as CU05
+  usecase "CU-06: Pago de Consumo Extra" as CU06
+}
 
-    Recepcionista --> CU02
-    Recepcionista --> CU03
-    Recepcionista --> CU04
+Cliente --> CU01
+Cliente --> CU02
+Cliente --> CU03
+Cliente --> CU05
+Cliente --> CU06
 
-    Camarera --> CU04
+Recepcionista --> CU02
+Recepcionista --> CU03
+Recepcionista --> CU04
 
-    CU03 --> API_Banco
-    CU06 --> API_Banco
+Camarera --> CU04
+
+CU03 --> BNB
+CU06 --> BNB
+@enduml
 ```
 *Nota.* Mapa de actores y casos de uso del sistema integrado.
 
@@ -1871,34 +1852,83 @@ flowchart LR
 
 *Diagrama de actividades del flujo de negocio global.*
 
-```mermaid
-flowchart TD
-    A[Inicio de Consulta] --> B[Verificar disponibilidad]
-    B --> C{¿Disponible?}
-    C -- No --> D[Sugerir cambio de fecha/hora]
-    D --> B
-    C -- Sí --> E[Registrar datos de reserva]
-    E --> F[Crear reserva en PENDIENTE_PAGO]
-    F --> G{Elegir método de pago}
-    G -- QR BNB --> H[Generar QR dinámico]
-    H --> I[Esperar confirmación de pago]
-    I --> J{¿Pago exitoso?}
-    J -- No/Expirado --> K[Liberar reserva y habitación]
-    K --> End([Fin])
-    J -- Sí --> L[Actualizar reserva a PAGADA]
-    G -- Efectivo --> M[Registrar reserva en efectivo]
-    L --> N[Establecer ventana check-in 30 min]
-    M --> N
-    N --> O[Llegada física del cliente]
-    O --> P[Check-in: Recepcionista valida y entrega controles/tarjeta]
-    P --> Q[Habitación pasa a estado OCUPADA]
-    Q --> R[Huésped consume productos extra y paga vía QR]
-    R --> S[Check-out: Recepcionista valida accesorios]
-    S --> T[Habitación pasa a estado EN LIMPIEZA]
-    T --> U[Camarera desinfecta e higieniza la habitación]
-    U --> V[Notificación de limpieza concluida]
-    V --> W[Habitación pasa a estado DISPONIBLE]
-    W --> End
+```plantuml
+@startuml
+|Cliente|
+start
+:Iniciar Consulta de Habitación;
+|Sistema|
+repeat
+  :Verificar disponibilidad;
+  if (¿Habitaciones disponibles?) then (sí)
+    break
+  else (no)
+    |Cliente|
+    :Sugerir/Modificar criterios de búsqueda;
+  endif
+|Sistema|
+repeat while (intentar nueva búsqueda)
+
+|Cliente|
+:Registrar datos personales del huésped;
+|Sistema|
+:Crear Reserva (estado: PENDIENTE_PAGO);
+|Cliente|
+if (Elegir método de pago) then (Código QR BNB)
+  |Sistema|
+  :Generar QR dinámico (API BNB);
+  |Cliente|
+  :Escanear QR y realizar transferencia;
+  |Sistema|
+  :Esperar confirmación de pago;
+  if (¿Pago exitoso a tiempo?) then (sí)
+    :Actualizar Reserva a PAGADA;
+  else (no)
+    :Anular reserva y liberar habitación;
+    stop
+  endif
+else (Efectivo en recepción)
+  |Sistema|
+  :Registrar compromiso de pago presencial;
+endif
+
+:Establecer ventana de check-in de 30 minutos;
+|Cliente|
+:Presentarse físicamente en recepción;
+|Recepcionista|
+:Validar reserva y procesar check-in;
+if (¿Pago en efectivo pendiente?) then (sí)
+  :Cobrar monto en efectivo;
+  |Sistema|
+  :Actualizar Reserva a PAGADA;
+else (no)
+endif
+|Recepcionista|
+:Entregar tarjeta de acceso y controles;
+|Sistema|
+:Actualizar estado de Habitación a OCUPADA;
+
+|Cliente|
+:Ocupar habitación;
+:Consumir extras y pagar vía QR;
+:Entregar accesorios y cerrar puerta;
+
+|Recepcionista|
+:Validar accesorios y realizar check-out;
+|Sistema|
+:Actualizar estado de Habitación a EN LIMPIEZA;
+
+|Camarera|
+:Ingresar a habitación con tarjeta de servicio;
+:Desinfectar e higienizar habitación;
+:Notificar finalización por walkie-talkie;
+
+|Recepcionista|
+:Registrar informe de limpieza;
+|Sistema|
+:Actualizar estado de Habitación a DISPONIBLE;
+stop
+@enduml
 ```
 *Nota.* Flujo de trabajo secuencial desde la consulta inicial hasta el check-out e higiene de habitaciones.
 
@@ -1912,38 +1942,39 @@ flowchart TD
 
 *Arquitectura de paquetes del sistema completo.*
 
-```mermaid
-flowchart TD
-    subgraph Frontend [Capa de Presentación - HTML5 / JS Vanilla]
-        UI[Vistas: index.html / recepcion.html / puerta.html]
-        Ctrl[Controladores JS: DisponibilidadController / RecepcionController]
-    end
+```plantuml
+@startuml
+package "Presentación (Frontend)" as Frontend <<layer>> {
+  [Vistas: index.html / recepcion.html / puerta.html] as UI
+  [Controladores JS: DisponibilidadController / RecepcionController] as JS_Ctrl
+}
 
-    subgraph Backend_Application [Capa de Aplicación - Java Spring Boot]
-        UC[Casos de Uso: CheckInService / ProcesarPagoService / ReservaService]
-        DTO[Data Transfer Objects - DTOs]
-        Ports[Puertos: Repositories / Payment Gateway API Interfaces]
-    end
+package "Aplicación (Backend App)" as App <<layer>> {
+  [Casos de Uso: CheckInService / ProcesarPagoService / ReservaService] as Services
+  [Data Transfer Objects (DTOs)] as DTOs
+  [Puertos: Repositories / Payment Gateway API Interfaces] as Ports
+}
 
-    subgraph Backend_Domain [Capa de Dominio]
-        Entidades[Entidades: Reserva / Habitacion / Huesped / Pago]
-    end
+package "Dominio (Backend Domain)" as Domain <<layer>> {
+  [Entidades: Reserva / Habitacion / Huesped / Pago] as Entities
+}
 
-    subgraph Backend_Infrastructure [Capa de Infraestructura]
-        REST[Controladores REST: REST APIs]
-        Adapters[Adaptadores de Persistencia: Spring Data JPA Repositories]
-        ExtAPIs[Clientes Externos: BNB Payment Gateway Connector]
-    end
+package "Infraestructura (Backend Infra)" as Infra <<layer>> {
+  [Controladores REST (APIs)] as REST
+  [Adaptadores de Persistencia: Spring Data JPA] as Repos
+  [Clientes Externos: BNB Payment Gateway Connector] as ExtAPIs
+}
 
-    subgraph Database [Persistencia - PostgreSQL]
-        DB[(Tablas: habitaciones / reservas / pagos / comprobantes)]
-    end
+database "PostgreSQL Database" as DB {
+  [Tablas: habitaciones / reservas / pagos / comprobantes] as Tables
+}
 
-    Frontend --> Backend_Application
-    Backend_Application --> Backend_Domain
-    Backend_Infrastructure --> Backend_Application
-    Backend_Infrastructure --> Backend_Domain
-    Backend_Infrastructure --> Database
+Frontend ..> App : <<import>>
+App ..> Domain : <<use>>
+Infra ..> App : <<use>>
+Infra ..> Domain : <<use>>
+Infra ..> DB : <<use>>
+@enduml
 ```
 *Nota.* Representación de las capas lógicas y el flujo de dependencias de la arquitectura limpia.
 
@@ -1957,31 +1988,68 @@ flowchart TD
 
 *Diagrama de actividades para realizar reserva.*
 
-```mermaid
-flowchart TD
-    Start([Inicio]) --> EntraPortal[Cliente: Ingresa al portal de reservas]
-    EntraPortal --> IngresaFechas[Cliente: Indica fecha, hora y tipo de habitación]
-    IngresaFechas --> BuscarHab[Sistema: Busca habitaciones disponibles]
-    BuscarHab --> HayLibres{¿Hay disponibles?}
-    HayLibres -- No --> Sugerir[Sistema: Muestra alerta y sugiere otra fecha/categoría]
-    Sugerir --> IngresaFechas
-    HayLibres -- Sí --> Selecciona[Cliente: Selecciona habitación e introduce datos personales]
-    Selecciona --> ValidaDatos{¿Datos válidos y habitación libre?}
-    ValidaDatos -- No --> AlertaDatos[Sistema: Informa error o duplicidad de datos]
-    AlertaDatos --> Selecciona
-    ValidaDatos -- Sí --> ReservaPendiente[Sistema: Registra huésped y crea reserva PENDIENTE_PAGO]
-    ReservaPendiente --> MetodoPago{¿Método de pago?}
-    MetodoPago -- QR BNB --> GenerarQR[Sistema: Llama a API de BNB y genera QR de pago]
-    GenerarQR --> ClientePaga[Cliente: Realiza transferencia desde banca móvil]
-    ClientePaga --> Polling[Sistema: Verifica estado del pago vía Polling]
-    Polling --> EstadoPago{¿Pago recibido a tiempo?}
-    EstadoPago -- No --> AnulaReserva[Sistema: Cancela la reserva y libera la habitación]
-    AnulaReserva --> FinError([Fin con Error])
-    EstadoPago -- Sí --> ReservaPagada[Sistema: Marca reserva como PAGADA y emite comprobante]
-    MetodoPago -- Efectivo --> ReservaEfectivo[Sistema: Registra reserva con compromiso de pago en recepción]
-    ReservaPagada --> Exito[Sistema: Muestra pantalla de éxito y advierte ventana de llegada de 30 minutos]
-    ReservaEfectivo --> Exito
-    Exito --> FinSuccess([Fin Exitoso])
+```plantuml
+@startuml
+|Cliente|
+start
+:Ingresar al portal de reservas;
+:Indicar fecha, hora y tipo de habitación;
+|Sistema|
+repeat
+  :Buscar habitaciones disponibles;
+  if (¿Hay habitaciones libres?) then (sí)
+    break
+  else (no)
+    |Sistema|
+    :Sugerir otra fecha o categoría;
+    |Cliente|
+    :Modificar criterios;
+  endif
+|Sistema|
+repeat while (buscar de nuevo)
+
+|Cliente|
+:Seleccionar habitación y rellenar datos personales;
+|Sistema|
+:Validar datos del huésped;
+if (¿Datos válidos?) then (sí)
+  :Crear reserva en PENDIENTE_PAGO;
+else (no)
+  |Sistema|
+  :Mostrar mensaje de error;
+  |Cliente|
+  :Corregir datos;
+  stop
+endif
+
+|Cliente|
+if (Elegir método de pago) then (QR BNB)
+  |Sistema|
+  :Llamar API de BNB y generar QR;
+  |Cliente|
+  :Realizar transferencia desde banca móvil;
+  |Sistema|
+  repeat
+    :Verificar estado del pago (Polling);
+    if (¿Pago recibido a tiempo?) then (sí)
+      :Marcar reserva como PAGADA;
+      :Emitir comprobante de pago;
+      break
+    else (no y expiró)
+      :Anular reserva y liberar habitación;
+      stop
+    endif
+  repeat while (esperar pago)
+else (Efectivo)
+  |Sistema|
+  :Registrar reserva con compromiso de pago en recepción;
+endif
+
+|Sistema|
+:Mostrar pantalla de confirmación exitosa;
+:Advertir ventana de check-in de 30 minutos;
+stop
+@enduml
 ```
 *Nota.* Detalle del flujo de control y decisiones en el proceso de reserva, registro y pago.
 
@@ -1995,16 +2063,17 @@ flowchart TD
 
 *Diagrama de estados para el ciclo de vida de una habitación.*
 
-```mermaid
-stateDiagram-v2
-    [*] --> Disponible : Inicialización
+```plantuml
+@startuml
+[*] --> Disponible : Inicialización
 
-    Disponible --> Ocupada : Check-in de Huésped (CU-04 / CU-05)
-    Ocupada --> EnLimpieza : Check-out y Devolución de Accesorios (CU-04)
-    EnLimpieza --> Disponible : Notificación de Limpieza Concluida (CU-04)
+Disponible --> Ocupada : Check-in de Huésped (CU-04 / CU-05)
+Ocupada --> EnLimpieza : Check-out y Devolución de Accesorios (CU-04)
+EnLimpieza --> Disponible : Notificación de Limpieza Concluida (CU-04)
 
-    Disponible --> Mantenimiento : Reporte de Daños o Desviación de Calidad (CU-04)
-    Mantenimiento --> Disponible : Resolución y Cierre de Incidencia (CU-04)
+Disponible --> Mantenimiento : Reporte de Daños o Desviación de Calidad (CU-04)
+Mantenimiento --> Disponible : Resolución y Cierre de Incidencia (CU-04)
+@enduml
 ```
 *Nota.* Transiciones de estado (Disponible, Ocupada, En Limpieza, Mantenimiento) del recurso principal.
 
