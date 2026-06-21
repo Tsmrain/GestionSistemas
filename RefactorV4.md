@@ -350,89 +350,101 @@ El cliente ingresa la fecha, hora de ingreso y la categoría de habitación requ
 #### Postcondición
 * Se muestran las opciones de habitaciones disponibles y sus precios calculados, sin alterar el estado de reserva o asignación de las habitaciones.
 
-##### Diagramas UML (Mermaid)
+##### Diagramas UML (PlantUML)
 
 ###### 1. Diagrama de Caso de Uso
-```mermaid
-flowchart LR
-    Cliente((Cliente / Huésped))
-    subgraph Sistema Residencial
-        CU01(CU-01: Consultar Disponibilidad)
-    end
-    Cliente --> CU01
+```plantuml
+@startuml
+left to right direction
+actor "Cliente (Huésped)" as Cliente
+rectangle "Sistema Residencial" {
+  usecase "CU-01: Consultar Disponibilidad" as CU01
+}
+Cliente --> CU01
+@enduml
 ```
 
 ###### 2. Diagrama de Clases de Interfaz
-```mermaid
-classDiagram
-    class DisponibilidadView {
-        +mostrarResultados(habitaciones)
-        +mostrarMensajeError(mensaje)
-    }
-    class DisponibilidadController {
-        -disponibilidadService
-        +consultar(fecha, hora, tipo)
-    }
-    class DisponibilidadService {
-        <<interface>>
-        +buscarHabitacionesDisponibles(query)
-    }
-    class Habitacion {
-        -numero: String
-        -estadoActual: String
-    }
-    DisponibilidadView ..> DisponibilidadController : eventos
-    DisponibilidadController --> DisponibilidadService
-    DisponibilidadService ..> Habitacion
+```plantuml
+@startuml
+class DisponibilidadView {
+  +mostrarResultados(habitaciones)
+  +mostrarMensajeError(mensaje)
+}
+class DisponibilidadController {
+  -disponibilidadService
+  +consultar(fecha, hora, tipo)
+}
+interface DisponibilidadService {
+  +buscarHabitacionesDisponibles(query)
+}
+class Habitacion {
+  -numero
+  -estadoActual
+}
+DisponibilidadView ..> DisponibilidadController : eventos
+DisponibilidadController --> DisponibilidadService
+DisponibilidadService ..> Habitacion
+@enduml
 ```
 
 ###### 3. Diagrama de Secuencia
-```mermaid
-sequenceDiagram
-    actor Cliente
-    participant View as DisponibilidadView
-    participant Ctrl as DisponibilidadController
-    participant Serv as DisponibilidadService
-    participant Repo as HabitacionRepository
+```plantuml
+@startuml
+actor Cliente
+participant "DisponibilidadView" as View
+participant "DisponibilidadController" as Ctrl
+participant "DisponibilidadService" as Serv
+participant "HabitacionRepository" as Repo
 
-    Cliente->>View: Ingresa fecha, hora y tipo
-    View->>Ctrl: consultar(fecha, hora, tipo)
-    Ctrl->>Serv: buscarHabitacionesDisponibles(query)
-    Serv->>Repo: findByEstado("Disponible")
-    Repo-->>Serv: lista de habitaciones
-    Serv-->>Ctrl: lista filtrada
-    Ctrl-->>View: renderizar resultados
-    View-->>Cliente: muestra habitaciones disponibles
+Cliente ->> View: Ingresa fecha, hora y tipo
+View ->> Ctrl: consultar(fecha, hora, tipo)
+Ctrl ->> Serv: buscarHabitacionesDisponibles(query)
+Serv ->> Repo: findByEstado("Disponible")
+Repo -->> Serv: lista de habitaciones
+Serv -->> Ctrl: lista filtrada
+Ctrl -->> View: renderizar resultados
+View -->> Cliente: muestra habitaciones disponibles
+@enduml
 ```
 
 ###### 4. Diagrama de Colaboración
-```mermaid
-flowchart LR
-    Cliente((Cliente)) -- "1: ingresarCriterios()" --> View[DisponibilidadView]
-    View -- "2: consultar()" --> Ctrl[DisponibilidadController]
-    Ctrl -- "3: buscarHabitacionesDisponibles()" --> Serv[DisponibilidadService]
-    Serv -- "4: findByEstado()" --> Repo[(HabitacionRepository)]
+```plantuml
+@startuml
+left to right direction
+object "1: Cliente" as Cliente
+object "2: DisponibilidadView" as View
+object "3: DisponibilidadController" as Ctrl
+object "4: DisponibilidadService" as Serv
+object "5: HabitacionRepository" as Repo
+
+Cliente --> View : "1: ingresarCriterios()"
+View --> Ctrl : "2: consultar()"
+Ctrl --> Serv : "3: buscarHabitacionesDisponibles()"
+Serv --> Repo : "4: findByEstado()"
+@enduml
 ```
 
 ###### 5. Diagrama de Paquetes
-```mermaid
-flowchart TD
-    subgraph Frontend [Presentación - Frontend]
-        DisponibilidadView
-        DisponibilidadController
-    end
-    subgraph Application [Aplicación - Backend App]
-        DisponibilidadService
-    end
-    subgraph Domain [Dominio - Backend Domain]
-        Habitacion
-    end
-    subgraph Infrastructure [Infraestructura - Backend Infra]
-        HabitacionRepository
-    end
-    Frontend ..> Application
-    Application ..> Domain
-    Application ..> Infrastructure
+```plantuml
+@startuml
+package "Presentación (Frontend)" {
+  [DisponibilidadView]
+  [DisponibilidadController]
+}
+package "Aplicación (Backend App)" {
+  [DisponibilidadService]
+}
+package "Dominio (Backend Domain)" {
+  [Habitacion]
+}
+package "Infraestructura (Backend Infra)" {
+  [HabitacionRepository]
+}
+[Presentación (Frontend)] ..> [Aplicación (Backend App)]
+[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
+[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+@enduml
 ```
 
 ---
@@ -469,92 +481,104 @@ El cliente (o el recepcionista) selecciona una habitación disponible en un hora
 #### Postcondición
 * La reserva queda registrada en estado "PENDIENTE_PAGO", y la habitación queda bloqueada temporalmente para el período correspondiente a la espera de la confirmación del pago.
 
-##### Diagramas UML (Mermaid)
+##### Diagramas UML (PlantUML)
 
 ###### 1. Diagrama de Caso de Uso
-```mermaid
-flowchart LR
-    Cliente((Cliente))
-    Recepcionista((Recepcionista))
-    subgraph Sistema Residencial
-        CU02(CU-02: Registrar Reserva)
-    end
-    Cliente --> CU02
-    Recepcionista --> CU02
+```plantuml
+@startuml
+left to right direction
+actor "Cliente" as Cliente
+actor "Recepcionista" as Recepcionista
+rectangle "Sistema Residencial" {
+  usecase "CU-02: Registrar Reserva" as CU02
+}
+Cliente --> CU02
+Recepcionista --> CU02
+@enduml
 ```
 
 ###### 2. Diagrama de Clases de Interfaz
-```mermaid
-classDiagram
-    class ReservaView {
-        +capturarDatosHuesped()
-        +mostrarConfirmacion(reservaId)
-    }
-    class ReservaController {
-        -reservaService
-        +registrarReserva(request)
-    }
-    class ReservaService {
-        <<interface>>
-        +crearReserva(command)
-    }
-    class Reserva {
-        -id: Long
-        -estado: String
-        -fechaCreacion: Date
-    }
-    ReservaView ..> ReservaController : eventos
-    ReservaController --> ReservaService
-    ReservaService ..> Reserva
+```plantuml
+@startuml
+class ReservaView {
+  +capturarDatosHuesped()
+  +mostrarConfirmacion(reservaId)
+}
+class ReservaController {
+  -reservaService
+  +registrarReserva(request)
+}
+interface ReservaService {
+  +crearReserva(command)
+}
+class Reserva {
+  -id
+  -estado
+  -fechaCreacion
+}
+ReservaView ..> ReservaController
+ReservaController --> ReservaService
+ReservaService ..> Reserva
+@enduml
 ```
 
 ###### 3. Diagrama de Secuencia
-```mermaid
-sequenceDiagram
-    actor Actor as Cliente / Recepcionista
-    participant View as ReservaView
-    participant Ctrl as ReservaController
-    participant Serv as ReservaService
-    participant Repo as ReservaRepository
+```plantuml
+@startuml
+actor Actor as "Cliente / Recepcionista"
+participant "ReservaView" as View
+participant "ReservaController" as Ctrl
+participant "ReservaService" as Serv
+participant "ReservaRepository" as Repo
 
-    Actor->>View: Ingresa datos personales e info de estadía
-    View->>Ctrl: registrarReserva(request)
-    Ctrl->>Serv: crearReserva(command)
-    Serv->>Repo: save(Reserva)
-    Repo-->>Serv: Reserva guardada (estado=PENDIENTE_PAGO)
-    Serv-->>Ctrl: ReservaResponse
-    Ctrl-->>View: renderizarConfirmacion(reservaId)
-    View-->>Actor: muestra identificador de reserva
+Actor ->> View: Ingresa datos personales e info de estadía
+View ->> Ctrl: registrarReserva(request)
+Ctrl ->> Serv: crearReserva(command)
+Serv ->> Repo: save(Reserva)
+Repo -->> Serv: Reserva guardada (estado=PENDIENTE_PAGO)
+Serv -->> Ctrl: ReservaResponse
+Ctrl -->> View: renderizarConfirmacion(reservaId)
+View -->> Actor: muestra identificador de reserva
+@enduml
 ```
 
 ###### 4. Diagrama de Colaboración
-```mermaid
-flowchart LR
-    Actor((Cliente / Recepcionista)) -- "1: ingresarDatos()" --> View[ReservaView]
-    View -- "2: registrarReserva()" --> Ctrl[ReservaController]
-    Ctrl -- "3: crearReserva()" --> Serv[ReservaService]
-    Serv -- "4: save()" --> Repo[(ReservaRepository)]
+```plantuml
+@startuml
+left to right direction
+object "1: Actor" as Actor
+object "2: ReservaView" as View
+object "3: ReservaController" as Ctrl
+object "4: ReservaService" as Serv
+object "5: ReservaRepository" as Repo
+
+Actor --> View : "1: ingresarDatos()"
+View --> Ctrl : "2: registrarReserva()"
+Ctrl --> Serv : "3: crearReserva()"
+Serv --> Repo : "4: save()"
+@enduml
 ```
 
 ###### 5. Diagrama de Paquetes
-```mermaid
-flowchart TD
-    subgraph Frontend [Presentación - Frontend]
-        ReservaView
-        ReservaController
-    end
-    subgraph Application [Aplicación - Backend App]
-        ReservaService
-    end
-    subgraph Domain [Dominio - Backend Domain]
-        Reserva
-    end
-    subgraph Infrastructure [Infraestructura - Backend Infra]
-        ReservaRepository
-    end
-    Frontend ..> Application
-    Application ..> Domain
-    Application ..> Infrastructure
+```plantuml
+@startuml
+package "Presentación (Frontend)" {
+  [ReservaView]
+  [ReservaController]
+}
+package "Aplicación (Backend App)" {
+  [ReservaService]
+}
+package "Dominio (Backend Domain)" {
+  [Reserva]
+}
+package "Infraestructura (Backend Infra)" {
+  [ReservaRepository]
+}
+[Presentación (Frontend)] ..> [Aplicación (Backend App)]
+[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
+[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+@enduml
 ```
 
 ---
@@ -593,114 +617,127 @@ Con base en una reserva pendiente, el sistema presenta los métodos de pago auto
 #### Postcondición
 * La reserva cambia a estado "PAGADA" (o comprometida para pago presencial en recepción) y se emite un comprobante digital único con la hora del pago y la ventana de check-in calculada.
 
-##### Diagramas UML (Mermaid)
+##### Diagramas UML (PlantUML)
 
 ###### 1. Diagrama de Caso de Uso
-```mermaid
-flowchart LR
-    Cliente((Cliente))
-    Recepcionista((Recepcionista))
-    BNB((API Banco BNB))
-    subgraph Sistema Residencial
-        CU03(CU-03: Procesar Pago)
-    end
-    Cliente --> CU03
-    Recepcionista --> CU03
-    CU03 --> BNB
+```plantuml
+@startuml
+left to right direction
+actor "Cliente" as Cliente
+actor "Recepcionista" as Recepcionista
+actor "API Banco BNB" as BNB
+rectangle "Sistema Residencial" {
+  usecase "CU-03: Procesar Pago" as CU03
+}
+Cliente --> CU03
+Recepcionista --> CU03
+CU03 --> BNB
+@enduml
 ```
 
 ###### 2. Diagrama de Clases de Interfaz
-```mermaid
-classDiagram
-    class PagoView {
-        +mostrarOpcionesPago()
-        +mostrarQR(qrData)
-        +mostrarExito(nroComprobante)
-    }
-    class PagoController {
-        -procesarPagoService
-        +iniciarPago(reservaId, metodo)
-        +verificarPago(reservaId)
-    }
-    class ProcesarPagoService {
-        <<interface>>
-        +iniciarProcesoPago(request)
-        +verificarEstadoPago(reservaId)
-    }
-    class Pago {
-        -id: Long
-        -monto: Double
-        -metodo: String
-        -estado: String
-    }
-    PagoView ..> PagoController : eventos
-    PagoController --> ProcesarPagoService
-    ProcesarPagoService ..> Pago
+```plantuml
+@startuml
+class PagoView {
+  +mostrarOpcionesPago()
+  +mostrarQR(qrData)
+  +mostrarExito(nroComprobante)
+}
+class PagoController {
+  -procesarPagoService
+  +iniciarPago(reservaId, metodo)
+  +verificarPago(reservaId)
+}
+interface ProcesarPagoService {
+  +iniciarProcesoPago(request)
+  +verificarEstadoPago(reservaId)
+}
+class Pago {
+  -id
+  -monto
+  -metodo
+  -estado
+}
+PagoView ..> PagoController
+PagoController --> ProcesarPagoService
+ProcesarPagoService ..> Pago
+@enduml
 ```
 
 ###### 3. Diagrama de Secuencia
-```mermaid
-sequenceDiagram
-    actor Actor as Cliente / Recepcionista
-    participant View as PagoView
-    participant Ctrl as PagoController
-    participant Serv as ProcesarPagoService
-    participant BNB as BnbPaymentPort
-    participant Repo as ReservaRepository
+```plantuml
+@startuml
+actor Actor as "Cliente / Recepcionista"
+participant "PagoView" as View
+participant "PagoController" as Ctrl
+participant "ProcesarPagoService" as Serv
+participant "BnbPaymentPort" as BNB
+participant "ReservaRepository" as Repo
 
-    Actor->>View: Elige Pago QR (BNB)
-    View->>Ctrl: iniciarPago(reservaId, "QR_BNB")
-    Ctrl->>Serv: iniciarProcesoPago(request)
-    Serv->>BNB: generarQR(monto, glosa, reservaId)
-    BNB-->>Serv: qrData
-    Serv-->>Ctrl: qrData
-    Ctrl-->>View: renderizar QR
-    Actor->>View: Confirma pago desde app banco
-    loop Polling verificar pago
-        Ctrl->>Serv: verificarEstadoPago(reservaId)
-        Serv->>BNB: consultarEstado(qrId)
-        BNB-->>Serv: COMPLETADO
-        Serv->>Repo: save(Reserva -> PAGADA)
-        Serv-->>Ctrl: COMPLETADO + NroComprobante
-        Ctrl-->>View: mostrar pantalla de éxito
-    end
+Actor ->> View: Elige Pago QR (BNB)
+View ->> Ctrl: iniciarPago(reservaId, "QR_BNB")
+Ctrl ->> Serv: iniciarProcesoPago(request)
+Serv ->> BNB: generarQR(monto, glosa, reservaId)
+BNB -->> Serv: qrData
+Serv -->> Ctrl: qrData
+Ctrl -->> View: renderizar QR
+Actor ->> View: Confirma pago desde app banco
+loop Polling verificar pago
+  Ctrl ->> Serv: verificarEstadoPago(reservaId)
+  Serv ->> BNB: consultarEstado(qrId)
+  BNB -->> Serv: COMPLETADO
+  Serv ->> Repo: save(Reserva -> PAGADA)
+  Serv -->> Ctrl: COMPLETADO + NroComprobante
+  Ctrl -->> View: mostrar pantalla de éxito
+end
+@enduml
 ```
 
 ###### 4. Diagrama de Colaboración
-```mermaid
-flowchart LR
-    Actor((Cliente / Recepcionista)) -- "1: seleccionarMetodo()" --> View[PagoView]
-    View -- "2: iniciarPago()" --> Ctrl[PagoController]
-    Ctrl -- "3: iniciarProcesoPago()" --> Serv[ProcesarPagoService]
-    Serv -- "4: generarQR()" --> BNB[BnbPaymentPort]
-    Actor -- "5: pagarDesdeApp()" --> View
-    Ctrl -- "6: verificarEstadoPago()" --> Serv
-    Serv -- "7: consultarEstado()" --> BNB
-    Serv -- "8: save(PAGADA)" --> Repo[(ReservaRepository)]
+```plantuml
+@startuml
+left to right direction
+object "1: Actor" as Actor
+object "2: PagoView" as View
+object "3: PagoController" as Ctrl
+object "4: ProcesarPagoService" as Serv
+object "5: BnbPaymentPort" as BNB
+object "6: ReservaRepository" as Repo
+
+Actor --> View : "1: seleccionarMetodo()"
+View --> Ctrl : "2: iniciarPago()"
+Ctrl --> Serv : "3: iniciarProcesoPago()"
+Serv --> BNB : "4: generarQR()"
+Actor --> View : "5: pagarDesdeApp()"
+Ctrl --> Serv : "6: verificarEstadoPago()"
+Serv --> BNB : "7: consultarEstado()"
+Serv --> Repo : "8: save(PAGADA)"
+@enduml
 ```
 
 ###### 5. Diagrama de Paquetes
-```mermaid
-flowchart TD
-    subgraph Frontend [Presentación - Frontend]
-        PagoView
-        PagoController
-    end
-    subgraph Application [Aplicación - Backend App]
-        ProcesarPagoService
-        BnbPaymentPort
-    end
-    subgraph Domain [Dominio - Backend Domain]
-        Pago
-        Reserva
-    end
-    subgraph Infrastructure [Infraestructura - Backend Infra]
-        BnbSandboxAdapter
-        ReservaRepositoryAdapter
-    end
-    Frontend ..> Application
-    Application ..> Domain
-    Application ..> Infrastructure
+```plantuml
+@startuml
+package "Presentación (Frontend)" {
+  [PagoView]
+  [PagoController]
+}
+package "Aplicación (Backend App)" {
+  [ProcesarPagoService]
+  [BnbPaymentPort]
+}
+package "Dominio (Backend Domain)" {
+  [Pago]
+  [Reserva]
+}
+package "Infraestructura (Backend Infra)" {
+  [BnbSandboxAdapter]
+  [ReservaRepositoryAdapter]
+}
+[Presentación (Frontend)] ..> [Aplicación (Backend App)]
+[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
+[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+@enduml
 ```
 
 ---
@@ -740,101 +777,114 @@ El recepcionista verifica la reserva activa o procesa una llegada directa, reali
 #### Postcondición
 * El ingreso y salida física quedan documentados, el estado de la habitación pasa por el flujo Ocupada $\rightarrow$ En Limpieza $\rightarrow$ Disponible, y el retorno de los accesorios queda validado.
 
-##### Diagramas UML (Mermaid)
+##### Diagramas UML (PlantUML)
 
 ###### 1. Diagrama de Caso de Uso
-```mermaid
-flowchart LR
-    Recepcionista((Recepcionista))
-    Camarera((Camarera))
-    subgraph Sistema Residencial
-        CU04(CU-04: Realizar Check-in)
-    end
-    Recepcionista --> CU04
-    Camarera --> CU04
+```plantuml
+@startuml
+left to right direction
+actor "Recepcionista" as Recepcionista
+actor "Camarera" as Camarera
+rectangle "Sistema Residencial" {
+  usecase "CU-04: Realizar Check-in" as CU04
+}
+Recepcionista --> CU04
+Camarera --> CU04
+@enduml
 ```
 
 ###### 2. Diagrama de Clases de Interfaz
-```mermaid
-classDiagram
-    class RecepcionView {
-        +mostrarTableroHabitaciones()
-        +mostrarFormularioCheckIn()
-        +notificarEstado(habitacionId, estado)
-    }
-    class RecepcionController {
-        -checkInService
-        +registrarIngreso(reservaId, accesorios)
-        +registrarSalida(reservaId)
-        +confirmarLimpieza(habitacionId)
-    }
-    class CheckInService {
-        <<interface>>
-        +procesarCheckIn(reservaId)
-        +procesarCheckOut(reservaId)
-        +actualizarEstadoLimpieza(habitacionId)
-    }
-    class Habitacion {
-        -numero: String
-        -estadoActual: String
-    }
-    RecepcionView ..> RecepcionController : eventos
-    RecepcionController --> CheckInService
-    CheckInService ..> Habitacion
+```plantuml
+@startuml
+class RecepcionView {
+  +mostrarTableroHabitaciones()
+  +mostrarFormularioCheckIn()
+  +notificarEstado(habitacionId, estado)
+}
+class RecepcionController {
+  -checkInService
+  +registrarIngreso(reservaId, accesorios)
+  +registrarSalida(reservaId)
+  +confirmarLimpieza(habitacionId)
+}
+interface CheckInService {
+  +procesarCheckIn(reservaId)
+  +procesarCheckOut(reservaId)
+  +actualizarEstadoLimpieza(habitacionId)
+}
+class Habitacion {
+  -numero
+  -estadoActual
+}
+RecepcionView ..> RecepcionController
+RecepcionController --> CheckInService
+CheckInService ..> Habitacion
+@enduml
 ```
 
 ###### 3. Diagrama de Secuencia
-```mermaid
-sequenceDiagram
-    actor Recepcionista
-    participant View as RecepcionView
-    participant Ctrl as RecepcionController
-    participant Serv as CheckInService
-    participant Repo as HabitacionRepository
-    participant ResRepo as ReservaRepository
+```plantuml
+@startuml
+actor Recepcionista
+participant "RecepcionView" as View
+participant "RecepcionController" as Ctrl
+participant "CheckInService" as Serv
+participant "HabitacionRepository" as Repo
+participant "ReservaRepository" as ResRepo
 
-    Recepcionista->>View: Busca reserva e ingresa entrega de accesorios
-    View->>Ctrl: registrarIngreso(reservaId, accesorios)
-    Ctrl->>Serv: procesarCheckIn(reservaId)
-    Serv->>ResRepo: findById(reservaId)
-    ResRepo-->>Serv: Reserva (estado=PAGADA)
-    Serv->>Repo: actualizarEstado(habitacionId, "OCUPADA")
-    Serv->>ResRepo: save(Reserva -> estado=ACTIVA)
-    Serv-->>Ctrl: Ingreso confirmado
-    Ctrl-->>View: actualizar tablero a OCUPADA
+Recepcionista ->> View: Busca reserva e ingresa entrega de accesorios
+View ->> Ctrl: registrarIngreso(reservaId, accesorios)
+Ctrl ->> Serv: procesarCheckIn(reservaId)
+Serv ->> ResRepo: findById(reservaId)
+ResRepo -->> Serv: Reserva (estado=PAGADA)
+Serv ->> Repo: actualizarEstado(habitacionId, "OCUPADA")
+Serv ->> ResRepo: save(Reserva -> estado=ACTIVA)
+Serv -->> Ctrl: Ingreso confirmado
+Ctrl -->> View: actualizar tablero a OCUPADA
+@enduml
 ```
 
 ###### 4. Diagrama de Colaboración
-```mermaid
-flowchart LR
-    Recepcionista((Recepcionista)) -- "1: confirmarLlegada()" --> View[RecepcionView]
-    View -- "2: registrarIngreso()" --> Ctrl[RecepcionController]
-    Ctrl -- "3: procesarCheckIn()" --> Serv[CheckInService]
-    Serv -- "4: findById() / save(ACTIVA)" --> ResRepo[(ReservaRepository)]
-    Serv -- "5: actualizarEstado(OCUPADA)" --> Repo[(HabitacionRepository)]
+```plantuml
+@startuml
+left to right direction
+object "1: Recepcionista" as Recepcionista
+object "2: RecepcionView" as View
+object "3: RecepcionController" as Ctrl
+object "4: CheckInService" as Serv
+object "5: HabitacionRepository" as Repo
+object "6: ReservaRepository" as ResRepo
+
+Recepcionista --> View : "1: confirmarLlegada()"
+View --> Ctrl : "2: registrarIngreso()"
+Ctrl --> Serv : "3: procesarCheckIn()"
+Serv --> ResRepo : "4: findById() / save(ACTIVA)"
+Serv --> Repo : "5: actualizarEstado(OCUPADA)"
+@enduml
 ```
 
 ###### 5. Diagrama de Paquetes
-```mermaid
-flowchart TD
-    subgraph Frontend [Presentación - Frontend]
-        RecepcionView
-        RecepcionController
-    end
-    subgraph Application [Aplicación - Backend App]
-        CheckInService
-    end
-    subgraph Domain [Dominio - Backend Domain]
-        Habitacion
-        Reserva
-    end
-    subgraph Infrastructure [Infraestructura - Backend Infra]
-        HabitacionRepositoryAdapter
-        ReservaRepositoryAdapter
-    end
-    Frontend ..> Application
-    Application ..> Domain
-    Application ..> Infrastructure
+```plantuml
+@startuml
+package "Presentación (Frontend)" {
+  [RecepcionView]
+  [RecepcionController]
+}
+package "Aplicación (Backend App)" {
+  [CheckInService]
+}
+package "Dominio (Backend Domain)" {
+  [Habitacion]
+  [Reserva]
+}
+package "Infraestructura (Backend Infra)" {
+  [HabitacionRepositoryAdapter]
+  [ReservaRepositoryAdapter]
+}
+[Presentación (Frontend)] ..> [Aplicación (Backend App)]
+[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
+[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+@enduml
 ```
 
 ---
@@ -872,101 +922,114 @@ El cliente presenta su código QR de acceso al sensor de la puerta asignada. El 
 #### Postcondición
 * Se registra el ingreso del huésped en el sistema, se desbloquea físicamente la puerta de la habitación y esta pasa a estado "OCUPADA".
 
-##### Diagramas UML (Mermaid)
+##### Diagramas UML (PlantUML)
 
 ###### 1. Diagrama de Caso de Uso
-```mermaid
-flowchart LR
-    Cliente((Cliente))
-    subgraph Sistema Residencial
-        CU05(CU-05: Acceso por QR en Puerta)
-    end
-    Cliente --> CU05
+```plantuml
+@startuml
+left to right direction
+actor "Cliente" as Cliente
+rectangle "Sistema Residencial" {
+  usecase "CU-05: Acceso por QR en Puerta" as CU05
+}
+Cliente --> CU05
+@enduml
 ```
 
 ###### 2. Diagrama de Clases de Interfaz
-```mermaid
-classDiagram
-    class PuertaView {
-        +capturarQR()
-        +mostrarAccesoAutorizado(mensaje)
-        +mostrarAccesoDenegado(mensaje)
-    }
-    class PuertaController {
-        -puertaService
-        +validarAccesoQR(codigo, habitacionId)
-    }
-    class PuertaService {
-        <<interface>>
-        +verificarYRegistrarAcceso(codigo, habitacionId)
-    }
-    class Reserva {
-        -codigoQR: String
-        -estado: String
-    }
-    PuertaView ..> PuertaController : eventos
-    PuertaController --> PuertaService
-    PuertaService ..> Reserva
+```plantuml
+@startuml
+class PuertaView {
+  +capturarQR()
+  +mostrarAccesoAutorizado(mensaje)
+  +mostrarAccesoDenegado(mensaje)
+}
+class PuertaController {
+  -puertaService
+  +validarAccesoQR(codigo, habitacionId)
+}
+interface PuertaService {
+  +verificarYRegistrarAcceso(codigo, habitacionId)
+}
+class Reserva {
+  -codigoQR
+  -estado
+}
+PuertaView ..> PuertaController
+PuertaController --> PuertaService
+PuertaService ..> Reserva
+@enduml
 ```
 
 ###### 3. Diagrama de Secuencia
-```mermaid
-sequenceDiagram
-    actor Cliente
-    participant View as PuertaView (Tablet)
-    participant Ctrl as PuertaController
-    participant Serv as PuertaService
-    participant ResRepo as ReservaRepository
-    participant HabRepo as HabitacionRepository
+```plantuml
+@startuml
+actor Cliente
+participant "PuertaView (Tablet)" as View
+participant "PuertaController" as Ctrl
+participant "PuertaService" as Serv
+participant "ReservaRepository" as ResRepo
+participant "HabitacionRepository" as HabRepo
 
-    Cliente->>View: Escanea QR en lector de puerta
-    View->>Ctrl: validarAccesoQR(codigo, habitacionId)
-    Ctrl->>Serv: verificarYRegistrarAcceso(codigo, habitacionId)
-    Serv->>ResRepo: findByCodigo(codigo)
-    ResRepo-->>Serv: Reserva
-    Serv->>Serv: Validar estado (PAGADA o ACTIVA) y habitación
-    alt Acceso Válido
-        Serv->>HabRepo: actualizarEstado(habitacionId, "OCUPADA")
-        Serv->>ResRepo: save(Reserva -> horaIngreso=NOW)
-        Serv-->>Ctrl: Acceso Autorizado
-        Ctrl-->>View: Desbloquear puerta y mostrar bienvenida
-    else Acceso Inválido
-        Serv-->>Ctrl: Acceso Denegado
-        Ctrl-->>View: Mostrar error de acceso y mantener bloqueado
-    end
+Cliente ->> View: Escanea QR en lector de puerta
+View ->> Ctrl: validarAccesoQR(codigo, habitacionId)
+Ctrl ->> Serv: verificarYRegistrarAcceso(codigo, habitacionId)
+Serv ->> ResRepo: findByCodigo(codigo)
+ResRepo -->> Serv: Reserva
+Serv ->> Serv: Validar estado (PAGADA o ACTIVA) y habitación
+alt Acceso Válido
+  Serv ->> HabRepo: actualizarEstado(habitacionId, "OCUPADA")
+  Serv ->> ResRepo: save(Reserva -> horaIngreso=NOW)
+  Serv -->> Ctrl: Acceso Autorizado
+  Ctrl -->> View: Desbloquear puerta y mostrar bienvenida
+else Acceso Inválido
+  Serv -->> Ctrl: Acceso Denegado
+  Ctrl -->> View: Mostrar error de acceso y mantener bloqueado
+end
+@enduml
 ```
 
 ###### 4. Diagrama de Colaboración
-```mermaid
-flowchart LR
-    Cliente((Cliente)) -- "1: presentarQR()" --> View[PuertaView]
-    View -- "2: validarAccesoQR()" --> Ctrl[PuertaController]
-    Ctrl -- "3: verificarYRegistrarAcceso()" --> Serv[PuertaService]
-    Serv -- "4: findByCodigo() / save()" --> ResRepo[(ReservaRepository)]
-    Serv -- "5: actualizarEstado(OCUPADA)" --> HabRepo[(HabitacionRepository)]
+```plantuml
+@startuml
+left to right direction
+object "1: Cliente" as Cliente
+object "2: PuertaView" as View
+object "3: PuertaController" as Ctrl
+object "4: PuertaService" as Serv
+object "5: ReservaRepository" as ResRepo
+object "6: HabitacionRepository" as HabRepo
+
+Cliente --> View : "1: presentarQR()"
+View --> Ctrl : "2: validarAccesoQR()"
+Ctrl --> Serv : "3: verificarYRegistrarAcceso()"
+Serv --> ResRepo : "4: findByCodigo() / save()"
+Serv --> HabRepo : "5: actualizarEstado(OCUPADA)"
+@enduml
 ```
 
 ###### 5. Diagrama de Paquetes
-```mermaid
-flowchart TD
-    subgraph Frontend [Presentación - Frontend]
-        PuertaView
-        PuertaController
-    end
-    subgraph Application [Aplicación - Backend App]
-        PuertaService
-    end
-    subgraph Domain [Dominio - Backend Domain]
-        Reserva
-        Habitacion
-    end
-    subgraph Infrastructure [Infraestructura - Backend Infra]
-        ReservaRepositoryAdapter
-        HabitacionRepositoryAdapter
-    end
-    Frontend ..> Application
-    Application ..> Domain
-    Application ..> Infrastructure
+```plantuml
+@startuml
+package "Presentación (Frontend)" {
+  [PuertaView]
+  [PuertaController]
+}
+package "Aplicación (Backend App)" {
+  [PuertaService]
+}
+package "Dominio (Backend Domain)" {
+  [Reserva]
+  [Habitacion]
+}
+package "Infraestructura (Backend Infra)" {
+  [ReservaRepositoryAdapter]
+  [HabitacionRepositoryAdapter]
+}
+[Presentación (Frontend)] ..> [Aplicación (Backend App)]
+[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
+[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+@enduml
 ```
 
 ---
@@ -1004,110 +1067,123 @@ Durante la estadía, el huésped selecciona productos adicionales disponibles en
 #### Postcondición
 * Los consumos adicionales quedan registrados como pagados en la base de datos, asociados a la reserva de la habitación.
 
-##### Diagramas UML (Mermaid)
+##### Diagramas UML (PlantUML)
 
 ###### 1. Diagrama de Caso de Uso
-```mermaid
-flowchart LR
-    Cliente((Cliente))
-    BNB((API Banco BNB))
-    subgraph Sistema Residencial
-        CU06(CU-06: Pago de Consumo Extra)
-    end
-    Cliente --> CU06
-    CU06 --> BNB
+```plantuml
+@startuml
+left to right direction
+actor "Cliente" as Cliente
+actor "API Banco BNB" as BNB
+rectangle "Sistema Residencial" {
+  usecase "CU-06: Pago de Consumo Extra" as CU06
+}
+Cliente --> CU06
+CU06 --> BNB
+@enduml
 ```
 
 ###### 2. Diagrama de Clases de Interfaz
-```mermaid
-classDiagram
-    class TabletView {
-        +mostrarMenuConsumos()
-        +mostrarQRConsumo(qrData)
-        +confirmarPagoConsumo()
-    }
-    class ConsumoController {
-        -consumoService
-        +registrarPedido(reservaId, items)
-        +verificarPagoConsumo(consumoId)
-    }
-    class ConsumoExtraService {
-        <<interface>>
-        +crearConsumoPendiente(reservaId, items)
-        +confirmarPagoConsumo(consumoId)
-    }
-    class ConsumoExtra {
-        -id: Long
-        -itemsJson: String
-        -total: Double
-        -estado: String
-    }
-    TabletView ..> ConsumoController : eventos
-    ConsumoController --> ConsumoExtraService
-    ConsumoExtraService ..> ConsumoExtra
+```plantuml
+@startuml
+class TabletView {
+  +mostrarMenuConsumos()
+  +mostrarQRConsumo(qrData)
+  +confirmarPagoConsumo()
+}
+class ConsumoController {
+  -consumoService
+  +registrarPedido(reservaId, items)
+  +verificarPagoConsumo(consumoId)
+}
+interface ConsumoExtraService {
+  +crearConsumoPendiente(reservaId, items)
+  +confirmarPagoConsumo(consumoId)
+}
+class ConsumoExtra {
+  -id
+  -itemsJson
+  -total
+  -estado
+}
+TabletView ..> ConsumoController
+ConsumoController --> ConsumoExtraService
+ConsumoExtraService ..> ConsumoExtra
+@enduml
 ```
 
 ###### 3. Diagrama de Secuencia
-```mermaid
-sequenceDiagram
-    actor Cliente
-    participant View as TabletView
-    participant Ctrl as ConsumoController
-    participant Serv as ConsumoExtraService
-    participant BNB as BnbPaymentPort
-    participant Repo as ConsumoRepository
+```plantuml
+@startuml
+actor Cliente
+participant "TabletView" as View
+participant "ConsumoController" as Ctrl
+participant "ConsumoExtraService" as Serv
+participant "BnbPaymentPort" as BNB
+participant "ConsumoRepository" as Repo
 
-    Cliente->>View: Selecciona productos de la tableta y presiona pagar
-    View->>Ctrl: registrarPedido(reservaId, items)
-    Ctrl->>Serv: crearConsumoPendiente(reservaId, items)
-    Serv->>BNB: generarQR(total, "Consumos Extra", reservaId)
-    BNB-->>Serv: qrData
-    Serv->>Repo: save(ConsumoExtra -> estado=PENDIENTE)
-    Serv-->>Ctrl: qrData
-    Ctrl-->>View: renderizar QR de consumo
-    Cliente->>View: Escanea QR y paga
-    View->>Ctrl: verificarPagoConsumo(consumoId)
-    Ctrl->>Serv: confirmarPagoConsumo(consumoId)
-    Serv->>BNB: consultarEstado(qrId)
-    BNB-->>Serv: COMPLETADO
-    Serv->>Repo: save(ConsumoExtra -> estado=PAGADO)
-    Serv-->>Ctrl: Pago confirmado
-    Ctrl-->>View: mostrar pantalla de éxito
+Cliente ->> View: Selecciona productos de la tableta y presiona pagar
+View ->> Ctrl: registrarPedido(reservaId, items)
+Ctrl ->> Serv: crearConsumoPendiente(reservaId, items)
+Serv ->> BNB: generarQR(total, "Consumos Extra", reservaId)
+BNB -->> Serv: qrData
+Serv ->> Repo: save(ConsumoExtra -> estado=PENDIENTE)
+Serv -->> Ctrl: qrData
+Ctrl -->> View: renderizar QR de consumo
+Cliente ->> View: Escanea QR y paga
+View ->> Ctrl: verificarPagoConsumo(consumoId)
+Ctrl ->> Serv: confirmarPagoConsumo(consumoId)
+Serv ->> BNB: consultarEstado(qrId)
+BNB -->> Serv: COMPLETADO
+Serv ->> Repo: save(ConsumoExtra -> estado=PAGADO)
+Serv -->> Ctrl: Pago confirmado
+Ctrl -->> View: mostrar pantalla de éxito
+@enduml
 ```
 
 ###### 4. Diagrama de Colaboración
-```mermaid
-flowchart LR
-    Cliente((Cliente)) -- "1: seleccionarProductos()" --> View[TabletView]
-    View -- "2: registrarPedido()" --> Ctrl[ConsumoController]
-    Ctrl -- "3: crearConsumoPendiente()" --> Serv[ConsumoExtraService]
-    Serv -- "4: generarQR()" --> BNB[BnbPaymentPort]
-    Ctrl -- "5: confirmarPagoConsumo()" --> Serv
-    Serv -- "6: save(PAGADO)" --> Repo[(ConsumoRepository)]
+```plantuml
+@startuml
+left to right direction
+object "1: Cliente" as Cliente
+object "2: TabletView" as View
+object "3: ConsumoController" as Ctrl
+object "4: ConsumoExtraService" as Serv
+object "5: BnbPaymentPort" as BNB
+object "6: ConsumoRepository" as Repo
+
+Cliente --> View : "1: seleccionarProductos()"
+View --> Ctrl : "2: registrarPedido()"
+Ctrl --> Serv : "3: crearConsumoPendiente()"
+Serv --> BNB : "4: generarQR()"
+Ctrl --> Serv : "5: confirmarPagoConsumo()"
+Serv --> Repo : "6: save(PAGADO)"
+@enduml
 ```
 
 ###### 5. Diagrama de Paquetes
-```mermaid
-flowchart TD
-    subgraph Frontend [Presentación - Frontend]
-        TabletView
-        ConsumoController
-    end
-    subgraph Application [Aplicación - Backend App]
-        ConsumoExtraService
-        BnbPaymentPort
-    end
-    subgraph Domain [Dominio - Backend Domain]
-        ConsumoExtra
-        Reserva
-    end
-    subgraph Infrastructure [Infraestructura - Backend Infra]
-        ConsumoRepositoryAdapter
-        BnbSandboxAdapter
-    end
-    Frontend ..> Application
-    Application ..> Domain
-    Application ..> Infrastructure
+```plantuml
+@startuml
+package "Presentación (Frontend)" {
+  [TabletView]
+  [ConsumoController]
+}
+package "Aplicación (Backend App)" {
+  [ConsumoExtraService]
+  [BnbPaymentPort]
+}
+package "Dominio (Backend Domain)" {
+  [ConsumoExtra]
+  [Reserva]
+}
+package "Infraestructura (Backend Infra)" {
+  [ConsumoRepositoryAdapter]
+  [BnbSandboxAdapter]
+}
+[Presentación (Frontend)] ..> [Aplicación (Backend App)]
+[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
+[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+@enduml
 ```
 
 ---
