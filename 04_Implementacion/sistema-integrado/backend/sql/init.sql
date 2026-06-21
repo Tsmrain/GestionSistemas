@@ -213,3 +213,16 @@ CREATE TABLE IF NOT EXISTS verificacion_detalles (
     cargo_aplicado DOUBLE PRECISION DEFAULT 0.0,
     cobrado BOOLEAN NOT NULL DEFAULT TRUE
 );
+
+CREATE TABLE IF NOT EXISTS ventas_insumos (
+    id BIGSERIAL PRIMARY KEY,
+    habitacion_id BIGINT REFERENCES habitaciones(id) ON DELETE SET NULL,
+    numero_habitacion VARCHAR(10),
+    cliente VARCHAR(100),
+    ubicacion VARCHAR(50) NOT NULL,
+    items_json TEXT NOT NULL,
+    total DOUBLE PRECISION NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'PAGADO',
+    fecha TIMESTAMP NOT NULL DEFAULT NOW(),
+    recepcionista VARCHAR(100)
+);

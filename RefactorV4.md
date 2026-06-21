@@ -1270,40 +1270,35 @@ class PuertaView <<boundary>> {
   +mostrarAccesoDenegado(mensaje: String)
 }
 class PuertaController <<controller>> {
-  -puertaService: PuertaService
+  -checkInService: CheckInService
   --
-  +validarAccesoQR(codigo: String, habitacionId: Long)
+  +validarAcceso(request: ValidarPuertaRequest)
 }
-interface PuertaService <<control>> {
+class CheckInService <<control>> {
+  -reservaRepository: ReservaRepositoryPort
+  -habitacionRepository: HabitacionRepositoryPort
   --
-  +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
-}
-class PuertaServiceImpl <<control>> {
-  -reservaRepository: ReservaRepository
-  -habitacionRepository: HabitacionRepository
-  --
-  +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
+  +validarAccesoPuerta(request: ValidarPuertaRequest): PuertaAccesoResponse
 }
 class Reserva <<entity>> {
   -codigoQR: String
   -estado: String
   --
 }
-interface ReservaRepository <<database>> {
+interface ReservaRepositoryPort <<database>> {
   --
-  +findByCodigo(codigo: String): Reserva
+  +findById(id: Long): Reserva
   +save(r: Reserva): Reserva
 }
-interface HabitacionRepository <<database>> {
+interface HabitacionRepositoryPort <<database>> {
   --
-  +actualizarEstado(id: Long, estado: String)
+  +save(h: Habitacion)
 }
 PuertaView ..> PuertaController : <<use>>
-PuertaController --> PuertaService
-PuertaServiceImpl ..|> PuertaService
-PuertaServiceImpl --> ReservaRepository
-PuertaServiceImpl --> HabitacionRepository
-ReservaRepository ..> Reserva : <<use>>
+PuertaController --> CheckInService
+CheckInService --> ReservaRepositoryPort
+CheckInService --> HabitacionRepositoryPort
+ReservaRepositoryPort ..> Reserva : <<use>>
 note top of PuertaController : GRASP Controller
 @enduml
 ```
@@ -1321,27 +1316,27 @@ autonumber
 actor Cliente
 boundary "<u>:PuertaView</u>" as View
 control "<u>:PuertaController</u>" as Ctrl
-control "<u>:PuertaService</u>" as Serv
+control "<u>:CheckInService</u>" as Serv
 database "<u>:ReservaRepository</u>" as ResRepo
 database "<u>:HabitacionRepository</u>" as HabRepo
 
 Cliente -> View : escanearQR(codigo)
 activate View
-View -> Ctrl : validarAccesoQR(codigo, habitacionId)
+View -> Ctrl : validarAcceso(request)
 activate Ctrl
-Ctrl -> Serv : verificarYRegistrarAcceso(codigo, habitacionId)
+Ctrl -> Serv : validarAccesoPuerta(request)
 activate Serv
-Serv -> ResRepo : findByCodigo(codigo)
+Serv -> ResRepo : findById(reservaId)
 activate ResRepo
 ResRepo --> Serv : Reserva
 deactivate ResRepo
 Serv -> Serv : validarReservaHabitacionYEstado()
 alt Acceso Válido
-  Serv -> HabRepo : actualizarEstado(habitacionId, "OCUPADA")
+  Serv -> HabRepo : save(Habitacion.setEstado("Ocupada"))
   activate HabRepo
   HabRepo --> Serv : h
   deactivate HabRepo
-  Serv -> ResRepo : save(Reserva.registrarIngreso())
+  Serv -> ResRepo : save(Reserva.realizarCheckIn())
   activate ResRepo
   ResRepo --> Serv : r
   deactivate ResRepo
@@ -1372,15 +1367,15 @@ left to right direction
 actor Cliente
 boundary "<u>:PuertaView</u>" as View
 control "<u>:PuertaController</u>" as Ctrl
-control "<u>:PuertaService</u>" as Serv
+control "<u>:CheckInService</u>" as Serv
 database "<u>:ReservaRepository</u>" as ResRepo
 database "<u>:HabitacionRepository</u>" as HabRepo
 
 Cliente --> View : 1: escanearQR(codigo)
-View --> Ctrl : 1.1: validarAccesoQR(codigo, habitacionId)
-Ctrl --> Serv : 1.1.1: verificarYRegistrarAcceso(codigo, habitacionId)
-Serv --> ResRepo : 1.1.1.1: findByCodigo(codigo)
-Serv --> HabRepo : [acceso válido] 1.1.1.2: actualizarEstado(habitacionId, "OCUPADA")
+View --> Ctrl : 1.1: validarAcceso(request)
+Ctrl --> Serv : 1.1.1: validarAccesoPuerta(request)
+Serv --> ResRepo : 1.1.1.1: findById(reservaId)
+Serv --> HabRepo : [acceso válido] 1.1.1.2: save(h)
 Serv --> ResRepo : [acceso válido] 1.1.1.3: save(r)
 @enduml
 ```
@@ -1399,8 +1394,7 @@ package "Presentación (Frontend)" <<layer>> {
   [PuertaController]
 }
 package "Aplicación (Backend App)" <<layer>> {
-  [PuertaService]
-  [PuertaServiceImpl]
+  [CheckInService]
 }
 package "Dominio (Backend Domain)" <<layer>> {
   [Reserva]
@@ -1777,6 +1771,31 @@ class Egreso {
   fecha
 }
 
+class VentaInsumo {
+  numeroHabitacion
+  cliente
+  ubicacion
+  itemsJson
+  total
+  estado
+  fecha
+}
+
+class VerificacionCheckout {
+  fechaVerificacion
+  recepcionista
+  nombreCamarera
+  conforme
+  observaciones
+}
+
+class VerificacionDetalle {
+  estadoReportado
+  cantidad
+  cargoAplicado
+  cobrado
+}
+
 Huesped "1" -- "*" Reserva : realiza >
 Huesped "0..1" -- "*" Reserva : acompaña en >
 Habitacion "1" -- "*" Reserva : asignada a >
@@ -1791,11 +1810,16 @@ Reserva "1" -- "*" ConsumoExtra : genera >
 Recepcionista "1" -- "*" Reserva : gestiona >
 Camarera "1" -- "*" Habitacion : limpia >
 Recepcionista "1" -- "*" Egreso : registra >
+Recepcionista "1" -- "*" VentaInsumo : registra >
+Habitacion "0..1" -- "*" VentaInsumo : vendida desde >
+Reserva "1" -- "0..1" VerificacionCheckout : verificada por >
+Habitacion "1" -- "*" VerificacionCheckout : inspeccionada en >
+VerificacionCheckout "1" -- "*" VerificacionDetalle : contiene >
+InventarioItem "1" -- "*" VerificacionDetalle : revisado en >
 @enduml
 ```
 *Nota.* Modelo de dominio relacional del sistema residencial que correlaciona directamente con la base de datos e implementación en Spring Boot.
 
----
 
 ## Caso de Uso del Sistema (Figura 32)
 
