@@ -17,28 +17,12 @@
 10. [Ambiente](#10-ambiente)
 11. [Tipo de Sistema](#11-tipo-de-sistema)
 12. [UML](#12-uml)
-    * [Caso de Uso: Promocionar Servicios](#caso-de-uso-promocionar-servicios)
-    * [Caso de Uso: Contactar Establecimiento](#caso-de-uso-contactar-establecimiento)
-    * [Caso de Uso: Solicitar Servicio](#caso-de-uso-solicitar-servicio)
-    * [Caso de Uso: Gestionar Reserva](#caso-de-uso-gestionar-reserva)
-    * [Caso de Uso: Gestionar Tipos de Habitación](#caso-de-uso-gestionar-tipos-de-habitacion)
-    * [Caso de Uso: Gestionar Habitaciones](#caso-de-uso-gestionar-habitaciones)
-    * [Caso de Uso: Procesar Check-In/Out](#caso-de-uso-procesar-check-inout)
-        * [Actores](#actores)
-        * [Tipo](#tipo)
-        * [Propósito](#proposito)
-        * [Resumen](#resumen)
-        * [Precondición](#precondicion)
-        * [Curso Básico](#curso-basico)
-        * [Check-Out](#check-out)
-        * [Caminos Alternativos](#caminos-alternativos)
-        * [Postcondición](#postcondicion)
-    * [Caso de Uso: Gestionar Pagos](#caso-de-uso-gestionar-pagos)
-    * [Caso de Uso: Controlar Accesos](#caso-de-uso-controlar-accesos)
-    * [Caso de Uso: Gestionar Limpieza](#caso-de-uso-gestionar-limpieza)
-    * [Caso de Uso: Generar Informes](#caso-de-uso-generar-informes)
-    * [Caso de Uso: Gestionar Consumos](#caso-de-uso-gestionar-consumos)
-    * [Caso de Uso: Monitorear Seguridad](#caso-de-uso-monitorear-seguridad)
+    * [CU-01: Consultar Disponibilidad](#cu-01-consultar-disponibilidad)
+    * [CU-02: Registrar Reserva](#cu-02-registrar-reserva)
+    * [CU-03: Procesar Pago](#cu-03-procesar-pago)
+    * [CU-04: Realizar Check-in](#cu-04-realizar-check-in)
+    * [CU-05: Acceso por QR en Puerta](#cu-05-acceso-por-qr-en-puerta)
+    * [CU-06: Pago de Consumo Extra](#cu-06-pago-de-consumo-extra)
 * [Modelo de Dominio del Sistema](#modelo-de-dominio-del-sistema)
 * [Caso de Uso del Sistema](#caso-de-uso-del-sistema)
 * [Diagrama de Actividad del Sistema](#diagrama-de-actividad-del-sistema)
@@ -332,43 +316,216 @@ A continuación se detalla la priorización y descripción de los casos de uso i
 
 ---
 
-### CASO DE USO: Solicitar Servicio
+### CASOS DE USO DETALLADOS
+
+---
+
+### CU-01: Consultar Disponibilidad
 
 #### Actores
-* **Primario:** Cliente
+* **Primario:** Cliente (Huésped)
 
 #### Tipo
-* Primario / Alta Prioridad
+* Primario / Esencial
 
 #### Propósito
-Permitir al cliente realizar la solicitud de servicios de alojamiento de forma digital o presencial, garantizando que el proceso de reserva y asignación de habitaciones se gestione sin conflictos de disponibilidad.
+Permitir al huésped conocer la disponibilidad y tarifas de las habitaciones para una fecha y horario específicos sin revelar detalles de la interfaz.
 
 #### Resumen
-El cliente realiza una solicitud de servicio, selecciona el tipo de habitación, verifica la disponibilidad, ingresa sus datos personales, confirma la solicitud y realiza el pago. El sistema gestiona el proceso para garantizar la reserva sin inconvenientes.
+El cliente ingresa la fecha, hora de ingreso y la categoría de habitación requerida. El sistema busca habitaciones libres que coincidan con los criterios y presenta las opciones disponibles con sus tarifas calculadas.
 
 #### Precondición
-* El cliente debe estar registrado en el sistema.
-* Los datos del cliente deben estar completos y actualizados.
+* El sistema debe contar con el catálogo de tipos de habitación y sus tarifas vigentes parametrizadas.
 
 #### Curso Básico de Acción
 
 | Actor (Cliente) | Respuestas del Sistema |
 |---|---|
-| **1.** El cliente inicia la solicitud introduciendo su nombre, cédula de identidad (CI), servicio solicitado, fecha, hora de entrada y cantidad de horas a utilizar. | **2.** El sistema verifica que no haya otra solicitud en conflicto y que el tipo de habitación exista, mostrando su información y características. |
-| **3.** El cliente confirma los datos de la solicitud. | **4.** El sistema verifica que el nombre y CI no presenten duplicidades conflictivas y solicita el pago de la tarifa correspondiente. |
-| **5.** El cliente realiza la transacción (QR/transferencia) e ingresa el comprobante de pago en el sistema. | **6.** El sistema verifica que el pago se haya realizado correctamente mediante la validación con la aplicación del banco. |
-| **7.** El cliente confirma la reserva. | **8.** El sistema verifica que la fecha y horario sigan disponibles, realiza la asignación física de la habitación, muestra la confirmación del servicio y efectúa la reserva. |
+| **1.** El cliente inicia la consulta indicando la fecha, la hora de ingreso estimada, la duración de la estadía y la categoría de habitación deseada. | **2.** El sistema busca habitaciones disponibles que cumplan con la categoría y el rango de tiempo especificado. |
+| **3.** El cliente solicita ver el detalle de las opciones encontradas. | **4.** El sistema presenta las habitaciones disponibles indicando sus características particulares (capacidad, servicios incluidos) y el precio total correspondiente. |
 
 #### Caminos Alternativos
-* **Paso 2 (Conflicto de Solicitud):** Si ya existe la solicitud, se procede a realizar modificaciones en el tiempo de uso o se procede a eliminar la reserva.
-* **Paso 3 (Inexistencia del Servicio):** Si el servicio no está disponible o no existe, vuelve a introducir el tipo de servicio o se sale del sistema.
-* **Paso 4 (Registro Existente):** Si la información del cliente existe, se muestra el historial del cliente.
-* **Paso 6 (Falla en el Pago):** Si el pago no se realiza correctamente, el cliente puede eliminar la transacción o volver a intentar realizar el pago.
-* **Paso 7 (Habitación No Disponible):** Si el horario y la habitación no están disponibles, el sistema notifica al cliente y permite intentar nuevamente o salir del sistema.
+* **Paso 2a (Sin habitaciones disponibles):** Si no existen habitaciones disponibles para el criterio ingresado, el sistema informa la falta de vacancia para ese período y sugiere opciones en horarios, fechas u otras categorías alternativas. El cliente puede modificar los criterios de búsqueda o finalizar la consulta.
 
 #### Postcondición
-* La solicitud queda registrada y confirmada en el sistema.
-* Los servicios solicitados están reservados y la habitación queda bloqueada para su uso.
+* Se muestran las opciones de habitaciones disponibles y sus precios calculados, sin alterar el estado de reserva o asignación de las habitaciones.
+
+---
+
+### CU-02: Registrar Reserva
+
+#### Actores
+* **Primario:** Cliente (Huésped)
+* **Alternativo:** Recepcionista (en representación del cliente)
+
+#### Tipo
+* Primario / Esencial
+
+#### Propósito
+Registrar formalmente el compromiso de reserva de una habitación específica para un huésped y asociarle un identificador único.
+
+#### Resumen
+El cliente (o el recepcionista) selecciona una habitación disponible en un horario definido y proporciona la información de identificación personal del huésped. El sistema registra la reserva en estado "PENDIENTE" y asocia temporalmente el recurso de la habitación.
+
+#### Precondición
+* Se debe haber verificado la disponibilidad de la habitación en el período solicitado (CU-01).
+
+#### Curso Básico de Acción
+
+| Actor (Cliente / Recepcionista) | Respuestas del Sistema |
+|---|---|
+| **1.** Solicita reservar la habitación seleccionada introduciendo los datos personales del huésped (nombre, cédula de identidad, celular y fecha de nacimiento) y la información de la estadía. | **2.** El sistema verifica que la habitación elegida continúe libre para el período seleccionado y valida los datos de registro ingresados. |
+| **3.** Confirma los datos de la reserva para su procesamiento. | **4.** El sistema registra la reserva en estado "PENDIENTE", asocia temporalmente la habitación y genera un identificador único de reserva. |
+
+#### Caminos Alternativos
+* **Paso 2a (Habitación ocupada en el proceso):** Si la habitación fue reservada por otro usuario durante el proceso, el sistema notifica el conflicto de disponibilidad, ofrece recursos alternativos equivalentes y permite reiniciar la selección.
+* **Paso 2b (Huésped ya registrado en la base de datos):** Si la cédula de identidad ya existe en el sistema, el sistema reconoce el registro previo, precarga los datos históricos correspondientes y asocia la nueva reserva a la cuenta del huésped.
+
+#### Postcondición
+* La reserva queda registrada en estado "PENDIENTE", y la habitación queda bloqueada temporalmente para el período correspondiente a la espera de la confirmación del pago.
+
+---
+
+### CU-03: Procesar Pago
+
+#### Actores
+* **Primario:** Cliente (Huésped)
+* **Secundario:** Recepcionista, API Externa de la Entidad Bancaria (BNB)
+
+#### Tipo
+* Primario / Esencial
+
+#### Propósito
+Formalizar la reserva mediante la validación, confirmación y registro del cobro financiero correspondiente.
+
+#### Resumen
+Con base en una reserva pendiente, el sistema presenta los métodos de pago autorizados (QR bancario o efectivo). Si se selecciona QR, interactúa con la API bancaria externa para generar el código dinámico y confirmar la transacción. Si se selecciona efectivo, registra la intención de pago para validación en recepción.
+
+#### Precondición
+* Debe existir una reserva registrada en estado "PENDIENTE" (CU-02).
+
+#### Curso Básico de Acción
+
+| Actor (Cliente / Recepcionista) | Respuestas del Sistema |
+|---|---|
+| **1.** El cliente solicita realizar el pago de su reserva pendiente seleccionando la opción de pago por QR bancario. | **2.** El sistema calcula el monto exacto, solicita la generación de un código QR dinámico a la API del BNB y presenta las instrucciones de pago. |
+| **3.** El cliente realiza la transferencia bancaria escaneando el código QR. | **4.** El sistema valida la recepción del pago consultando el estado de la transacción con la API bancaria del BNB. |
+| **5.** El cliente solicita la confirmación de la operación. | **6.** El sistema cambia el estado de la reserva a "PAGADA", genera un comprobante de pago con número correlativo único, calcula la hora límite de llegada (ventana de check-in de 30 minutos) y emite la confirmación. |
+
+#### Caminos Alternativos
+* **Paso 1a (Pago en Efectivo):** Si el cliente selecciona la opción de pago en efectivo, el sistema registra la transacción bajo este método, vincula la reserva al proceso de cobro físico en recepción y emite la confirmación pendiente de validación presencial, calculando la ventana de arribo de 30 minutos.
+* **Paso 4a (Falla del servicio bancario externo):** Si el sistema detecta que la API de la entidad bancaria externa no responde, notifica la falla de conexión al cliente y ofrece opciones alternativas como el pago presencial en recepción.
+* **Paso 4b (Código QR expirado):** Si transcurren más de 5 minutos sin verificar el pago, el sistema anula el código QR generado, notifica al cliente y permite generar un nuevo código de pago.
+
+#### Postcondición
+* La reserva cambia a estado "PAGADA" (o comprometida para pago presencial en recepción) y se emite un comprobante digital único con la hora del pago y la ventana de check-in calculada.
+
+---
+
+### CU-04: Realizar Check-in
+
+#### Actores
+* **Primario:** Recepcionista
+* **Secundario:** Personal de Limpieza
+
+#### Tipo
+* Primario / Esencial
+
+#### Propósito
+Registrar el ingreso físico del huésped, entregar los accesorios de la habitación y controlar el ciclo de vida del estado de la habitación (limpieza, mantenimiento y disponibilidad).
+
+#### Resumen
+El recepcionista verifica la reserva activa o procesa una llegada directa, realiza el cobro si corresponde y registra la asignación de los accesorios. Al finalizar el tiempo de estadía, se verifica la devolución de accesorios, se asigna la habitación al personal de limpieza y se libera tras el reporte final del personal.
+
+#### Precondición
+* La habitación seleccionada debe estar en un estado coherente con el paso del ciclo de vida (Disponible para ingreso, Ocupada para salida).
+
+#### Curso Básico de Acción
+
+| Actor (Recepcionista / Personal de Limpieza) | Respuestas del Sistema |
+|---|---|
+| **1.** El recepcionista busca la reserva activa del cliente (por nombre o identificador). | **2.** El sistema valida la reserva pagada dentro del tiempo límite de la ventana de ingreso y muestra los datos asociados. |
+| **3.** El recepcionista registra la entrega física de la tarjeta de acceso y los controles de los dispositivos al cliente. | **4.** El sistema registra la asignación de los accesorios, cambia el estado de la reserva a "ACTIVA" y actualiza la habitación a estado "OCUPADA". |
+| **5.** El recepcionista inicia el check-out tras la entrega de los accesorios por parte del cliente al finalizar el tiempo de estadía. | **6.** El sistema verifica la devolución conforme a los accesorios registrados y actualiza la habitación a estado "EN LIMPIEZA". |
+| **7.** El personal de limpieza reporta la finalización de los trabajos de desinfección e higiene de la habitación. | **8.** El sistema actualiza el registro de estado de la habitación a "DISPONIBLE", quedando libre para una nueva reserva. |
+
+#### Caminos Alternativos
+* **Paso 1a (Llegada directa sin reserva):** El recepcionista busca habitaciones disponibles de forma manual. El sistema muestra las opciones libres y permite registrar los datos del cliente. El recepcionista procesa el pago correspondiente (QR o efectivo) y continúa con la entrega de accesorios.
+* **Paso 2a (Pago en efectivo pendiente):** Si la reserva tiene pago pendiente en recepción, el recepcionista recibe y procesa el pago físico. El sistema valida el pago, actualiza la reserva a estado "PAGADA" y continúa con el flujo de check-in.
+* **Paso 5a (Exceso de tiempo de estadía):** Si el cliente excede el tiempo límite de ocupación establecido, el sistema calcula automáticamente el recargo adicional por concepto de tiempo extra. El recepcionista cobra la diferencia correspondiente y registra el pago del tiempo extra antes de procesar la salida.
+
+#### Postcondición
+* El ingreso y salida física quedan documentados, el estado de la habitación pasa por el flujo Ocupada $\rightarrow$ En Limpieza $\rightarrow$ Disponible, y el retorno de los accesorios queda validado.
+
+---
+
+### CU-05: Acceso por QR en Puerta
+
+#### Actores
+* **Primario:** Cliente (Huésped)
+* **Secundario:** Sistema de Control de Acceso
+
+#### Tipo
+* Primario / Esencial (Caja Negra)
+
+#### Propósito
+Permitir la apertura física autónoma de la habitación asignada al cliente mediante la validación electrónica de su comprobante de pago.
+
+#### Resumen
+El cliente presenta su código QR de acceso al sensor de la puerta asignada. El sistema valida el código, verifica que corresponda a esa habitación y esté en período de validez, desbloquea físicamente la puerta de la habitación y registra el ingreso del huésped.
+
+#### Precondición
+* El cliente debe poseer un código QR de acceso generado en una reserva pagada o activa (CU-03 / CU-04).
+
+#### Curso Básico de Acción
+
+| Actor (Cliente) | Respuestas del Sistema |
+|---|---|
+| **1.** El cliente presenta el código QR de acceso al lector electrónico de la puerta de la habitación. | **2.** El sistema captura la información codificada y la contrasta con el registro de reservas activas y pagadas. |
+| **3.** El cliente solicita el ingreso físico a la habitación. | **4.** El sistema valida que la reserva esté pagada o activa, corresponda a la habitación física solicitada y se encuentre en la ventana de tiempo de ingreso autorizada. |
+| **5.** El cliente empuja la puerta. | **6.** El sistema activa la apertura de la cerradura electrónica, registra la fecha y hora exacta del primer ingreso y actualiza el estado de la habitación a "OCUPADA". |
+
+#### Caminos Alternativos
+* **Paso 4a (Código QR inválido o incorrecto):** Si el código QR es inválido o no corresponde a la habitación en la que se está intentando el acceso, el sistema rechaza la solicitud de apertura y emite una alerta de error.
+* **Paso 4b (Expiración de la ventana de check-in):** Si la ventana de check-in de 30 minutos ha expirado sin registrar pago o llegada válida, el sistema deniega el acceso, emite un aviso de cancelación por incomparecencia (No-Show) y mantiene la puerta cerrada.
+
+#### Postcondición
+* Se registra el ingreso del huésped en el sistema, se desbloquea físicamente la puerta de la habitación y esta pasa a estado "OCUPADA".
+
+---
+
+### CU-06: Pago de Consumo Extra
+
+#### Actores
+* **Primario:** Cliente (Huésped)
+* **Secundario:** API Externa de la Entidad Bancaria (BNB)
+
+#### Tipo
+* Secundario / Esencial
+
+#### Propósito
+Gestionar y cobrar los productos y servicios adicionales consumidos por el huésped de forma directa y automatizada desde la habitación.
+
+#### Resumen
+Durante la estadía, el huésped selecciona productos adicionales disponibles en su habitación. El sistema registra el pedido en estado pendiente, genera un código QR por el total de los artículos seleccionados y, tras la confirmación de la transferencia bancaria externa, marca los consumos como pagados.
+
+#### Precondición
+* Debe haber un check-in registrado y la estadía del huésped debe estar en estado activo (CU-04 / CU-05).
+
+#### Curso Básico de Acción
+
+| Actor (Cliente) | Respuestas del Sistema |
+|---|---|
+| **1.** El cliente inicia la solicitud de consumo extra seleccionando productos del catálogo provisto en la habitación. | **2.** El sistema registra de manera temporal la lista de productos y calcula el monto total del pedido. |
+| **3.** El cliente confirma la solicitud de consumos. | **4.** El sistema solicita a la API del BNB la generación de un código QR por el monto total calculado. |
+| **5.** El cliente realiza el pago bancario correspondiente escaneando el código QR. | **6.** El sistema valida el pago con la API bancaria del BNB, cambia el estado del consumo a "PAGADO", registra la transacción y genera el comprobante digital de consumo. |
+
+#### Caminos Alternativos
+* **Paso 5a (Cancelación del pedido):** Si el cliente decide cancelar la solicitud de consumos antes de realizar el pago, el cliente anula la operación. El sistema limpia la lista temporal de productos y retorna la sesión al estado de espera.
+* **Paso 6a (Falla en el Pago / Expiración de QR):** Si la transacción del QR es rechazada o el tiempo de validez del código expira sin concretar el pago, el sistema notifica la falla de la transacción, anula el código QR y permite volver a generar el pedido.
+
+#### Postcondición
+* Los consumos adicionales quedan registrados como pagados en la base de datos, asociados a la reserva de la habitación.
 
 ---
 
