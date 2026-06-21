@@ -374,3 +374,25 @@ El cliente realiza una solicitud de servicio, selecciona el tipo de habitación,
 #### Postcondición
 * La solicitud queda registrada y confirmada en el sistema.
 * Los servicios solicitados están reservados y la habitación queda bloqueada para su uso.
+
+---
+
+#### Figura 1: Diagrama de Caso de Uso 1
+
+*(Insertar Diagrama de Caso de Uso aquí)*
+
+#### Figura 2: Diagrama de Clases de Interfaz
+
+*(Insertar Diagrama de Clases de Interfaz aquí)*
+
+#### Figura 3: Diagrama de Colaboración
+
+*(Insertar Diagrama de Colaboración aquí)*
+
+#### Figura 4: Diagrama de Secuencia
+
+*(Insertar Diagrama de Secuencia aquí)*
+
+#### Figura 5: Pantalla de Caso de Uso
+
+*(Insertar Pantalla de Caso de Uso aquí)*
