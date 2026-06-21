@@ -368,31 +368,31 @@ Cliente --> CU01
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-boundary DisponibilidadView <<boundary>> {
+class DisponibilidadView <<boundary>> {
   --
   +mostrarResultados(habitaciones: List)
   +mostrarMensajeError(mensaje: String)
 }
-control DisponibilidadController <<controller>> {
+class DisponibilidadController <<controller>> {
   -disponibilidadService: DisponibilidadService
   --
   +consultar(fecha: Date, hora: Time, tipo: String)
 }
-control DisponibilidadService <<control>> {
+interface DisponibilidadService <<control>> {
   --
   +buscarHabitacionesDisponibles(query: ConsultaQuery): List
 }
-control DisponibilidadServiceImpl <<control>> {
+class DisponibilidadServiceImpl <<control>> {
   -habitacionRepository: HabitacionRepository
   --
   +buscarHabitacionesDisponibles(query: ConsultaQuery): List
 }
-entity Habitacion <<entity>> {
+class Habitacion <<entity>> {
   -numero: String
   -estadoActual: String
   --
 }
-database HabitacionRepository <<database>> {
+interface HabitacionRepository <<database>> {
   --
   +findByEstado(estado: String): List
 }
@@ -529,32 +529,32 @@ Recepcionista --> CU02
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-boundary ReservaView <<boundary>> {
+class ReservaView <<boundary>> {
   --
   +capturarDatosHuesped()
   +mostrarConfirmacion(reservaId: Long)
 }
-control ReservaController <<controller>> {
+class ReservaController <<controller>> {
   -reservaService: ReservaService
   --
   +registrarReserva(request: RegistroRequest)
 }
-control ReservaService <<control>> {
+interface ReservaService <<control>> {
   --
   +crearReserva(command: RegistroCommand): Reserva
 }
-control ReservaServiceImpl <<control>> {
+class ReservaServiceImpl <<control>> {
   -reservaRepository: ReservaRepository
   --
   +crearReserva(command: RegistroCommand): Reserva
 }
-entity Reserva <<entity>> {
+class Reserva <<entity>> {
   -id: Long
   -estado: String
   -fechaCreacion: Date
   --
 }
-database ReservaRepository <<database>> {
+interface ReservaRepository <<database>> {
   --
   +save(r: Reserva): Reserva
 }
@@ -697,43 +697,43 @@ CU03 --> BNB
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-boundary PagoView <<boundary>> {
+class PagoView <<boundary>> {
   --
   +mostrarOpcionesPago()
   +mostrarQR(qrData: String)
   +mostrarExito(nroComprobante: String)
 }
-control PagoController <<controller>> {
+class PagoController <<controller>> {
   -procesarPagoService: ProcesarPagoService
   --
   +iniciarPago(reservaId: Long, metodo: String)
   +verificarPago(reservaId: Long)
 }
-control ProcesarPagoService <<control>> {
+interface ProcesarPagoService <<control>> {
   --
   +iniciarProcesoPago(req: IniciarPagoRequest): PagoResponse
   +verificarEstadoPago(reservaId: Long): PagoResponse
 }
-control ProcesarPagoServiceImpl <<control>> {
+class ProcesarPagoServiceImpl <<control>> {
   -reservaRepository: ReservaRepository
   -bnbPaymentPort: BnbPaymentPort
   --
   +iniciarProcesoPago(req: IniciarPagoRequest): PagoResponse
   +verificarEstadoPago(reservaId: Long): PagoResponse
 }
-control BnbPaymentPort <<control>> {
+interface BnbPaymentPort <<control>> {
   --
   +generarQR(monto: Double, glosa: String, id: Long): String
   +consultarEstado(qrId: String): String
 }
-entity Pago <<entity>> {
+class Pago <<entity>> {
   -id: Long
   -monto: Double
   -metodo: String
   -estado: String
   --
 }
-database ReservaRepository <<database>> {
+interface ReservaRepository <<database>> {
   --
   +findById(id: Long): Reserva
   +save(r: Reserva): Reserva
@@ -912,26 +912,26 @@ Camarera --> CU04
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-boundary RecepcionView <<boundary>> {
+class RecepcionView <<boundary>> {
   --
   +mostrarTableroHabitaciones()
   +mostrarFormularioCheckIn()
   +notificarEstado(habitacionId: Long, estado: String)
 }
-control RecepcionController <<controller>> {
+class RecepcionController <<controller>> {
   -checkInService: CheckInService
   --
   +registrarIngreso(reservaId: Long, accesorios: List)
   +registrarSalida(reservaId: Long)
   +confirmarLimpieza(habitacionId: Long)
 }
-control CheckInService <<control>> {
+interface CheckInService <<control>> {
   --
   +procesarCheckIn(reservaId: Long, accesorios: List)
   +procesarCheckOut(reservaId: Long)
   +actualizarEstadoLimpieza(habitacionId: Long, camarera: String)
 }
-control CheckInServiceImpl <<control>> {
+class CheckInServiceImpl <<control>> {
   -habitacionRepository: HabitacionRepository
   -reservaRepository: ReservaRepository
   --
@@ -939,17 +939,17 @@ control CheckInServiceImpl <<control>> {
   +procesarCheckOut(reservaId: Long)
   +actualizarEstadoLimpieza(habitacionId: Long, camarera: String)
 }
-entity Habitacion <<entity>> {
+class Habitacion <<entity>> {
   -id: Long
   -numero: String
   -estadoActual: String
   --
 }
-database HabitacionRepository <<database>> {
+interface HabitacionRepository <<database>> {
   --
   +actualizarEstado(id: Long, estado: String)
 }
-database ReservaRepository <<database>> {
+interface ReservaRepository <<database>> {
   --
   +findById(id: Long): Reserva
   +save(r: Reserva): Reserva
@@ -1102,38 +1102,38 @@ CU05 --> Sistema
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-boundary PuertaView <<boundary>> {
+class PuertaView <<boundary>> {
   --
   +capturarQR()
   +mostrarAccesoAutorizado(mensaje: String)
   +mostrarAccesoDenegado(mensaje: String)
 }
-control PuertaController <<controller>> {
+class PuertaController <<controller>> {
   -puertaService: PuertaService
   --
   +validarAccesoQR(codigo: String, habitacionId: Long)
 }
-control PuertaService <<control>> {
+interface PuertaService <<control>> {
   --
   +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
 }
-control PuertaServiceImpl <<control>> {
+class PuertaServiceImpl <<control>> {
   -reservaRepository: ReservaRepository
   -habitacionRepository: HabitacionRepository
   --
   +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
 }
-entity Reserva <<entity>> {
+class Reserva <<entity>> {
   -codigoQR: String
   -estado: String
   --
 }
-database ReservaRepository <<database>> {
+interface ReservaRepository <<database>> {
   --
   +findByCodigo(codigo: String): Reserva
   +save(r: Reserva): Reserva
 }
-database HabitacionRepository <<database>> {
+interface HabitacionRepository <<database>> {
   --
   +actualizarEstado(id: Long, estado: String)
 }
@@ -1292,43 +1292,43 @@ CU06 --> BNB
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-boundary TabletView <<boundary>> {
+class TabletView <<boundary>> {
   --
   +mostrarMenuConsumos()
   +mostrarQRConsumo(qrData: String)
   +confirmarPagoConsumo()
 }
-control ConsumoController <<controller>> {
+class ConsumoController <<controller>> {
   -consumoService: ConsumoExtraService
   --
   +registrarPedido(reservaId: Long, items: List)
   +verificarPagoConsumo(consumoId: Long)
 }
-control ConsumoExtraService <<control>> {
+interface ConsumoExtraService <<control>> {
   --
   +crearConsumoPendiente(reservaId: Long, items: List): ConsumoResponse
   +confirmarPagoConsumo(consumoId: Long): ConsumoResponse
 }
-control ConsumoExtraServiceImpl <<control>> {
+class ConsumoExtraServiceImpl <<control>> {
   -consumoRepository: ConsumoRepository
   -bnbPaymentPort: BnbPaymentPort
   --
   +crearConsumoPendiente(reservaId: Long, items: List): ConsumoResponse
   +confirmarPagoConsumo(consumoId: Long): ConsumoResponse
 }
-control BnbPaymentPort <<control>> {
+interface BnbPaymentPort <<control>> {
   --
   +generarQR(total: Double, glosa: String, id: Long): String
   +consultarEstado(qrId: String): String
 }
-entity ConsumoExtra <<entity>> {
+class ConsumoExtra <<entity>> {
   -id: Long
   -itemsJson: String
   -total: Double
   -estado: String
   --
 }
-database ConsumoRepository <<database>> {
+interface ConsumoRepository <<database>> {
   --
   +save(c: ConsumoExtra): ConsumoExtra
   +findById(id: Long): ConsumoExtra
