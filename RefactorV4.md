@@ -319,21 +319,16 @@ El sistema es principalmente un **TPS (Transaction Processing System - Sistema d
 
 ## 12. UML
 
-A continuación se detalla la priorización y descripción de los casos de uso identificados para el sistema:
+A continuación se detalla la priorización y descripción de los casos de uso identificados e implementados en el proyecto:
 
-| Caso de Uso | Actor | Prioridad | Descripción |
-|---|---|---|---|
-| **Contactar Establecimiento** | Sistema | Alta | El sistema gestiona las solicitudes de información entrantes por diferentes canales (redes sociales, presencial). |
-| **Solicitar Servicio** | Cliente | Alta | Permite a los clientes solicitar habitaciones y servicios, verificar su disponibilidad y procesar los pagos correspondientes. |
-| **Gestionar Reservas** | Recepcionista | Alta | Administra el flujo completo del proceso de reserva de habitaciones y la emisión de confirmaciones. |
-| **Gestionar Tipo de Habitaciones** | Administrador | Alta | Permite configurar los tipos de habitaciones del motel, definiendo sus características y tarifas por hora. |
-| **Gestionar Habitaciones** | Recepcionista | Alta | Controla y visualiza el estado físico y de disponibilidad de las habitaciones en tiempo real. |
-| **Gestionar Pagos** | Recepcionista | Alta | Procesa las transacciones de pago de los clientes y genera los comprobantes correspondientes. |
-| **Controlar Accesos** | Recepcionista | Alta | Administra la programación, asignación y devolución de tarjetas magnéticas y accesorios. |
-| **Gestionar Limpieza** | Personal de Limpieza | Alta | Coordina las tareas de higienización de habitaciones y reporta la liberación de las mismas al encargado. |
-| **Generar Informes** | Administrador | Media | Produce los reportes financieros y operativos globales para la toma de decisiones. |
-| **Gestionar Consumos** | Recepcionista | Media | Controla el consumo de bebidas y productos adicionales dentro y fuera de la habitación. |
-| **Monitorear Seguridad** | Personal de Seguridad | Alta | Supervisa los accesos y áreas comunes, gestionando incidentes o situaciones de conflicto. |
+| Código | Caso de Uso | Actor(es) | Prioridad | Descripción |
+|---|---|---|---|---|
+| **CU-01** | **Consultar Disponibilidad** | Cliente (Huésped) | Alta | Permite verificar la disponibilidad de habitaciones según la fecha, el horario y la categoría seleccionada de forma autónoma. |
+| **CU-02** | **Registrar Reserva** | Cliente (Huésped) / Recepcionista | Alta | Captura la información del cliente y registra la reserva en estado "PENDIENTE" vinculando la habitación seleccionada. |
+| **CU-03** | **Procesar Pago** | Cliente (Huésped) / Recepcionista / API Externa (BNB) | Alta | Procesa la transacción financiera mediante código QR dinámico integrado con el BNB o en efectivo, actualizando el estado de la reserva a "PAGADA". |
+| **CU-04** | **Realizar Check-in** | Recepcionista / Personal de Limpieza | Alta | Administra el ingreso físico del cliente, la entrega de accesorios, el estado de las habitaciones en tiempo real y la posterior liberación tras limpieza. |
+| **CU-05** | **Acceso por QR en Puerta** | Cliente (Huésped) / Sistema (Tablet en Puerta) | Alta | Valida de manera autónoma el código QR del huésped en la puerta de la habitación asignada, registrando el ingreso y marcándola como ocupada. |
+| **CU-06** | **Pago de Consumo Extra** | Cliente (Huésped) | Media | Habilita al huésped a consumir productos y servicios adicionales dentro de la habitación, procesando el cobro mediante QR integrado. |
 
 ---
 
