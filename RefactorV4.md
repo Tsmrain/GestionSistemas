@@ -368,31 +368,31 @@ Cliente --> CU01
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class DisponibilidadView <<boundary>> {
+boundary DisponibilidadView <<boundary>> {
   --
   +mostrarResultados(habitaciones: List)
   +mostrarMensajeError(mensaje: String)
 }
-class DisponibilidadController <<controller>> {
+control DisponibilidadController <<controller>> {
   -disponibilidadService: DisponibilidadService
   --
   +consultar(fecha: Date, hora: Time, tipo: String)
 }
-interface DisponibilidadService <<control>> {
+control DisponibilidadService <<control>> {
   --
   +buscarHabitacionesDisponibles(query: ConsultaQuery): List
 }
-class DisponibilidadServiceImpl <<control>> {
+control DisponibilidadServiceImpl <<control>> {
   -habitacionRepository: HabitacionRepository
   --
   +buscarHabitacionesDisponibles(query: ConsultaQuery): List
 }
-class Habitacion <<entity>> {
+entity Habitacion <<entity>> {
   -numero: String
   -estadoActual: String
   --
 }
-interface HabitacionRepository <<database>> {
+database HabitacionRepository <<database>> {
   --
   +findByEstado(estado: String): List
 }
@@ -411,10 +411,10 @@ note top of DisponibilidadServiceImpl : GRASP Information Expert
 @startuml
 autonumber
 actor Cliente
-participant "<u>:DisponibilidadView</u>" as View
-participant "<u>:DisponibilidadController</u>" as Ctrl
-participant "<u>:DisponibilidadService</u>" as Serv
-participant "<u>:HabitacionRepository</u>" as Repo
+boundary "<u>:DisponibilidadView</u>" as View
+control "<u>:DisponibilidadController</u>" as Ctrl
+control "<u>:DisponibilidadService</u>" as Serv
+database "<u>:HabitacionRepository</u>" as Repo
 
 Cliente -> View : indicarCriterios(fecha, hora, tipo)
 activate View
@@ -439,11 +439,11 @@ deactivate View
 ```plantuml
 @startuml
 left to right direction
-object "<u>:Cliente</u>" as Cliente
-object "<u>:DisponibilidadView</u>" as View
-object "<u>:DisponibilidadController</u>" as Ctrl
-object "<u>:DisponibilidadService</u>" as Serv
-object "<u>:HabitacionRepository</u>" as Repo
+actor Cliente
+boundary "<u>:DisponibilidadView</u>" as View
+control "<u>:DisponibilidadController</u>" as Ctrl
+control "<u>:DisponibilidadService</u>" as Serv
+database "<u>:HabitacionRepository</u>" as Repo
 
 Cliente --> View : 1: indicarCriterios(fecha, hora, tipo)
 View --> Ctrl : 1.1: consultar(fecha, hora, tipo)
@@ -529,32 +529,32 @@ Recepcionista --> CU02
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class ReservaView <<boundary>> {
+boundary ReservaView <<boundary>> {
   --
   +capturarDatosHuesped()
   +mostrarConfirmacion(reservaId: Long)
 }
-class ReservaController <<controller>> {
+control ReservaController <<controller>> {
   -reservaService: ReservaService
   --
   +registrarReserva(request: RegistroRequest)
 }
-interface ReservaService <<control>> {
+control ReservaService <<control>> {
   --
   +crearReserva(command: RegistroCommand): Reserva
 }
-class ReservaServiceImpl <<control>> {
+control ReservaServiceImpl <<control>> {
   -reservaRepository: ReservaRepository
   --
   +crearReserva(command: RegistroCommand): Reserva
 }
-class Reserva <<entity>> {
+entity Reserva <<entity>> {
   -id: Long
   -estado: String
   -fechaCreacion: Date
   --
 }
-interface ReservaRepository <<database>> {
+database ReservaRepository <<database>> {
   --
   +save(r: Reserva): Reserva
 }
@@ -573,10 +573,10 @@ note top of ReservaServiceImpl : GRASP Creator (creates Reserva)
 @startuml
 autonumber
 actor Actor as "Cliente / Recepcionista"
-participant "<u>:ReservaView</u>" as View
-participant "<u>:ReservaController</u>" as Ctrl
-participant "<u>:ReservaService</u>" as Serv
-participant "<u>:ReservaRepository</u>" as Repo
+boundary "<u>:ReservaView</u>" as View
+control "<u>:ReservaController</u>" as Ctrl
+control "<u>:ReservaService</u>" as Serv
+database "<u>:ReservaRepository</u>" as Repo
 
 Actor -> View : ingresarDatosHuesped(nombre, ci, celular, fechaNacimiento)
 activate View
@@ -584,7 +584,7 @@ View -> Ctrl : registrarReserva(request)
 activate Ctrl
 Ctrl -> Serv : crearReserva(command)
 activate Serv
-create participant "<u>r:Reserva</u>" as Reserva
+create entity "<u>r:Reserva</u>" as Reserva
 Serv -> Reserva : <<create>>
 Serv -> Repo : save(r)
 activate Repo
@@ -603,11 +603,11 @@ deactivate View
 ```plantuml
 @startuml
 left to right direction
-object "<u>:Actor</u>" as Actor
-object "<u>:ReservaView</u>" as View
-object "<u>:ReservaController</u>" as Ctrl
-object "<u>:ReservaService</u>" as Serv
-object "<u>:ReservaRepository</u>" as Repo
+actor Actor as "Cliente / Recepcionista"
+boundary "<u>:ReservaView</u>" as View
+control "<u>:ReservaController</u>" as Ctrl
+control "<u>:ReservaService</u>" as Serv
+database "<u>:ReservaRepository</u>" as Repo
 
 Actor --> View : 1: ingresarDatosHuesped(...)
 View --> Ctrl : 1.1: registrarReserva(request)
@@ -697,43 +697,43 @@ CU03 --> BNB
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class PagoView <<boundary>> {
+boundary PagoView <<boundary>> {
   --
   +mostrarOpcionesPago()
   +mostrarQR(qrData: String)
   +mostrarExito(nroComprobante: String)
 }
-class PagoController <<controller>> {
+control PagoController <<controller>> {
   -procesarPagoService: ProcesarPagoService
   --
   +iniciarPago(reservaId: Long, metodo: String)
   +verificarPago(reservaId: Long)
 }
-interface ProcesarPagoService <<control>> {
+control ProcesarPagoService <<control>> {
   --
   +iniciarProcesoPago(req: IniciarPagoRequest): PagoResponse
   +verificarEstadoPago(reservaId: Long): PagoResponse
 }
-class ProcesarPagoServiceImpl <<control>> {
+control ProcesarPagoServiceImpl <<control>> {
   -reservaRepository: ReservaRepository
   -bnbPaymentPort: BnbPaymentPort
   --
   +iniciarProcesoPago(req: IniciarPagoRequest): PagoResponse
   +verificarEstadoPago(reservaId: Long): PagoResponse
 }
-interface BnbPaymentPort <<control>> {
+control BnbPaymentPort <<control>> {
   --
   +generarQR(monto: Double, glosa: String, id: Long): String
   +consultarEstado(qrId: String): String
 }
-class Pago <<entity>> {
+entity Pago <<entity>> {
   -id: Long
   -monto: Double
   -metodo: String
   -estado: String
   --
 }
-interface ReservaRepository <<database>> {
+database ReservaRepository <<database>> {
   --
   +findById(id: Long): Reserva
   +save(r: Reserva): Reserva
@@ -753,11 +753,11 @@ note top of PagoController : GRASP Controller
 @startuml
 autonumber
 actor Actor as "Cliente / Recepcionista"
-participant "<u>:PagoView</u>" as View
-participant "<u>:PagoController</u>" as Ctrl
-participant "<u>:ProcesarPagoService</u>" as Serv
-participant "<u>:BnbPaymentPort</u>" as BNB <<interface>>
-participant "<u>:ReservaRepository</u>" as Repo
+boundary "<u>:PagoView</u>" as View
+control "<u>:PagoController</u>" as Ctrl
+control "<u>:ProcesarPagoService</u>" as Serv
+control "<u>:BnbPaymentPort</u>" as BNB <<interface>>
+database "<u>:ReservaRepository</u>" as Repo
 
 Actor -> View : seleccionarMetodoPago("QR_BNB")
 activate View
@@ -769,7 +769,7 @@ Serv -> BNB : generarQR(monto, glosa, reservaId)
 activate BNB
 BNB --> Serv : qrData
 deactivate BNB
-create participant "<u>q:QrCode</u>" as QR
+create entity "<u>q:QrCode</u>" as QR
 Serv -> QR : <<create>>(qrData)
 Serv --> Ctrl : qrData
 deactivate Serv
@@ -809,12 +809,12 @@ deactivate View
 ```plantuml
 @startuml
 left to right direction
-object "<u>:Actor</u>" as Actor
-object "<u>:PagoView</u>" as View
-object "<u>:PagoController</u>" as Ctrl
-object "<u>:ProcesarPagoService</u>" as Serv
-object "<u>:BnbPaymentPort</u>" as BNB
-object "<u>:ReservaRepository</u>" as Repo
+actor Actor as "Cliente / Recepcionista"
+boundary "<u>:PagoView</u>" as View
+control "<u>:PagoController</u>" as Ctrl
+control "<u>:ProcesarPagoService</u>" as Serv
+control "<u>:BnbPaymentPort</u>" as BNB
+database "<u>:ReservaRepository</u>" as Repo
 
 Actor --> View : 1: seleccionarMetodoPago("QR_BNB")
 View --> Ctrl : 1.1: iniciarPago(reservaId, "QR_BNB")
@@ -912,26 +912,26 @@ Camarera --> CU04
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class RecepcionView <<boundary>> {
+boundary RecepcionView <<boundary>> {
   --
   +mostrarTableroHabitaciones()
   +mostrarFormularioCheckIn()
   +notificarEstado(habitacionId: Long, estado: String)
 }
-class RecepcionController <<controller>> {
+control RecepcionController <<controller>> {
   -checkInService: CheckInService
   --
   +registrarIngreso(reservaId: Long, accesorios: List)
   +registrarSalida(reservaId: Long)
   +confirmarLimpieza(habitacionId: Long)
 }
-interface CheckInService <<control>> {
+control CheckInService <<control>> {
   --
   +procesarCheckIn(reservaId: Long, accesorios: List)
   +procesarCheckOut(reservaId: Long)
   +actualizarEstadoLimpieza(habitacionId: Long, camarera: String)
 }
-class CheckInServiceImpl <<control>> {
+control CheckInServiceImpl <<control>> {
   -habitacionRepository: HabitacionRepository
   -reservaRepository: ReservaRepository
   --
@@ -939,17 +939,17 @@ class CheckInServiceImpl <<control>> {
   +procesarCheckOut(reservaId: Long)
   +actualizarEstadoLimpieza(habitacionId: Long, camarera: String)
 }
-class Habitacion <<entity>> {
+entity Habitacion <<entity>> {
   -id: Long
   -numero: String
   -estadoActual: String
   --
 }
-interface HabitacionRepository <<database>> {
+database HabitacionRepository <<database>> {
   --
   +actualizarEstado(id: Long, estado: String)
 }
-interface ReservaRepository <<database>> {
+database ReservaRepository <<database>> {
   --
   +findById(id: Long): Reserva
   +save(r: Reserva): Reserva
@@ -969,11 +969,11 @@ note top of RecepcionController : GRASP Controller
 @startuml
 autonumber
 actor Recepcionista
-participant "<u>:RecepcionView</u>" as View
-participant "<u>:RecepcionController</u>" as Ctrl
-participant "<u>:CheckInService</u>" as Serv
-participant "<u>:HabitacionRepository</u>" as Repo
-participant "<u>:ReservaRepository</u>" as ResRepo
+boundary "<u>:RecepcionView</u>" as View
+control "<u>:RecepcionController</u>" as Ctrl
+control "<u>:CheckInService</u>" as Serv
+database "<u>:HabitacionRepository</u>" as Repo
+database "<u>:ReservaRepository</u>" as ResRepo
 
 Recepcionista -> View : buscarReserva(codigo)
 activate View
@@ -1006,12 +1006,12 @@ deactivate View
 ```plantuml
 @startuml
 left to right direction
-object "<u>:Recepcionista</u>" as Recepcionista
-object "<u>:RecepcionView</u>" as View
-object "<u>:RecepcionController</u>" as Ctrl
-object "<u>:CheckInService</u>" as Serv
-object "<u>:HabitacionRepository</u>" as Repo
-object "<u>:ReservaRepository</u>" as ResRepo
+actor Recepcionista
+boundary "<u>:RecepcionView</u>" as View
+control "<u>:RecepcionController</u>" as Ctrl
+control "<u>:CheckInService</u>" as Serv
+database "<u>:HabitacionRepository</u>" as Repo
+database "<u>:ReservaRepository</u>" as ResRepo
 
 Recepcionista --> View : 1: buscarReserva(codigo)
 View --> Ctrl : 1.1: registrarIngreso(reservaId, accesorios)
@@ -1102,38 +1102,38 @@ CU05 --> Sistema
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class PuertaView <<boundary>> {
+boundary PuertaView <<boundary>> {
   --
   +capturarQR()
   +mostrarAccesoAutorizado(mensaje: String)
   +mostrarAccesoDenegado(mensaje: String)
 }
-class PuertaController <<controller>> {
+control PuertaController <<controller>> {
   -puertaService: PuertaService
   --
   +validarAccesoQR(codigo: String, habitacionId: Long)
 }
-interface PuertaService <<control>> {
+control PuertaService <<control>> {
   --
   +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
 }
-class PuertaServiceImpl <<control>> {
+control PuertaServiceImpl <<control>> {
   -reservaRepository: ReservaRepository
   -habitacionRepository: HabitacionRepository
   --
   +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
 }
-class Reserva <<entity>> {
+entity Reserva <<entity>> {
   -codigoQR: String
   -estado: String
   --
 }
-interface ReservaRepository <<database>> {
+database ReservaRepository <<database>> {
   --
   +findByCodigo(codigo: String): Reserva
   +save(r: Reserva): Reserva
 }
-interface HabitacionRepository <<database>> {
+database HabitacionRepository <<database>> {
   --
   +actualizarEstado(id: Long, estado: String)
 }
@@ -1152,11 +1152,11 @@ note top of PuertaController : GRASP Controller
 @startuml
 autonumber
 actor Cliente
-participant "<u>:PuertaView</u>" as View
-participant "<u>:PuertaController</u>" as Ctrl
-participant "<u>:PuertaService</u>" as Serv
-participant "<u>:ReservaRepository</u>" as ResRepo
-participant "<u>:HabitacionRepository</u>" as HabRepo
+boundary "<u>:PuertaView</u>" as View
+control "<u>:PuertaController</u>" as Ctrl
+control "<u>:PuertaService</u>" as Serv
+database "<u>:ReservaRepository</u>" as ResRepo
+database "<u>:HabitacionRepository</u>" as HabRepo
 
 Cliente -> View : escanearQR(codigo)
 activate View
@@ -1196,12 +1196,12 @@ deactivate View
 ```plantuml
 @startuml
 left to right direction
-object "<u>:Cliente</u>" as Cliente
-object "<u>:PuertaView</u>" as View
-object "<u>:PuertaController</u>" as Ctrl
-object "<u>:PuertaService</u>" as Serv
-object "<u>:ReservaRepository</u>" as ResRepo
-object "<u>:HabitacionRepository</u>" as HabRepo
+actor Cliente
+boundary "<u>:PuertaView</u>" as View
+control "<u>:PuertaController</u>" as Ctrl
+control "<u>:PuertaService</u>" as Serv
+database "<u>:ReservaRepository</u>" as ResRepo
+database "<u>:HabitacionRepository</u>" as HabRepo
 
 Cliente --> View : 1: escanearQR(codigo)
 View --> Ctrl : 1.1: validarAccesoQR(codigo, habitacionId)
@@ -1292,43 +1292,43 @@ CU06 --> BNB
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class TabletView <<boundary>> {
+boundary TabletView <<boundary>> {
   --
   +mostrarMenuConsumos()
   +mostrarQRConsumo(qrData: String)
   +confirmarPagoConsumo()
 }
-class ConsumoController <<controller>> {
+control ConsumoController <<controller>> {
   -consumoService: ConsumoExtraService
   --
   +registrarPedido(reservaId: Long, items: List)
   +verificarPagoConsumo(consumoId: Long)
 }
-interface ConsumoExtraService <<control>> {
+control ConsumoExtraService <<control>> {
   --
   +crearConsumoPendiente(reservaId: Long, items: List): ConsumoResponse
   +confirmarPagoConsumo(consumoId: Long): ConsumoResponse
 }
-class ConsumoExtraServiceImpl <<control>> {
+control ConsumoExtraServiceImpl <<control>> {
   -consumoRepository: ConsumoRepository
   -bnbPaymentPort: BnbPaymentPort
   --
   +crearConsumoPendiente(reservaId: Long, items: List): ConsumoResponse
   +confirmarPagoConsumo(consumoId: Long): ConsumoResponse
 }
-interface BnbPaymentPort <<control>> {
+control BnbPaymentPort <<control>> {
   --
   +generarQR(total: Double, glosa: String, id: Long): String
   +consultarEstado(qrId: String): String
 }
-class ConsumoExtra <<entity>> {
+entity ConsumoExtra <<entity>> {
   -id: Long
   -itemsJson: String
   -total: Double
   -estado: String
   --
 }
-interface ConsumoRepository <<database>> {
+database ConsumoRepository <<database>> {
   --
   +save(c: ConsumoExtra): ConsumoExtra
   +findById(id: Long): ConsumoExtra
@@ -1348,11 +1348,11 @@ note top of ConsumoController : GRASP Controller
 @startuml
 autonumber
 actor Cliente
-participant "<u>:TabletView</u>" as View
-participant "<u>:ConsumoController</u>" as Ctrl
-participant "<u>:ConsumoExtraService</u>" as Serv
-participant "<u>:BnbPaymentPort</u>" as BNB <<interface>>
-participant "<u>:ConsumoRepository</u>" as Repo
+boundary "<u>:TabletView</u>" as View
+control "<u>:ConsumoController</u>" as Ctrl
+control "<u>:ConsumoExtraService</u>" as Serv
+control "<u>:BnbPaymentPort</u>" as BNB <<interface>>
+database "<u>:ConsumoRepository</u>" as Repo
 
 Cliente -> View : confirmarPedido(items)
 activate View
@@ -1364,7 +1364,7 @@ Serv -> BNB : generarQR(total, "Consumos Extra", reservaId)
 activate BNB
 BNB --> Serv : qrData
 deactivate BNB
-create participant "<u>q:QrCode</u>" as QR
+create entity "<u>q:QrCode</u>" as QR
 Serv -> QR : <<create>>(qrData)
 Serv -> Repo : save(ConsumoExtra)
 activate Repo
@@ -1406,12 +1406,12 @@ deactivate View
 ```plantuml
 @startuml
 left to right direction
-object "<u>:Cliente</u>" as Cliente
-object "<u>:TabletView</u>" as View
-object "<u>:ConsumoController</u>" as Ctrl
-object "<u>:ConsumoExtraService</u>" as Serv
-object "<u>:BnbPaymentPort</u>" as BNB
-object "<u>:ConsumoRepository</u>" as Repo
+actor Cliente
+boundary "<u>:TabletView</u>" as View
+control "<u>:ConsumoController</u>" as Ctrl
+control "<u>:ConsumoExtraService</u>" as Serv
+control "<u>:BnbPaymentPort</u>" as BNB
+database "<u>:ConsumoRepository</u>" as Repo
 
 Cliente --> View : 1: confirmarPedido(items)
 View --> Ctrl : 1.1: registrarPedido(reservaId, items)
