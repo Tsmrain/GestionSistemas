@@ -356,7 +356,8 @@ El cliente ingresa la fecha, hora de ingreso y la categoría de habitación requ
 ```plantuml
 @startuml
 left to right direction
-actor "Cliente (Huésped)" as Cliente
+skinparam actorStyle hollow
+actor "Cliente" as Cliente <<actor>>
 rectangle "Sistema Residencial" {
   usecase "CU-01: Consultar Disponibilidad" as CU01
 }
@@ -367,44 +368,70 @@ Cliente --> CU01
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class DisponibilidadView {
-  +mostrarResultados(habitaciones)
-  +mostrarMensajeError(mensaje)
+class DisponibilidadView <<boundary>> {
+  --
+  +mostrarResultados(habitaciones: List)
+  +mostrarMensajeError(mensaje: String)
 }
-class DisponibilidadController {
-  -disponibilidadService
-  +consultar(fecha, hora, tipo)
+class DisponibilidadController <<controller>> {
+  -disponibilidadService: DisponibilidadService
+  --
+  +consultar(fecha: Date, hora: Time, tipo: String)
 }
-interface DisponibilidadService {
-  +buscarHabitacionesDisponibles(query)
+interface DisponibilidadService <<control>> {
+  --
+  +buscarHabitacionesDisponibles(query: ConsultaQuery): List
 }
-class Habitacion {
-  -numero
-  -estadoActual
+class DisponibilidadServiceImpl <<control>> {
+  -habitacionRepository: HabitacionRepository
+  --
+  +buscarHabitacionesDisponibles(query: ConsultaQuery): List
 }
-DisponibilidadView ..> DisponibilidadController : eventos
+class Habitacion <<entity>> {
+  -numero: String
+  -estadoActual: String
+  --
+}
+interface HabitacionRepository <<database>> {
+  --
+  +findByEstado(estado: String): List
+}
+DisponibilidadView ..> DisponibilidadController : <<use>>
 DisponibilidadController --> DisponibilidadService
-DisponibilidadService ..> Habitacion
+DisponibilidadServiceImpl ..|> DisponibilidadService
+DisponibilidadServiceImpl --> HabitacionRepository
+HabitacionRepository ..> Habitacion : <<use>>
+note top of DisponibilidadController : GRASP Controller
+note top of DisponibilidadServiceImpl : GRASP Information Expert
 @enduml
 ```
 
 ###### 3. Diagrama de Secuencia
 ```plantuml
 @startuml
+autonumber
 actor Cliente
-participant "DisponibilidadView" as View
-participant "DisponibilidadController" as Ctrl
-participant "DisponibilidadService" as Serv
-participant "HabitacionRepository" as Repo
+participant "<u>:DisponibilidadView</u>" as View
+participant "<u>:DisponibilidadController</u>" as Ctrl
+participant "<u>:DisponibilidadService</u>" as Serv
+participant "<u>:HabitacionRepository</u>" as Repo
 
-Cliente ->> View: Ingresa fecha, hora y tipo
-View ->> Ctrl: consultar(fecha, hora, tipo)
-Ctrl ->> Serv: buscarHabitacionesDisponibles(query)
-Serv ->> Repo: findByEstado("Disponible")
-Repo -->> Serv: lista de habitaciones
-Serv -->> Ctrl: lista filtrada
-Ctrl -->> View: renderizar resultados
-View -->> Cliente: muestra habitaciones disponibles
+Cliente -> View : indicarCriterios(fecha, hora, tipo)
+activate View
+View -> Ctrl : consultar(fecha, hora, tipo)
+activate Ctrl
+Ctrl -> Serv : buscarHabitacionesDisponibles(query)
+activate Serv
+Serv -> Repo : findByEstado("Disponible")
+activate Repo
+Repo --> Serv : habitaciones
+deactivate Repo
+Serv --> Ctrl : habitacionesFiltradas
+deactivate Serv
+Ctrl --> View : mostrarResultados(habitaciones)
+deactivate Ctrl
+View --> Cliente : visualizar resultados
+deactivate View
 @enduml
 ```
 
@@ -412,38 +439,39 @@ View -->> Cliente: muestra habitaciones disponibles
 ```plantuml
 @startuml
 left to right direction
-object "1: Cliente" as Cliente
-object "2: DisponibilidadView" as View
-object "3: DisponibilidadController" as Ctrl
-object "4: DisponibilidadService" as Serv
-object "5: HabitacionRepository" as Repo
+object "<u>:Cliente</u>" as Cliente
+object "<u>:DisponibilidadView</u>" as View
+object "<u>:DisponibilidadController</u>" as Ctrl
+object "<u>:DisponibilidadService</u>" as Serv
+object "<u>:HabitacionRepository</u>" as Repo
 
-Cliente --> View : "1: ingresarCriterios()"
-View --> Ctrl : "2: consultar()"
-Ctrl --> Serv : "3: buscarHabitacionesDisponibles()"
-Serv --> Repo : "4: findByEstado()"
+Cliente --> View : 1: indicarCriterios(fecha, hora, tipo)
+View --> Ctrl : 1.1: consultar(fecha, hora, tipo)
+Ctrl --> Serv : 1.1.1: buscarHabitacionesDisponibles(query)
+Serv --> Repo : 1.1.1.1: findByEstado("Disponible")
 @enduml
 ```
 
 ###### 5. Diagrama de Paquetes
 ```plantuml
 @startuml
-package "Presentación (Frontend)" {
+package "Presentación (Frontend)" <<layer>> {
   [DisponibilidadView]
   [DisponibilidadController]
 }
-package "Aplicación (Backend App)" {
+package "Aplicación (Backend App)" <<layer>> {
   [DisponibilidadService]
+  [DisponibilidadServiceImpl]
 }
-package "Dominio (Backend Domain)" {
+package "Dominio (Backend Domain)" <<layer>> {
   [Habitacion]
 }
-package "Infraestructura (Backend Infra)" {
+package "Infraestructura (Backend Infra)" <<layer>> {
   [HabitacionRepository]
 }
-[Presentación (Frontend)] ..> [Aplicación (Backend App)]
-[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
-[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+"Presentación (Frontend)" ..> "Aplicación (Backend App)" : <<import>>
+"Aplicación (Backend App)" ..> "Dominio (Backend Domain)" : <<use>>
+"Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
 
@@ -487,8 +515,9 @@ El cliente (o el recepcionista) selecciona una habitación disponible en un hora
 ```plantuml
 @startuml
 left to right direction
-actor "Cliente" as Cliente
-actor "Recepcionista" as Recepcionista
+skinparam actorStyle hollow
+actor "Cliente" as Cliente <<actor>>
+actor "Recepcionista" as Recepcionista <<actor>>
 rectangle "Sistema Residencial" {
   usecase "CU-02: Registrar Reserva" as CU02
 }
@@ -500,45 +529,73 @@ Recepcionista --> CU02
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class ReservaView {
+class ReservaView <<boundary>> {
+  --
   +capturarDatosHuesped()
-  +mostrarConfirmacion(reservaId)
+  +mostrarConfirmacion(reservaId: Long)
 }
-class ReservaController {
-  -reservaService
-  +registrarReserva(request)
+class ReservaController <<controller>> {
+  -reservaService: ReservaService
+  --
+  +registrarReserva(request: RegistroRequest)
 }
-interface ReservaService {
-  +crearReserva(command)
+interface ReservaService <<control>> {
+  --
+  +crearReserva(command: RegistroCommand): Reserva
 }
-class Reserva {
-  -id
-  -estado
-  -fechaCreacion
+class ReservaServiceImpl <<control>> {
+  -reservaRepository: ReservaRepository
+  --
+  +crearReserva(command: RegistroCommand): Reserva
 }
-ReservaView ..> ReservaController
+class Reserva <<entity>> {
+  -id: Long
+  -estado: String
+  -fechaCreacion: Date
+  --
+}
+interface ReservaRepository <<database>> {
+  --
+  +save(r: Reserva): Reserva
+}
+ReservaView ..> ReservaController : <<use>>
 ReservaController --> ReservaService
-ReservaService ..> Reserva
+ReservaServiceImpl ..|> ReservaService
+ReservaServiceImpl --> ReservaRepository
+ReservaRepository ..> Reserva : <<use>>
+note top of ReservaController : GRASP Controller
+note top of ReservaServiceImpl : GRASP Creator (creates Reserva)
 @enduml
 ```
 
 ###### 3. Diagrama de Secuencia
 ```plantuml
 @startuml
+autonumber
 actor Actor as "Cliente / Recepcionista"
-participant "ReservaView" as View
-participant "ReservaController" as Ctrl
-participant "ReservaService" as Serv
-participant "ReservaRepository" as Repo
+participant "<u>:ReservaView</u>" as View
+participant "<u>:ReservaController</u>" as Ctrl
+participant "<u>:ReservaService</u>" as Serv
+participant "<u>:ReservaRepository</u>" as Repo
 
-Actor ->> View: Ingresa datos personales e info de estadía
-View ->> Ctrl: registrarReserva(request)
-Ctrl ->> Serv: crearReserva(command)
-Serv ->> Repo: save(Reserva)
-Repo -->> Serv: Reserva guardada (estado=PENDIENTE_PAGO)
-Serv -->> Ctrl: ReservaResponse
-Ctrl -->> View: renderizarConfirmacion(reservaId)
-View -->> Actor: muestra identificador de reserva
+Actor -> View : ingresarDatosHuesped(nombre, ci, celular, fechaNacimiento)
+activate View
+View -> Ctrl : registrarReserva(request)
+activate Ctrl
+Ctrl -> Serv : crearReserva(command)
+activate Serv
+create participant "<u>r:Reserva</u>" as Reserva
+Serv -> Reserva : <<create>>
+Serv -> Repo : save(r)
+activate Repo
+Repo --> Serv : r
+deactivate Repo
+Serv --> Ctrl : r
+deactivate Serv
+Ctrl --> View : mostrarConfirmacion(r.id)
+deactivate Ctrl
+View --> Actor : visualizar identificador
+deactivate View
 @enduml
 ```
 
@@ -546,38 +603,39 @@ View -->> Actor: muestra identificador de reserva
 ```plantuml
 @startuml
 left to right direction
-object "1: Actor" as Actor
-object "2: ReservaView" as View
-object "3: ReservaController" as Ctrl
-object "4: ReservaService" as Serv
-object "5: ReservaRepository" as Repo
+object "<u>:Actor</u>" as Actor
+object "<u>:ReservaView</u>" as View
+object "<u>:ReservaController</u>" as Ctrl
+object "<u>:ReservaService</u>" as Serv
+object "<u>:ReservaRepository</u>" as Repo
 
-Actor --> View : "1: ingresarDatos()"
-View --> Ctrl : "2: registrarReserva()"
-Ctrl --> Serv : "3: crearReserva()"
-Serv --> Repo : "4: save()"
+Actor --> View : 1: ingresarDatosHuesped(...)
+View --> Ctrl : 1.1: registrarReserva(request)
+Ctrl --> Serv : 1.1.1: crearReserva(command)
+Serv --> Repo : 1.1.1.1: save(r)
 @enduml
 ```
 
 ###### 5. Diagrama de Paquetes
 ```plantuml
 @startuml
-package "Presentación (Frontend)" {
+package "Presentación (Frontend)" <<layer>> {
   [ReservaView]
   [ReservaController]
 }
-package "Aplicación (Backend App)" {
+package "Aplicación (Backend App)" <<layer>> {
   [ReservaService]
+  [ReservaServiceImpl]
 }
-package "Dominio (Backend Domain)" {
+package "Dominio (Backend Domain)" <<layer>> {
   [Reserva]
 }
-package "Infraestructura (Backend Infra)" {
+package "Infraestructura (Backend Infra)" <<layer>> {
   [ReservaRepository]
 }
-[Presentación (Frontend)] ..> [Aplicación (Backend App)]
-[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
-[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+"Presentación (Frontend)" ..> "Aplicación (Backend App)" : <<import>>
+"Aplicación (Backend App)" ..> "Dominio (Backend Domain)" : <<use>>
+"Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
 
@@ -623,9 +681,10 @@ Con base en una reserva pendiente, el sistema presenta los métodos de pago auto
 ```plantuml
 @startuml
 left to right direction
-actor "Cliente" as Cliente
-actor "Recepcionista" as Recepcionista
-actor "API Banco BNB" as BNB
+skinparam actorStyle hollow
+actor "Cliente" as Cliente <<actor>>
+actor "Recepcionista" as Recepcionista <<actor>>
+rectangle "API Banco BNB" as BNB <<system>>
 rectangle "Sistema Residencial" {
   usecase "CU-03: Procesar Pago" as CU03
 }
@@ -638,58 +697,111 @@ CU03 --> BNB
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class PagoView {
+class PagoView <<boundary>> {
+  --
   +mostrarOpcionesPago()
-  +mostrarQR(qrData)
-  +mostrarExito(nroComprobante)
+  +mostrarQR(qrData: String)
+  +mostrarExito(nroComprobante: String)
 }
-class PagoController {
-  -procesarPagoService
-  +iniciarPago(reservaId, metodo)
-  +verificarPago(reservaId)
+class PagoController <<controller>> {
+  -procesarPagoService: ProcesarPagoService
+  --
+  +iniciarPago(reservaId: Long, metodo: String)
+  +verificarPago(reservaId: Long)
 }
-interface ProcesarPagoService {
-  +iniciarProcesoPago(request)
-  +verificarEstadoPago(reservaId)
+interface ProcesarPagoService <<control>> {
+  --
+  +iniciarProcesoPago(req: IniciarPagoRequest): PagoResponse
+  +verificarEstadoPago(reservaId: Long): PagoResponse
 }
-class Pago {
-  -id
-  -monto
-  -metodo
-  -estado
+class ProcesarPagoServiceImpl <<control>> {
+  -reservaRepository: ReservaRepository
+  -bnbPaymentPort: BnbPaymentPort
+  --
+  +iniciarProcesoPago(req: IniciarPagoRequest): PagoResponse
+  +verificarEstadoPago(reservaId: Long): PagoResponse
 }
-PagoView ..> PagoController
+interface BnbPaymentPort <<control>> {
+  --
+  +generarQR(monto: Double, glosa: String, id: Long): String
+  +consultarEstado(qrId: String): String
+}
+class Pago <<entity>> {
+  -id: Long
+  -monto: Double
+  -metodo: String
+  -estado: String
+  --
+}
+interface ReservaRepository <<database>> {
+  --
+  +findById(id: Long): Reserva
+  +save(r: Reserva): Reserva
+}
+PagoView ..> PagoController : <<use>>
 PagoController --> ProcesarPagoService
-ProcesarPagoService ..> Pago
+ProcesarPagoServiceImpl ..|> ProcesarPagoService
+ProcesarPagoServiceImpl --> BnbPaymentPort
+ProcesarPagoServiceImpl --> ReservaRepository
+ReservaRepository ..> Pago : <<use>>
+note top of PagoController : GRASP Controller
 @enduml
 ```
 
 ###### 3. Diagrama de Secuencia
 ```plantuml
 @startuml
+autonumber
 actor Actor as "Cliente / Recepcionista"
-participant "PagoView" as View
-participant "PagoController" as Ctrl
-participant "ProcesarPagoService" as Serv
-participant "BnbPaymentPort" as BNB
-participant "ReservaRepository" as Repo
+participant "<u>:PagoView</u>" as View
+participant "<u>:PagoController</u>" as Ctrl
+participant "<u>:ProcesarPagoService</u>" as Serv
+participant "<u>:BnbPaymentPort</u>" as BNB <<interface>>
+participant "<u>:ReservaRepository</u>" as Repo
 
-Actor ->> View: Elige Pago QR (BNB)
-View ->> Ctrl: iniciarPago(reservaId, "QR_BNB")
-Ctrl ->> Serv: iniciarProcesoPago(request)
-Serv ->> BNB: generarQR(monto, glosa, reservaId)
-BNB -->> Serv: qrData
-Serv -->> Ctrl: qrData
-Ctrl -->> View: renderizar QR
-Actor ->> View: Confirma pago desde app banco
-loop Polling verificar pago
-  Ctrl ->> Serv: verificarEstadoPago(reservaId)
-  Serv ->> BNB: consultarEstado(qrId)
-  BNB -->> Serv: COMPLETADO
-  Serv ->> Repo: save(Reserva -> PAGADA)
-  Serv -->> Ctrl: COMPLETADO + NroComprobante
-  Ctrl -->> View: mostrar pantalla de éxito
+Actor -> View : seleccionarMetodoPago("QR_BNB")
+activate View
+View -> Ctrl : iniciarPago(reservaId, "QR_BNB")
+activate Ctrl
+Ctrl -> Serv : iniciarProcesoPago(request)
+activate Serv
+Serv -> BNB : generarQR(monto, glosa, reservaId)
+activate BNB
+BNB --> Serv : qrData
+deactivate BNB
+create participant "<u>q:QrCode</u>" as QR
+Serv -> QR : <<create>>(qrData)
+Serv --> Ctrl : qrData
+deactivate Serv
+Ctrl --> View : renderizarQR(qrData)
+deactivate Ctrl
+View --> Actor : escanear y transferir
+
+loop Polling cada 5s (hasta confirmación o expiración)
+  Actor -> View : confirmarPago()
+  View -> Ctrl : verificarPago(reservaId)
+  activate Ctrl
+  Ctrl -> Serv : verificarEstadoPago(reservaId)
+  activate Serv
+  Serv -> BNB : consultarEstado(qrId)
+  activate BNB
+  BNB --> Serv : "COMPLETADO"
+  deactivate BNB
+  Serv -> Repo : save(Reserva.confirmarPago())
+  activate Repo
+  Repo --> Serv : r
+  deactivate Repo
+  Serv -> QR : invalidar()
+  activate QR
+  deactivate QR
+  destroy QR
+  Serv --> Ctrl : completadoResponse
+  deactivate Serv
+  Ctrl --> View : mostrarExito(comprobante)
+  deactivate Ctrl
+  View --> Actor : visualizar pantalla de éxito
 end
+deactivate View
 @enduml
 ```
 
@@ -697,46 +809,49 @@ end
 ```plantuml
 @startuml
 left to right direction
-object "1: Actor" as Actor
-object "2: PagoView" as View
-object "3: PagoController" as Ctrl
-object "4: ProcesarPagoService" as Serv
-object "5: BnbPaymentPort" as BNB
-object "6: ReservaRepository" as Repo
+object "<u>:Actor</u>" as Actor
+object "<u>:PagoView</u>" as View
+object "<u>:PagoController</u>" as Ctrl
+object "<u>:ProcesarPagoService</u>" as Serv
+object "<u>:BnbPaymentPort</u>" as BNB
+object "<u>:ReservaRepository</u>" as Repo
 
-Actor --> View : "1: seleccionarMetodo()"
-View --> Ctrl : "2: iniciarPago()"
-Ctrl --> Serv : "3: iniciarProcesoPago()"
-Serv --> BNB : "4: generarQR()"
-Actor --> View : "5: pagarDesdeApp()"
-Ctrl --> Serv : "6: verificarEstadoPago()"
-Serv --> BNB : "7: consultarEstado()"
-Serv --> Repo : "8: save(PAGADA)"
+Actor --> View : 1: seleccionarMetodoPago("QR_BNB")
+View --> Ctrl : 1.1: iniciarPago(reservaId, "QR_BNB")
+Ctrl --> Serv : 1.1.1: iniciarProcesoPago(req)
+Serv --> BNB : 1.1.1.1: generarQR(monto, glosa, id)
+
+Actor --> View : * [hasta confirmación o expiración] 2: confirmarPago()
+View --> Ctrl : 2.1: verificarPago(reservaId)
+Ctrl --> Serv : 2.1.1: verificarEstadoPago(reservaId)
+Serv --> BNB : 2.1.1.1: consultarEstado(qrId)
+Serv --> Repo : [pago completado] 2.1.1.2: save(r)
 @enduml
 ```
 
 ###### 5. Diagrama de Paquetes
 ```plantuml
 @startuml
-package "Presentación (Frontend)" {
+package "Presentación (Frontend)" <<layer>> {
   [PagoView]
   [PagoController]
 }
-package "Aplicación (Backend App)" {
+package "Aplicación (Backend App)" <<layer>> {
   [ProcesarPagoService]
+  [ProcesarPagoServiceImpl]
   [BnbPaymentPort]
 }
-package "Dominio (Backend Domain)" {
+package "Dominio (Backend Domain)" <<layer>> {
   [Pago]
   [Reserva]
 }
-package "Infraestructura (Backend Infra)" {
+package "Infraestructura (Backend Infra)" <<layer>> {
   [BnbSandboxAdapter]
   [ReservaRepositoryAdapter]
 }
-[Presentación (Frontend)] ..> [Aplicación (Backend App)]
-[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
-[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+"Presentación (Frontend)" ..> "Aplicación (Backend App)" : <<import>>
+"Aplicación (Backend App)" ..> "Dominio (Backend Domain)" : <<use>>
+"Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
 
@@ -783,8 +898,9 @@ El recepcionista verifica la reserva activa o procesa una llegada directa, reali
 ```plantuml
 @startuml
 left to right direction
-actor "Recepcionista" as Recepcionista
-actor "Camarera" as Camarera
+skinparam actorStyle hollow
+actor "Recepcionista" as Recepcionista <<actor>>
+actor "Camarera" as Camarera <<actor>>
 rectangle "Sistema Residencial" {
   usecase "CU-04: Realizar Check-in" as CU04
 }
@@ -796,51 +912,93 @@ Camarera --> CU04
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class RecepcionView {
+class RecepcionView <<boundary>> {
+  --
   +mostrarTableroHabitaciones()
   +mostrarFormularioCheckIn()
-  +notificarEstado(habitacionId, estado)
+  +notificarEstado(habitacionId: Long, estado: String)
 }
-class RecepcionController {
-  -checkInService
-  +registrarIngreso(reservaId, accesorios)
-  +registrarSalida(reservaId)
-  +confirmarLimpieza(habitacionId)
+class RecepcionController <<controller>> {
+  -checkInService: CheckInService
+  --
+  +registrarIngreso(reservaId: Long, accesorios: List)
+  +registrarSalida(reservaId: Long)
+  +confirmarLimpieza(habitacionId: Long)
 }
-interface CheckInService {
-  +procesarCheckIn(reservaId)
-  +procesarCheckOut(reservaId)
-  +actualizarEstadoLimpieza(habitacionId)
+interface CheckInService <<control>> {
+  --
+  +procesarCheckIn(reservaId: Long, accesorios: List)
+  +procesarCheckOut(reservaId: Long)
+  +actualizarEstadoLimpieza(habitacionId: Long, camarera: String)
 }
-class Habitacion {
-  -numero
-  -estadoActual
+class CheckInServiceImpl <<control>> {
+  -habitacionRepository: HabitacionRepository
+  -reservaRepository: ReservaRepository
+  --
+  +procesarCheckIn(reservaId: Long, accesorios: List)
+  +procesarCheckOut(reservaId: Long)
+  +actualizarEstadoLimpieza(habitacionId: Long, camarera: String)
 }
-RecepcionView ..> RecepcionController
+class Habitacion <<entity>> {
+  -id: Long
+  -numero: String
+  -estadoActual: String
+  --
+}
+interface HabitacionRepository <<database>> {
+  --
+  +actualizarEstado(id: Long, estado: String)
+}
+interface ReservaRepository <<database>> {
+  --
+  +findById(id: Long): Reserva
+  +save(r: Reserva): Reserva
+}
+RecepcionView ..> RecepcionController : <<use>>
 RecepcionController --> CheckInService
-CheckInService ..> Habitacion
+CheckInServiceImpl ..|> CheckInService
+CheckInServiceImpl --> HabitacionRepository
+CheckInServiceImpl --> ReservaRepository
+HabitacionRepository ..> Habitacion : <<use>>
+note top of RecepcionController : GRASP Controller
 @enduml
 ```
 
 ###### 3. Diagrama de Secuencia
 ```plantuml
 @startuml
+autonumber
 actor Recepcionista
-participant "RecepcionView" as View
-participant "RecepcionController" as Ctrl
-participant "CheckInService" as Serv
-participant "HabitacionRepository" as Repo
-participant "ReservaRepository" as ResRepo
+participant "<u>:RecepcionView</u>" as View
+participant "<u>:RecepcionController</u>" as Ctrl
+participant "<u>:CheckInService</u>" as Serv
+participant "<u>:HabitacionRepository</u>" as Repo
+participant "<u>:ReservaRepository</u>" as ResRepo
 
-Recepcionista ->> View: Busca reserva e ingresa entrega de accesorios
-View ->> Ctrl: registrarIngreso(reservaId, accesorios)
-Ctrl ->> Serv: procesarCheckIn(reservaId)
-Serv ->> ResRepo: findById(reservaId)
-ResRepo -->> Serv: Reserva (estado=PAGADA)
-Serv ->> Repo: actualizarEstado(habitacionId, "OCUPADA")
-Serv ->> ResRepo: save(Reserva -> estado=ACTIVA)
-Serv -->> Ctrl: Ingreso confirmado
-Ctrl -->> View: actualizar tablero a OCUPADA
+Recepcionista -> View : buscarReserva(codigo)
+activate View
+View -> Ctrl : registrarIngreso(reservaId, accesorios)
+activate Ctrl
+Ctrl -> Serv : procesarCheckIn(reservaId, accesorios)
+activate Serv
+Serv -> ResRepo : findById(reservaId)
+activate ResRepo
+ResRepo --> Serv : Reserva (estado=PAGADA)
+deactivate ResRepo
+Serv -> Repo : actualizarEstado(habitacionId, "OCUPADA")
+activate Repo
+Repo --> Serv : h
+deactivate Repo
+Serv -> ResRepo : save(Reserva.activar())
+activate ResRepo
+ResRepo --> Serv : r
+deactivate ResRepo
+Serv --> Ctrl : ingresoConfirmado
+deactivate Serv
+Ctrl --> View : notificarEstado(habitacionId, "OCUPADA")
+deactivate Ctrl
+View --> Recepcionista : entrega de accesorios
+deactivate View
 @enduml
 ```
 
@@ -848,42 +1006,44 @@ Ctrl -->> View: actualizar tablero a OCUPADA
 ```plantuml
 @startuml
 left to right direction
-object "1: Recepcionista" as Recepcionista
-object "2: RecepcionView" as View
-object "3: RecepcionController" as Ctrl
-object "4: CheckInService" as Serv
-object "5: HabitacionRepository" as Repo
-object "6: ReservaRepository" as ResRepo
+object "<u>:Recepcionista</u>" as Recepcionista
+object "<u>:RecepcionView</u>" as View
+object "<u>:RecepcionController</u>" as Ctrl
+object "<u>:CheckInService</u>" as Serv
+object "<u>:HabitacionRepository</u>" as Repo
+object "<u>:ReservaRepository</u>" as ResRepo
 
-Recepcionista --> View : "1: confirmarLlegada()"
-View --> Ctrl : "2: registrarIngreso()"
-Ctrl --> Serv : "3: procesarCheckIn()"
-Serv --> ResRepo : "4: findById() / save(ACTIVA)"
-Serv --> Repo : "5: actualizarEstado(OCUPADA)"
+Recepcionista --> View : 1: buscarReserva(codigo)
+View --> Ctrl : 1.1: registrarIngreso(reservaId, accesorios)
+Ctrl --> Serv : 1.1.1: procesarCheckIn(reservaId, accesorios)
+Serv --> ResRepo : 1.1.1.1: findById(reservaId)
+Serv --> Repo : 1.1.1.2: actualizarEstado(habitacionId, "OCUPADA")
+Serv --> ResRepo : 1.1.1.3: save(r)
 @enduml
 ```
 
 ###### 5. Diagrama de Paquetes
 ```plantuml
 @startuml
-package "Presentación (Frontend)" {
+package "Presentación (Frontend)" <<layer>> {
   [RecepcionView]
   [RecepcionController]
 }
-package "Aplicación (Backend App)" {
+package "Aplicación (Backend App)" <<layer>> {
   [CheckInService]
+  [CheckInServiceImpl]
 }
-package "Dominio (Backend Domain)" {
+package "Dominio (Backend Domain)" <<layer>> {
   [Habitacion]
   [Reserva]
 }
-package "Infraestructura (Backend Infra)" {
+package "Infraestructura (Backend Infra)" <<layer>> {
   [HabitacionRepositoryAdapter]
   [ReservaRepositoryAdapter]
 }
-[Presentación (Frontend)] ..> [Aplicación (Backend App)]
-[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
-[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+"Presentación (Frontend)" ..> "Aplicación (Backend App)" : <<import>>
+"Aplicación (Backend App)" ..> "Dominio (Backend Domain)" : <<use>>
+"Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
 
@@ -928,64 +1088,107 @@ El cliente presenta su código QR de acceso al sensor de la puerta asignada. El 
 ```plantuml
 @startuml
 left to right direction
-actor "Cliente" as Cliente
+skinparam actorStyle hollow
+actor "Cliente" as Cliente <<actor>>
+rectangle "Sistema de Control de Acceso" as Sistema <<system>>
 rectangle "Sistema Residencial" {
   usecase "CU-05: Acceso por QR en Puerta" as CU05
 }
 Cliente --> CU05
+CU05 --> Sistema
 @enduml
 ```
 
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class PuertaView {
+class PuertaView <<boundary>> {
+  --
   +capturarQR()
-  +mostrarAccesoAutorizado(mensaje)
-  +mostrarAccesoDenegado(mensaje)
+  +mostrarAccesoAutorizado(mensaje: String)
+  +mostrarAccesoDenegado(mensaje: String)
 }
-class PuertaController {
-  -puertaService
-  +validarAccesoQR(codigo, habitacionId)
+class PuertaController <<controller>> {
+  -puertaService: PuertaService
+  --
+  +validarAccesoQR(codigo: String, habitacionId: Long)
 }
-interface PuertaService {
-  +verificarYRegistrarAcceso(codigo, habitacionId)
+interface PuertaService <<control>> {
+  --
+  +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
 }
-class Reserva {
-  -codigoQR
-  -estado
+class PuertaServiceImpl <<control>> {
+  -reservaRepository: ReservaRepository
+  -habitacionRepository: HabitacionRepository
+  --
+  +verificarYRegistrarAcceso(codigo: String, habitacionId: Long): AccesoResponse
 }
-PuertaView ..> PuertaController
+class Reserva <<entity>> {
+  -codigoQR: String
+  -estado: String
+  --
+}
+interface ReservaRepository <<database>> {
+  --
+  +findByCodigo(codigo: String): Reserva
+  +save(r: Reserva): Reserva
+}
+interface HabitacionRepository <<database>> {
+  --
+  +actualizarEstado(id: Long, estado: String)
+}
+PuertaView ..> PuertaController : <<use>>
 PuertaController --> PuertaService
-PuertaService ..> Reserva
+PuertaServiceImpl ..|> PuertaService
+PuertaServiceImpl --> ReservaRepository
+PuertaServiceImpl --> HabitacionRepository
+ReservaRepository ..> Reserva : <<use>>
+note top of PuertaController : GRASP Controller
 @enduml
 ```
 
 ###### 3. Diagrama de Secuencia
 ```plantuml
 @startuml
+autonumber
 actor Cliente
-participant "PuertaView (Tablet)" as View
-participant "PuertaController" as Ctrl
-participant "PuertaService" as Serv
-participant "ReservaRepository" as ResRepo
-participant "HabitacionRepository" as HabRepo
+participant "<u>:PuertaView</u>" as View
+participant "<u>:PuertaController</u>" as Ctrl
+participant "<u>:PuertaService</u>" as Serv
+participant "<u>:ReservaRepository</u>" as ResRepo
+participant "<u>:HabitacionRepository</u>" as HabRepo
 
-Cliente ->> View: Escanea QR en lector de puerta
-View ->> Ctrl: validarAccesoQR(codigo, habitacionId)
-Ctrl ->> Serv: verificarYRegistrarAcceso(codigo, habitacionId)
-Serv ->> ResRepo: findByCodigo(codigo)
-ResRepo -->> Serv: Reserva
-Serv ->> Serv: Validar estado (PAGADA o ACTIVA) y habitación
+Cliente -> View : escanearQR(codigo)
+activate View
+View -> Ctrl : validarAccesoQR(codigo, habitacionId)
+activate Ctrl
+Ctrl -> Serv : verificarYRegistrarAcceso(codigo, habitacionId)
+activate Serv
+Serv -> ResRepo : findByCodigo(codigo)
+activate ResRepo
+ResRepo --> Serv : Reserva
+deactivate ResRepo
+Serv -> Serv : validarReservaHabitacionYEstado()
 alt Acceso Válido
-  Serv ->> HabRepo: actualizarEstado(habitacionId, "OCUPADA")
-  Serv ->> ResRepo: save(Reserva -> horaIngreso=NOW)
-  Serv -->> Ctrl: Acceso Autorizado
-  Ctrl -->> View: Desbloquear puerta y mostrar bienvenida
+  Serv -> HabRepo : actualizarEstado(habitacionId, "OCUPADA")
+  activate HabRepo
+  HabRepo --> Serv : h
+  deactivate HabRepo
+  Serv -> ResRepo : save(Reserva.registrarIngreso())
+  activate ResRepo
+  ResRepo --> Serv : r
+  deactivate ResRepo
+  Serv --> Ctrl : autorizadoResponse
+  Ctrl --> View : mostrarAccesoAutorizado(mensaje)
+  View --> Cliente : puerta desbloqueada
 else Acceso Inválido
-  Serv -->> Ctrl: Acceso Denegado
-  Ctrl -->> View: Mostrar error de acceso y mantener bloqueado
+  Serv --> Ctrl : denegadoResponse
+  deactivate Serv
+  Ctrl --> View : mostrarAccesoDenegado(mensaje)
+  deactivate Ctrl
+  View --> Cliente : puerta bloqueada
 end
+deactivate View
 @enduml
 ```
 
@@ -993,42 +1196,44 @@ end
 ```plantuml
 @startuml
 left to right direction
-object "1: Cliente" as Cliente
-object "2: PuertaView" as View
-object "3: PuertaController" as Ctrl
-object "4: PuertaService" as Serv
-object "5: ReservaRepository" as ResRepo
-object "6: HabitacionRepository" as HabRepo
+object "<u>:Cliente</u>" as Cliente
+object "<u>:PuertaView</u>" as View
+object "<u>:PuertaController</u>" as Ctrl
+object "<u>:PuertaService</u>" as Serv
+object "<u>:ReservaRepository</u>" as ResRepo
+object "<u>:HabitacionRepository</u>" as HabRepo
 
-Cliente --> View : "1: presentarQR()"
-View --> Ctrl : "2: validarAccesoQR()"
-Ctrl --> Serv : "3: verificarYRegistrarAcceso()"
-Serv --> ResRepo : "4: findByCodigo() / save()"
-Serv --> HabRepo : "5: actualizarEstado(OCUPADA)"
+Cliente --> View : 1: escanearQR(codigo)
+View --> Ctrl : 1.1: validarAccesoQR(codigo, habitacionId)
+Ctrl --> Serv : 1.1.1: verificarYRegistrarAcceso(codigo, habitacionId)
+Serv --> ResRepo : 1.1.1.1: findByCodigo(codigo)
+Serv --> HabRepo : [acceso válido] 1.1.1.2: actualizarEstado(habitacionId, "OCUPADA")
+Serv --> ResRepo : [acceso válido] 1.1.1.3: save(r)
 @enduml
 ```
 
 ###### 5. Diagrama de Paquetes
 ```plantuml
 @startuml
-package "Presentación (Frontend)" {
+package "Presentación (Frontend)" <<layer>> {
   [PuertaView]
   [PuertaController]
 }
-package "Aplicación (Backend App)" {
+package "Aplicación (Backend App)" <<layer>> {
   [PuertaService]
+  [PuertaServiceImpl]
 }
-package "Dominio (Backend Domain)" {
+package "Dominio (Backend Domain)" <<layer>> {
   [Reserva]
   [Habitacion]
 }
-package "Infraestructura (Backend Infra)" {
+package "Infraestructura (Backend Infra)" <<layer>> {
   [ReservaRepositoryAdapter]
   [HabitacionRepositoryAdapter]
 }
-[Presentación (Frontend)] ..> [Aplicación (Backend App)]
-[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
-[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+"Presentación (Frontend)" ..> "Aplicación (Backend App)" : <<import>>
+"Aplicación (Backend App)" ..> "Dominio (Backend Domain)" : <<use>>
+"Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
 
@@ -1073,8 +1278,9 @@ Durante la estadía, el huésped selecciona productos adicionales disponibles en
 ```plantuml
 @startuml
 left to right direction
-actor "Cliente" as Cliente
-actor "API Banco BNB" as BNB
+skinparam actorStyle hollow
+actor "Cliente" as Cliente <<actor>>
+rectangle "API Banco BNB" as BNB <<system>>
 rectangle "Sistema Residencial" {
   usecase "CU-06: Pago de Consumo Extra" as CU06
 }
@@ -1086,58 +1292,113 @@ CU06 --> BNB
 ###### 2. Diagrama de Clases de Interfaz
 ```plantuml
 @startuml
-class TabletView {
+class TabletView <<boundary>> {
+  --
   +mostrarMenuConsumos()
-  +mostrarQRConsumo(qrData)
+  +mostrarQRConsumo(qrData: String)
   +confirmarPagoConsumo()
 }
-class ConsumoController {
-  -consumoService
-  +registrarPedido(reservaId, items)
-  +verificarPagoConsumo(consumoId)
+class ConsumoController <<controller>> {
+  -consumoService: ConsumoExtraService
+  --
+  +registrarPedido(reservaId: Long, items: List)
+  +verificarPagoConsumo(consumoId: Long)
 }
-interface ConsumoExtraService {
-  +crearConsumoPendiente(reservaId, items)
-  +confirmarPagoConsumo(consumoId)
+interface ConsumoExtraService <<control>> {
+  --
+  +crearConsumoPendiente(reservaId: Long, items: List): ConsumoResponse
+  +confirmarPagoConsumo(consumoId: Long): ConsumoResponse
 }
-class ConsumoExtra {
-  -id
-  -itemsJson
-  -total
-  -estado
+class ConsumoExtraServiceImpl <<control>> {
+  -consumoRepository: ConsumoRepository
+  -bnbPaymentPort: BnbPaymentPort
+  --
+  +crearConsumoPendiente(reservaId: Long, items: List): ConsumoResponse
+  +confirmarPagoConsumo(consumoId: Long): ConsumoResponse
 }
-TabletView ..> ConsumoController
+interface BnbPaymentPort <<control>> {
+  --
+  +generarQR(total: Double, glosa: String, id: Long): String
+  +consultarEstado(qrId: String): String
+}
+class ConsumoExtra <<entity>> {
+  -id: Long
+  -itemsJson: String
+  -total: Double
+  -estado: String
+  --
+}
+interface ConsumoRepository <<database>> {
+  --
+  +save(c: ConsumoExtra): ConsumoExtra
+  +findById(id: Long): ConsumoExtra
+}
+TabletView ..> ConsumoController : <<use>>
 ConsumoController --> ConsumoExtraService
-ConsumoExtraService ..> ConsumoExtra
+ConsumoExtraServiceImpl ..|> ConsumoExtraService
+ConsumoExtraServiceImpl --> ConsumoRepository
+ConsumoExtraServiceImpl --> BnbPaymentPort
+ConsumoRepository ..> ConsumoExtra : <<use>>
+note top of ConsumoController : GRASP Controller
 @enduml
 ```
 
 ###### 3. Diagrama de Secuencia
 ```plantuml
 @startuml
+autonumber
 actor Cliente
-participant "TabletView" as View
-participant "ConsumoController" as Ctrl
-participant "ConsumoExtraService" as Serv
-participant "BnbPaymentPort" as BNB
-participant "ConsumoRepository" as Repo
+participant "<u>:TabletView</u>" as View
+participant "<u>:ConsumoController</u>" as Ctrl
+participant "<u>:ConsumoExtraService</u>" as Serv
+participant "<u>:BnbPaymentPort</u>" as BNB <<interface>>
+participant "<u>:ConsumoRepository</u>" as Repo
 
-Cliente ->> View: Selecciona productos de la tableta y presiona pagar
-View ->> Ctrl: registrarPedido(reservaId, items)
-Ctrl ->> Serv: crearConsumoPendiente(reservaId, items)
-Serv ->> BNB: generarQR(total, "Consumos Extra", reservaId)
-BNB -->> Serv: qrData
-Serv ->> Repo: save(ConsumoExtra -> estado=PENDIENTE)
-Serv -->> Ctrl: qrData
-Ctrl -->> View: renderizar QR de consumo
-Cliente ->> View: Escanea QR y paga
-View ->> Ctrl: verificarPagoConsumo(consumoId)
-Ctrl ->> Serv: confirmarPagoConsumo(consumoId)
-Serv ->> BNB: consultarEstado(qrId)
-BNB -->> Serv: COMPLETADO
-Serv ->> Repo: save(ConsumoExtra -> estado=PAGADO)
-Serv -->> Ctrl: Pago confirmado
-Ctrl -->> View: mostrar pantalla de éxito
+Cliente -> View : confirmarPedido(items)
+activate View
+View -> Ctrl : registrarPedido(reservaId, items)
+activate Ctrl
+Ctrl -> Serv : crearConsumoPendiente(reservaId, items)
+activate Serv
+Serv -> BNB : generarQR(total, "Consumos Extra", reservaId)
+activate BNB
+BNB --> Serv : qrData
+deactivate BNB
+create participant "<u>q:QrCode</u>" as QR
+Serv -> QR : <<create>>(qrData)
+Serv -> Repo : save(ConsumoExtra)
+activate Repo
+Repo --> Serv : c
+deactivate Repo
+Serv --> Ctrl : c
+deactivate Serv
+Ctrl --> View : mostrarQRConsumo(qrData)
+deactivate Ctrl
+View --> Cliente : pagar consumos
+
+Cliente -> View : confirmarPagoConsumo()
+View -> Ctrl : verificarPagoConsumo(consumoId)
+activate Ctrl
+Ctrl -> Serv : confirmarPagoConsumo(consumoId)
+activate Serv
+Serv -> BNB : consultarEstado(qrId)
+activate BNB
+BNB --> Serv : "COMPLETADO"
+deactivate BNB
+Serv -> Repo : save(ConsumoExtra.pagar())
+activate Repo
+Repo --> Serv : c
+deactivate Repo
+Serv -> QR : invalidar()
+activate QR
+deactivate QR
+destroy QR
+Serv --> Ctrl : pagoConfirmado
+deactivate Serv
+Ctrl --> View : mostrarExito()
+deactivate Ctrl
+View --> Cliente : visualizar pantalla de éxito
+deactivate View
 @enduml
 ```
 
@@ -1145,44 +1406,50 @@ Ctrl -->> View: mostrar pantalla de éxito
 ```plantuml
 @startuml
 left to right direction
-object "1: Cliente" as Cliente
-object "2: TabletView" as View
-object "3: ConsumoController" as Ctrl
-object "4: ConsumoExtraService" as Serv
-object "5: BnbPaymentPort" as BNB
-object "6: ConsumoRepository" as Repo
+object "<u>:Cliente</u>" as Cliente
+object "<u>:TabletView</u>" as View
+object "<u>:ConsumoController</u>" as Ctrl
+object "<u>:ConsumoExtraService</u>" as Serv
+object "<u>:BnbPaymentPort</u>" as BNB
+object "<u>:ConsumoRepository</u>" as Repo
 
-Cliente --> View : "1: seleccionarProductos()"
-View --> Ctrl : "2: registrarPedido()"
-Ctrl --> Serv : "3: crearConsumoPendiente()"
-Serv --> BNB : "4: generarQR()"
-Ctrl --> Serv : "5: confirmarPagoConsumo()"
-Serv --> Repo : "6: save(PAGADO)"
+Cliente --> View : 1: confirmarPedido(items)
+View --> Ctrl : 1.1: registrarPedido(reservaId, items)
+Ctrl --> Serv : 1.1.1: crearConsumoPendiente(reservaId, items)
+Serv --> BNB : 1.1.1.1: generarQR(total, glosa, id)
+Serv --> Repo : 1.1.1.2: save(c)
+
+Cliente --> View : 2: confirmarPagoConsumo()
+View --> Ctrl : 2.1: verificarPagoConsumo(consumoId)
+Ctrl --> Serv : 2.1.1: confirmarPagoConsumo(consumoId)
+Serv --> BNB : 2.1.1.1: consultarEstado(qrId)
+Serv --> Repo : [pago completado] 2.1.1.2: save(c.pagar())
 @enduml
 ```
 
 ###### 5. Diagrama de Paquetes
 ```plantuml
 @startuml
-package "Presentación (Frontend)" {
+package "Presentación (Frontend)" <<layer>> {
   [TabletView]
   [ConsumoController]
 }
-package "Aplicación (Backend App)" {
+package "Aplicación (Backend App)" <<layer>> {
   [ConsumoExtraService]
+  [ConsumoExtraServiceImpl]
   [BnbPaymentPort]
 }
-package "Dominio (Backend Domain)" {
+package "Dominio (Backend Domain)" <<layer>> {
   [ConsumoExtra]
   [Reserva]
 }
-package "Infraestructura (Backend Infra)" {
+package "Infraestructura (Backend Infra)" <<layer>> {
   [ConsumoRepositoryAdapter]
   [BnbSandboxAdapter]
 }
-[Presentación (Frontend)] ..> [Aplicación (Backend App)]
-[Aplicación (Backend App)] ..> [Dominio (Backend Domain)]
-[Aplicación (Backend App)] ..> [Infraestructura (Backend Infra)]
+"Presentación (Frontend)" ..> "Aplicación (Backend App)" : <<import>>
+"Aplicación (Backend App)" ..> "Dominio (Backend Domain)" : <<use>>
+"Aplicación (Backend App)" ..> "Infraestructura (Backend Infra)" : <<use>>
 @enduml
 ```
 
