@@ -43,9 +43,9 @@ Para contactar al establecimiento **PREMIUM**, existen varios métodos:
 * **Redes Sociales:** A través de plataformas como Facebook, Instagram, TikTok, entre otras.
 
 Las personas pueden acceder a cualquier red social para encontrar el número de contacto y la ubicación. Una vez establecido el contacto, se envía un mensaje y el personal de atención envía los precios con las características de cada tipo de habitación:
-* **Normal [150 Bs. / 12 hrs.]:** Aire acondicionado (A/C) y cama de 2 plazas.
+* **Estandar [150 Bs. / 12 hrs.]:** Aire acondicionado (A/C) y cama de 2 plazas.
 * **VIP [180 Bs. / 12 hrs.]:** Aire acondicionado (A/C), cama de 3 plazas y comida incluida.
-* **Super VIP [240 Bs. / 12 hrs.]:** Cama de 3 plazas, jacuzzi, servicio de habitación, consumos incluidos, acceso a Internet y aire acondicionado (A/C).
+* **SUPERVIP [250 Bs. / 6 hrs.]:** Cama de 3 plazas, jacuzzi, servicio de habitación, consumos incluidos, acceso a Internet y aire acondicionado (A/C).
 
 ### Proceso de Reserva y Registro
 Una vez seleccionado el tipo de habitación, se procede a registrar los datos del cliente:
@@ -59,7 +59,7 @@ Una vez realizado el pago, el cliente se presenta en recepción e indica si cuen
 3. Tras confirmar el pago, el recepcionista hace entrega de los accesorios de acceso a la habitación, tales como la tarjeta de acceso y los controles remotos de la televisión, TV por cable y aire acondicionado.
 
 > [!NOTE]
-> En el caso de reservas de tipo **Suites**, el recepcionista informa a los clientes sobre la *"hora loca"*, que consiste en una conservadora ubicada en el exterior de la habitación. Los clientes pueden seleccionar libremente y según su preferencia los diferentes tipos de tragos y bebidas que se encuentren en ella.
+> En el caso de reservas de tipo **SUPERVIP** (Suites), el recepcionista informa a los clientes sobre la *"hora loca"*, que consiste en una conservadora ubicada en el exterior de la habitación. Los clientes pueden seleccionar libremente y según su preferencia los diferentes tipos de tragos y bebidas de cortesía que se encuentren en ella.
 
 ### Proceso de Salida (Check-Out) y Limpieza
 Al momento de la salida, los clientes deben llevar consigo la tarjeta de acceso y los controles remotos (TV, cable y A/C), cerrar la puerta y entregarlos en recepción.
@@ -148,7 +148,7 @@ El personal de la organización está estructurado jerárquicamente en tres áre
 * Monitoreo del sistema de cámaras y control estricto de accesos.
 * Intervención ante emergencias y mediación en la resolución de conflictos.
 
-#### Limpieza (Empleado Nuevo)
+#### Camarera (Empleado de Limpieza)
 * Limpieza profunda, desinfección y preparación de habitaciones y áreas comunes.
 * Mantenimiento riguroso de los estándares de higiene exigidos.
 * Reportar inmediatamente desperfectos o necesidades de mantenimiento en las habitaciones.
@@ -308,7 +308,7 @@ A continuación se detalla la priorización y descripción de los casos de uso i
 | Código | Caso de Uso | Actor(es) | Prioridad | Descripción |
 |---|---|---|---|---|
 | **CU-01** | **Consultar Disponibilidad** | Cliente (Huésped) | Alta | Permite verificar la disponibilidad de habitaciones según la fecha, el horario y la categoría seleccionada de forma autónoma. |
-| **CU-02** | **Registrar Reserva** | Cliente (Huésped) / Recepcionista | Alta | Captura la información del cliente y registra la reserva en estado "PENDIENTE" vinculando la habitación seleccionada. |
+| **CU-02** | **Registrar Reserva** | Cliente (Huésped) / Recepcionista | Alta | Captura la información del cliente y registra la reserva en estado "PENDIENTE_PAGO" vinculando la habitación seleccionada. |
 | **CU-03** | **Procesar Pago** | Cliente (Huésped) / Recepcionista / API Externa (BNB) | Alta | Procesa la transacción financiera mediante código QR dinámico integrado con el BNB o en efectivo, actualizando el estado de la reserva a "PAGADA". |
 | **CU-04** | **Realizar Check-in** | Recepcionista / Personal de Limpieza | Alta | Administra el ingreso físico del cliente, la entrega de accesorios, el estado de las habitaciones en tiempo real y la posterior liberación tras limpieza. |
 | **CU-05** | **Acceso por QR en Puerta** | Cliente (Huésped) / Sistema (Tablet en Puerta) | Alta | Valida de manera autónoma el código QR del huésped en la puerta de la habitación asignada, registrando el ingreso y marcándola como ocupada. |
@@ -365,7 +365,7 @@ El cliente ingresa la fecha, hora de ingreso y la categoría de habitación requ
 Registrar formalmente el compromiso de reserva de una habitación específica para un huésped y asociarle un identificador único.
 
 #### Resumen
-El cliente (o el recepcionista) selecciona una habitación disponible en un horario definido y proporciona la información de identificación personal del huésped. El sistema registra la reserva en estado "PENDIENTE" y asocia temporalmente el recurso de la habitación.
+El cliente (o el recepcionista) selecciona una habitación disponible en un horario definido y proporciona la información de identificación personal del huésped. El sistema registra la reserva en estado "PENDIENTE_PAGO" y asocia temporalmente el recurso de la habitación.
 
 #### Precondición
 * Se debe haber verificado la disponibilidad de la habitación en el período solicitado (CU-01).
@@ -375,14 +375,14 @@ El cliente (o el recepcionista) selecciona una habitación disponible en un hora
 | Actor (Cliente / Recepcionista) | Respuestas del Sistema |
 |---|---|
 | **1.** Solicita reservar la habitación seleccionada introduciendo los datos personales del huésped (nombre, cédula de identidad, celular y fecha de nacimiento) y la información de la estadía. | **2.** El sistema verifica que la habitación elegida continúe libre para el período seleccionado y valida los datos de registro ingresados. |
-| **3.** Confirma los datos de la reserva para su procesamiento. | **4.** El sistema registra la reserva en estado "PENDIENTE", asocia temporalmente la habitación y genera un identificador único de reserva. |
+| **3.** Confirma los datos de la reserva para su procesamiento. | **4.** El sistema registra la reserva en estado "PENDIENTE_PAGO", asocia temporalmente la habitación y genera un identificador único de reserva. |
 
 #### Caminos Alternativos
 * **Paso 2a (Habitación ocupada en el proceso):** Si la habitación fue reservada por otro usuario durante el proceso, el sistema notifica el conflicto de disponibilidad, ofrece recursos alternativos equivalentes y permite reiniciar la selección.
 * **Paso 2b (Huésped ya registrado en la base de datos):** Si la cédula de identidad ya existe en el sistema, el sistema reconoce el registro previo, precarga los datos históricos correspondientes y asocia la nueva reserva a la cuenta del huésped.
 
 #### Postcondición
-* La reserva queda registrada en estado "PENDIENTE", y la habitación queda bloqueada temporalmente para el período correspondiente a la espera de la confirmación del pago.
+* La reserva queda registrada en estado "PENDIENTE_PAGO", y la habitación queda bloqueada temporalmente para el período correspondiente a la espera de la confirmación del pago.
 
 ---
 
@@ -402,7 +402,7 @@ Formalizar la reserva mediante la validación, confirmación y registro del cobr
 Con base en una reserva pendiente, el sistema presenta los métodos de pago autorizados (QR bancario o efectivo). Si se selecciona QR, interactúa con la API bancaria externa para generar el código dinámico y confirmar la transacción. Si se selecciona efectivo, registra la intención de pago para validación en recepción.
 
 #### Precondición
-* Debe existir una reserva registrada en estado "PENDIENTE" (CU-02).
+* Debe existir una reserva registrada en estado "PENDIENTE_PAGO" (CU-02).
 
 #### Curso Básico de Acción
 
@@ -533,18 +533,319 @@ Durante la estadía, el huésped selecciona productos adicionales disponibles en
 
 *(Insertar Diagrama de Caso de Uso aquí)*
 
-#### Figura 2: Diagrama de Clases de Interfaz
-
-*(Insertar Diagrama de Clases de Interfaz aquí)*
-
-#### Figura 3: Diagrama de Colaboración
-
-*(Insertar Diagrama de Colaboración aquí)*
-
-#### Figura 4: Diagrama de Secuencia
-
-*(Insertar Diagrama de Secuencia aquí)*
-
 #### Figura 5: Pantalla de Caso de Uso
 
 *(Insertar Pantalla de Caso de Uso aquí)*
+
+---
+
+## Modelo de Dominio del Sistema
+
+El siguiente diagrama de clases representa el modelo de dominio del Residencial, el cual correlaciona directamente con la estructura de entidades relacionales e implementación en Java:
+
+```mermaid
+classDiagram
+    class Reserva {
+        id: Long
+        montoTotal: Double
+        fechaCreacion: Date
+        fechaIngreso: Date
+        cantidadBloques: Integer
+        estado: String
+        fechaPago: Timestamp
+        ventanaCheckIn: Timestamp
+        horaIngreso: Timestamp
+        horaSalidaEstimada: Timestamp
+        recepcionista: String
+    }
+
+    class Huesped {
+        id: Long
+        nombre: String
+        ci: String
+        celular: String
+        urlFotoAnverso: String
+        urlFotoReverso: String
+        fechaNacimiento: Date
+    }
+
+    class Habitacion {
+        id: Long
+        numero: String
+        estadoActual: String
+        version: Long
+    }
+
+    class TipoHabitacion {
+        id: Long
+        nombreTipo: String
+        precioBase: Double
+        duracionHoras: Integer
+        descripcion: String
+    }
+
+    class Pago {
+        id: Long
+        monto: Double
+        metodo: String
+        estado: String
+        externalId: String
+        fechaCreacion: Timestamp
+        fechaExpiracion: Timestamp
+    }
+
+    class Comprobante {
+        id: Long
+        nroComprobante: String
+        fechaEmision: Timestamp
+    }
+
+    class Recepcionista {
+        id: Long
+        nombre: String
+        username: String
+        activo: Boolean
+    }
+
+    class Camarera {
+        id: Long
+        nombre: String
+        celular: String
+        activo: Boolean
+    }
+
+    class InventarioItem {
+        id: Long
+        nombre: String
+        tipo: String
+        stockActual: Integer
+        precioCompra: Double
+        precioVenta: Double
+        emoji: String
+    }
+
+    class HabitacionInventario {
+        id: Long
+        cantidadEsperada: Integer
+        cantidadActual: Integer
+        estadoVerificacion: String
+    }
+
+    class IncidenciaMantenimiento {
+        id: Long
+        descripcion: String
+        seguimiento: String
+        fechaReporte: Timestamp
+        recepcionistaReporta: String
+        estado: String
+        costoReparacion: Double
+        fechaResolucion: Timestamp
+        recepcionistaResuelve: String
+    }
+
+    class ConsumoExtra {
+        id: Long
+        itemsJson: String
+        total: Double
+        estado: String
+        qrData: String
+        fechaCreacion: Timestamp
+        fechaPago: Timestamp
+    }
+
+    class Egreso {
+        id: Long
+        descripcion: String
+        monto: Double
+        categoria: String
+        fecha: Timestamp
+        recepcionista: String
+        destinoDestinatario: String
+        urlComprobante: String
+    }
+
+    Huesped "1" -- "*" Reserva : Realiza
+    Huesped "0..1" -- "*" Reserva : Acompaña en
+    Habitacion "1" -- "*" Reserva : Asignada a
+    Reserva "1" -- "*" Pago : Registra
+    TipoHabitacion "1" -- "*" Habitacion : Categoriza
+    Pago "1" -- "1" Comprobante : Respalda
+    Habitacion "1" -- "*" HabitacionInventario : Posee
+    InventarioItem "1" -- "*" HabitacionInventario : Incluido en
+    Habitacion "1" -- "*" IncidenciaMantenimiento : Sufre
+    InventarioItem "0..1" -- "*" IncidenciaMantenimiento : Afectado por
+    Reserva "1" -- "*" ConsumoExtra : Genera
+```
+
+---
+
+## Caso de Uso del Sistema
+
+A continuación se esquematiza el mapa de casos de uso y la interacción de los actores en el sistema integrado:
+
+```mermaid
+flowchart LR
+    Cliente((Cliente / Huésped))
+    Recepcionista((Recepcionista))
+    Camarera((Camarera))
+    API_Banco((API Banco BNB))
+
+    subgraph Sistema Residencial
+        CU01(CU-01: Consultar Disponibilidad)
+        CU02(CU-02: Registrar Reserva)
+        CU03(CU-03: Procesar Pago)
+        CU04(CU-04: Realizar Check-in)
+        CU05(CU-05: Acceso por QR en Puerta)
+        CU06(CU-06: Pago de Consumo Extra)
+    end
+
+    Cliente --> CU01
+    Cliente --> CU02
+    Cliente --> CU03
+    Cliente --> CU05
+    Cliente --> CU06
+
+    Recepcionista --> CU02
+    Recepcionista --> CU03
+    Recepcionista --> CU04
+
+    Camarera --> CU04
+
+    CU03 --> API_Banco
+    CU06 --> API_Banco
+```
+
+---
+
+## Diagrama de Actividad del Sistema
+
+Describe el flujo general de control que rige la interacción del negocio desde la consulta del cliente hasta la liberación de la habitación:
+
+```mermaid
+flowchart TD
+    A[Inicio de Consulta] --> B[Verificar disponibilidad]
+    B --> C{¿Disponible?}
+    C -- No --> D[Sugerir cambio de fecha/hora]
+    D --> B
+    C -- Sí --> E[Registrar datos de reserva]
+    E --> F[Crear reserva en PENDIENTE_PAGO]
+    F --> G{Elegir método de pago}
+    G -- QR BNB --> H[Generar QR dinámico]
+    H --> I[Esperar confirmación de pago]
+    I --> J{¿Pago exitoso?}
+    J -- No/Expirado --> K[Liberar reserva y habitación]
+    K --> End([Fin])
+    J -- Sí --> L[Actualizar reserva a PAGADA]
+    G -- Efectivo --> M[Registrar reserva en efectivo]
+    L --> N[Establecer ventana check-in 30 min]
+    M --> N
+    N --> O[Llegada física del cliente]
+    O --> P[Check-in: Recepcionista valida y entrega controles/tarjeta]
+    P --> Q[Habitación pasa a estado OCUPADA]
+    Q --> R[Huésped consume productos extra y paga vía QR]
+    R --> S[Check-out: Recepcionista valida accesorios]
+    S --> T[Habitación pasa a estado EN LIMPIEZA]
+    T --> U[Camarera desinfecta e higieniza la habitación]
+    U --> V[Notificación de limpieza concluida]
+    V --> W[Habitación pasa a estado DISPONIBLE]
+    W --> End
+```
+
+---
+
+## Diagrama de Paquetes del Sistema
+
+El sistema implementa una arquitectura limpia y desacoplada estructurada en las siguientes capas de paquetes lógicos:
+
+```mermaid
+flowchart TD
+    subgraph Frontend [Capa de Presentación - HTML5 / JS Vanilla]
+        UI[Vistas: index.html / recepcion.html / puerta.html]
+        Ctrl[Controladores JS: DisponibilidadController / RecepcionController]
+    end
+
+    subgraph Backend_Application [Capa de Aplicación - Java Spring Boot]
+        UC[Casos de Uso: CheckInService / ProcesarPagoService / ReservaService]
+        DTO[Data Transfer Objects - DTOs]
+        Ports[Puertos: Repositories / Payment Gateway API Interfaces]
+    end
+
+    subgraph Backend_Domain [Capa de Dominio]
+        Entidades[Entidades: Reserva / Habitacion / Huesped / Pago]
+    end
+
+    subgraph Backend_Infrastructure [Capa de Infraestructura]
+        REST[Controladores REST: REST APIs]
+        Adapters[Adaptadores de Persistencia: Spring Data JPA Repositories]
+        ExtAPIs[Clientes Externos: BNB Payment Gateway Connector]
+    end
+
+    subgraph Database [Persistencia - PostgreSQL]
+        DB[(Tablas: habitaciones / reservas / pagos / comprobantes)]
+    end
+
+    Frontend --> Backend_Application
+    Backend_Application --> Backend_Domain
+    Backend_Infrastructure --> Backend_Application
+    Backend_Infrastructure --> Backend_Domain
+    Backend_Infrastructure --> Database
+```
+
+---
+
+## Diagrama de Actividad: Caso de uso principal – Realizar Reserva
+
+Flujo secuencial detallado del caso de uso principal (integración de CU-01, CU-02 y CU-03):
+
+```mermaid
+flowchart TD
+    Start([Inicio]) --> EntraPortal[Cliente: Ingresa al portal de reservas]
+    EntraPortal --> IngresaFechas[Cliente: Indica fecha, hora y tipo de habitación]
+    IngresaFechas --> BuscarHab[Sistema: Busca habitaciones disponibles]
+    BuscarHab --> HayLibres{¿Hay disponibles?}
+    HayLibres -- No --> Sugerir[Sistema: Muestra alerta y sugiere otra fecha/categoría]
+    Sugerir --> IngresaFechas
+    HayLibres -- Sí --> Selecciona[Cliente: Selecciona habitación e introduce datos personales]
+    Selecciona --> ValidaDatos{¿Datos válidos y habitación libre?}
+    ValidaDatos -- No --> AlertaDatos[Sistema: Informa error o duplicidad de datos]
+    AlertaDatos --> Selecciona
+    ValidaDatos -- Sí --> ReservaPendiente[Sistema: Registra huésped y crea reserva PENDIENTE_PAGO]
+    ReservaPendiente --> MetodoPago{¿Método de pago?}
+    MetodoPago -- QR BNB --> GenerarQR[Sistema: Llama a API de BNB y genera QR de pago]
+    GenerarQR --> ClientePaga[Cliente: Realiza transferencia desde banca móvil]
+    ClientePaga --> Polling[Sistema: Verifica estado del pago vía Polling]
+    Polling --> EstadoPago{¿Pago recibido a tiempo?}
+    EstadoPago -- No --> AnulaReserva[Sistema: Cancela la reserva y libera la habitación]
+    AnulaReserva --> FinError([Fin con Error])
+    EstadoPago -- Sí --> ReservaPagada[Sistema: Marca reserva como PAGADA y emite comprobante]
+    MetodoPago -- Efectivo --> ReservaEfectivo[Sistema: Registra reserva con compromiso de pago en recepción]
+    ReservaPagada --> Exito[Sistema: Muestra pantalla de éxito y advierte ventana de llegada de 30 minutos]
+    ReservaEfectivo --> Exito
+    Exito --> FinSuccess([Fin Exitoso])
+```
+
+---
+
+## Actividad de Objeto: Muestra el ciclo de vida de una habitación
+
+El estado de una habitación está condicionado por los eventos operativos ejecutados en los casos de uso:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Disponible : Inicialización
+
+    Disponible --> Ocupada : Check-in de Huésped (CU-04 / CU-05)
+    Ocupada --> EnLimpieza : Check-out y Devolución de Accesorios (CU-04)
+    EnLimpieza --> Disponible : Notificación de Limpieza Concluida (CU-04)
+
+    Disponible --> Mantenimiento : Reporte de Daños o Desviación de Calidad (CU-04)
+    Mantenimiento --> Disponible : Resolución y Cierre de Incidencia (CU-04)
+```
+
+---
+
+## Anexos
+
+* **Anexo A:** Plantilla de base de datos completa (`04_Implementacion/sistema-integrado/backend/sql/init.sql`).
+* **Anexo B:** Configuración del entorno de despliegue mediante contenedores Docker (`docker-compose.yml`).
+* **Anexo C:** Suite de pruebas automatizadas de lógica de negocio en backend (`sistema-integrado/backend/src/test/java`).
