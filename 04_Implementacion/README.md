@@ -8,7 +8,14 @@ Esta carpeta esta organizada por casos de uso y por un sistema integrado ejecuta
 - `caso-uso-02-registrar-reserva`: registro de reserva y datos del huesped.
 - `caso-uso-03-procesar-pago`: pago por QR BNB o efectivo.
 - `caso-uso-04-realizar-check-in`: panel de recepcion, check-in y limpieza.
-- `sistema-integrado`: aplicacion completa que une los cuatro casos de uso.
+- `caso-uso-05-acceso-puerta-qr`: validacion de acceso a habitacion por QR.
+- `caso-uso-06-pago-consumo-extra`: compra y pago de consumos desde la habitacion.
+- `caso-uso-07-gestion-inventario`: conciliacion de inventario fisico por habitacion.
+- `caso-uso-08-gestion-incidencias`: registro, seguimiento y cierre de incidencias.
+- `caso-uso-09-ventas-directas-insumos`: ventas directas de productos desde recepcion.
+- `caso-uso-10-administracion-personal-clientes`: ABM de clientes, personal y atributos operativos.
+- `caso-uso-11-caja-egresos-reportes`: caja, egresos y reportes financieros.
+- `sistema-integrado`: aplicacion completa que une los once casos de uso.
 
 Cada caso de uso contiene:
 
@@ -45,6 +52,11 @@ Desde la zona de recepcion se gestiona:
 - Busqueda de reservas.
 - Check-in.
 - Cambio de estado a limpieza/disponible.
+- Check-out y reportes de verificacion.
+- Inventario por habitacion e incidencias.
+- Ventas de insumos.
+- Finanzas, egresos y reportes.
+- Administracion / ABM de clientes, habitaciones, camareras, recepcionistas e incidencias.
 
 ## Entorno de desarrollo
 

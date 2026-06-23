@@ -586,6 +586,7 @@ class RecepcionView {
         if (activas.length === 0) {
             tablaInc.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px; color:#888;">No hay incidencias activas en mantenimiento.</td></tr>`;
         } else {
+            var self = this;
             activas.forEach(inc => {
                 var row = document.createElement("tr");
                 row.style.cssText = "border-bottom: 1px solid #eee; height: 45px;";
@@ -603,16 +604,58 @@ class RecepcionView {
                 `;
                 
                 row.querySelector(".btn-resolver-incidencia").addEventListener("click", function() {
-                    var costo = prompt("Ingrese el costo de la reparación o reposición (Bs):", "0");
-                    if (costo !== null) {
-                        var costoFloat = parseFloat(costo) || 0.0;
-                        onResolverIncidencia(inc.id, costoFloat);
-                    }
+                    self.mostrarModalResolverIncidencia(inc, onResolverIncidencia);
                 });
                 
                 tablaInc.appendChild(row);
             });
         }
+    }
+
+    mostrarModalResolverIncidencia(incidencia, onResolverIncidencia) {
+        var existente = document.getElementById("modal-resolver-incidencia");
+        if (existente) existente.remove();
+
+        var overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        overlay.id = "modal-resolver-incidencia";
+        overlay.innerHTML = `
+            <div class="modal" style="max-width:520px;">
+                <h2 class="modal-titulo">Cerrar incidencia de mantenimiento</h2>
+                <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:14px; margin:12px 0 16px;">
+                    <div style="font-size:13px; color:#666; margin-bottom:6px;">Habitación</div>
+                    <strong style="font-size:18px;">${this.#escapeHtml("Hab. " + incidencia.numeroHabitacion)}</strong>
+                    <div style="margin-top:12px; font-size:13px; color:#666;">Daño reportado</div>
+                    <div style="line-height:1.45;"><strong>${this.#escapeHtml(incidencia.nombreItem || "Estructural / otro")}</strong>: ${this.#escapeHtml(incidencia.descripcion || "")}</div>
+                    <div style="margin-top:10px; font-size:12px; color:#777;">Reportado por ${this.#escapeHtml(incidencia.recepcionistaReporta || "-")}</div>
+                </div>
+                <label style="display:block; font-weight:700; color:#555; margin-bottom:8px;">Costo de reparación o reposición (Bs)</label>
+                <input id="resolver-incidencia-costo" type="number" min="0" step="0.01" value="0" style="width:100%; height:48px; border:1px solid #ddd; border-radius:10px; padding:0 14px; font-size:16px; font-family:'Montserrat',sans-serif;">
+                <p style="font-size:12px; color:#777; margin:10px 0 18px;">Si escribes un monto mayor a 0, se registrará como egreso de reparación. Si no tuvo costo, deja 0.</p>
+                <div class="modal-actions">
+                    <button type="button" id="resolver-incidencia-cancelar" class="btn-cancelar">Cancelar</button>
+                    <button type="button" id="resolver-incidencia-confirmar" class="btn-confirmar">Cerrar incidencia</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        overlay.querySelector("#resolver-incidencia-cancelar").addEventListener("click", function () {
+            overlay.remove();
+        });
+
+        overlay.querySelector("#resolver-incidencia-confirmar").addEventListener("click", function () {
+            var input = overlay.querySelector("#resolver-incidencia-costo");
+            var costo = parseFloat(input.value);
+            if (Number.isNaN(costo) || costo < 0) {
+                input.focus();
+                input.style.borderColor = "#ef4444";
+                return;
+            }
+            overlay.remove();
+            onResolverIncidencia(incidencia.id, costo);
+        });
     }
 
     mostrarEstadoPanelFinanzas(mensaje, tipo) {

@@ -457,11 +457,7 @@ class RecepcionController {
     }
 
     static _normalizarEstadoTarjeta(estado) {
-        var normalizado = RecepcionController._normalizarEstado(estado);
-        if (normalizado === "PAGADA" || normalizado === "PENDIENTE_PAGO") {
-            return "DISPONIBLE";
-        }
-        return normalizado;
+        return RecepcionController._normalizarEstado(estado);
     }
 
     // Privado — maneja el click en una habitacion segun su estado
@@ -1405,17 +1401,26 @@ class RecepcionController {
 
     async _resolverIncidencia(id, costo) {
         try {
-            var response = await fetch(ApiClient.url("/api/inventario/incidencias/" + id + "/resolver?costoReparacion=" + costo + "&recepcionista=" + encodeURIComponent(this.recepcionista.nombre)), {
+            this.view.mostrarEstadoPanelFinanzas("Cerrando incidencia de mantenimiento...", "info");
+
+            var params = new URLSearchParams({
+                costoReparacion: String(costo || 0),
+                recepcionista: this.recepcionista.nombre
+            });
+            var response = await fetch(ApiClient.url("/api/inventario/incidencias/" + id + "/resolver?" + params.toString()), {
                 method: "POST"
             });
             if (!response.ok) {
-                alert("No se pudo resolver la incidencia.");
+                var mensaje = await this._leerMensajeError(response);
+                this.view.mostrarEstadoPanelFinanzas("No se pudo cerrar la incidencia: " + mensaje, "error");
                 return;
             }
-            alert("Incidencia resuelta. La habitación vuelve a estar disponible.");
-            this._cargarFinanzasYInventario();
+            await this._cargarFinanzasYInventario();
+            await this._cargarHabitaciones();
+            this.view.mostrarEstadoPanelFinanzas("Incidencia cerrada. Si no quedan incidencias pendientes, la habitación vuelve a disponible.", "success");
         } catch (error) {
             console.error("Error al resolver incidencia:", error);
+            this.view.mostrarEstadoPanelFinanzas("No se pudo conectar con el backend para cerrar la incidencia.", "error");
         }
     }
 

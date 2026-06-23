@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -119,7 +120,7 @@ public class DisponibilidadService {
             estadoOperativo = "MANTENIMIENTO";
         }
         Reserva reservaVigente = resolverReservaParaPanel(habitacion, estadoOperativo);
-        String estadoPanel = estadoOperativoParaPanel(estadoOperativo, habitacion.getEstadoActual());
+        String estadoPanel = estadoPanelConReserva(estadoOperativo, habitacion.getEstadoActual(), reservaVigente);
 
         return new HabitacionEstadoResponse(
                 habitacion.getId(),
@@ -149,7 +150,26 @@ public class DisponibilidadService {
                     .findFirst()
                     .orElse(null);
         }
-        return null;
+        return reservaRepository
+                .findAllByHabitacionIdAndEstados(habitacion.getId(), List.of("ACTIVA", "PAGADA", "PENDIENTE_PAGO"))
+                .stream()
+                .filter(this::esReservaActualParaPanel)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String estadoPanelConReserva(String estadoOperativo, String estadoOriginal, Reserva reservaVigente) {
+        if (reservaVigente != null) {
+            if ("ACTIVA".equals(reservaVigente.getEstado())) {
+                return "Ocupada";
+            }
+            return reservaVigente.getEstado();
+        }
+        return estadoOperativoParaPanel(estadoOperativo, estadoOriginal);
+    }
+
+    private boolean esReservaActualParaPanel(Reserva reserva) {
+        return reserva.getFechaIngreso() == null || !reserva.getFechaIngreso().isAfter(LocalDate.now());
     }
 
     private String estadoOperativoParaPanel(String estadoOperativo, String estadoOriginal) {

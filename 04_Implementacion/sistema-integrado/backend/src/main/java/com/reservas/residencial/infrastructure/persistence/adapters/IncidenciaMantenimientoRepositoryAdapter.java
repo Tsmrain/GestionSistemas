@@ -26,6 +26,11 @@ public class IncidenciaMantenimientoRepositoryAdapter implements IncidenciaMante
     }
 
     @Override
+    public Optional<IncidenciaMantenimiento> findByIdWithDetails(Long id) {
+        return repository.findByIdWithDetails(id);
+    }
+
+    @Override
     public List<IncidenciaMantenimiento> findAll() {
         return repository.findAll();
     }

@@ -42,6 +42,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=adminpassword
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - TZ=America/La_Paz
+    volumes:
+      - ./04_Implementacion/sistema-integrado/backend/uploads:/app/uploads
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api >/dev/null 2>&1 || exit 1"]
       interval: 5s
@@ -63,6 +65,7 @@ services:
       - "80:80"
     volumes:
       - ./04_Implementacion/sistema-integrado/frontend:/usr/share/nginx/html
+      - ./04_Implementacion/sistema-integrado/frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       backend:
         condition: service_healthy

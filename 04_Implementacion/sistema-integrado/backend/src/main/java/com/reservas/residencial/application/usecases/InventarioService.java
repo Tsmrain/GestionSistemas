@@ -107,7 +107,7 @@ public class InventarioService {
 
     @Transactional
     public IncidenciaResponse resolverIncidencia(Long incidenciaId, Double costoReparacion, String recepcionista) {
-        IncidenciaMantenimiento incidencia = incidenciaRepository.findById(incidenciaId)
+        IncidenciaMantenimiento incidencia = incidenciaRepository.findByIdWithDetails(incidenciaId)
                 .orElseThrow(() -> new IllegalArgumentException("Incidencia no encontrada: " + incidenciaId));
 
         // Forzar la inicialización de proxies lazy antes de que la sesión se limpie por updateEstadoActual
@@ -145,7 +145,9 @@ public class InventarioService {
             habitacionRepository.save(habitacion);
         }
 
-        return toIncidenciaResponse(incidencia);
+        return toIncidenciaResponse(
+                incidenciaRepository.findByIdWithDetails(incidencia.getId()).orElse(incidencia)
+        );
     }
 
     @Transactional

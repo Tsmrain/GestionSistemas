@@ -103,7 +103,7 @@ class InventarioServiceTest {
         IncidenciaMantenimiento incidencia = new IncidenciaMantenimiento(habitacion, item, "TV roto", "Recepcionista 1");
         incidencia.setId(10L);
 
-        when(incidenciaRepository.findById(10L)).thenReturn(Optional.of(incidencia));
+        when(incidenciaRepository.findByIdWithDetails(10L)).thenReturn(Optional.of(incidencia));
         when(incidenciaRepository.save(any(IncidenciaMantenimiento.class))).thenReturn(incidencia);
         when(incidenciaRepository.findByHabitacionId(1L)).thenReturn(List.of(incidencia)); // returns resolved incidence
 

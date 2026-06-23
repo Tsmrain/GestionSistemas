@@ -7,6 +7,7 @@ import java.util.Optional;
 public interface IncidenciaMantenimientoRepositoryPort {
     IncidenciaMantenimiento save(IncidenciaMantenimiento incidencia);
     Optional<IncidenciaMantenimiento> findById(Long id);
+    Optional<IncidenciaMantenimiento> findByIdWithDetails(Long id);
     List<IncidenciaMantenimiento> findAll();
     List<IncidenciaMantenimiento> findByHabitacionId(Long habitacionId);
     boolean existsByHabitacionIdAndEstado(Long habitacionId, String estado);

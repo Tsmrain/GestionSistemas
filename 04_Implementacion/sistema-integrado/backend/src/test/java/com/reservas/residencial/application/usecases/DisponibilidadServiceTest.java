@@ -98,18 +98,30 @@ class DisponibilidadServiceTest {
     }
 
     @Test
-    void listarTodasConEstado_ReservaPagadaNoPisaHabitacionDisponible() {
+    void listarTodasConEstado_ReservaPendienteHaceVisibleLaHabitacionComoPendientePago() {
         TipoHabitacion tipo = new TipoHabitacion(1L, "VIP", 180.0, 12, "Habitacion vip");
         Habitacion habitacion = new Habitacion(1L, "104", tipo, "Disponible", 0L);
+        Reserva pendiente = new Reserva();
+        pendiente.setId(54L);
+        pendiente.setEstado("PENDIENTE_PAGO");
+        pendiente.setFechaIngreso(LocalDate.now());
+        pendiente.setHabitacion(habitacion);
+        Huesped huesped = new Huesped();
+        huesped.setNombre("kylian");
+        huesped.setCi("12345678");
+        pendiente.setHuesped(huesped);
 
         when(habitacionRepository.findAll()).thenReturn(List.of(habitacion));
+        when(reservaRepository.findAllByHabitacionIdAndEstados(1L, List.of("ACTIVA", "PAGADA", "PENDIENTE_PAGO")))
+                .thenReturn(List.of(pendiente));
 
         List<HabitacionEstadoResponse> respuesta = disponibilidadService.listarTodasConEstado();
 
         assertThat(respuesta).hasSize(1);
-        assertThat(respuesta.get(0).estadoActual()).isEqualTo("Disponible");
-        assertThat(respuesta.get(0).reservaVigenteId()).isNull();
-        verify(reservaRepository, never()).findAllByHabitacionIdAndEstados(any(), any());
+        assertThat(respuesta.get(0).estadoActual()).isEqualTo("PENDIENTE_PAGO");
+        assertThat(respuesta.get(0).reservaVigenteId()).isEqualTo(54L);
+        assertThat(respuesta.get(0).reservaVigenteEstado()).isEqualTo("PENDIENTE_PAGO");
+        assertThat(respuesta.get(0).huespedNombre()).isEqualTo("kylian");
     }
 
     @Test
