@@ -47,6 +47,7 @@ public class GlobalExceptionHandler {
     /** BNB API caída u otro error inesperado → 503 con mensaje legible */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntime(RuntimeException ex) {
+        ex.printStackTrace(); // Log trace to stdout/stderr
         return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ErrorResponse(HttpStatus.SERVICE_UNAVAILABLE.value(),

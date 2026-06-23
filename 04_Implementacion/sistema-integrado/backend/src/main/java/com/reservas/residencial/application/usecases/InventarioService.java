@@ -110,6 +110,14 @@ public class InventarioService {
         IncidenciaMantenimiento incidencia = incidenciaRepository.findById(incidenciaId)
                 .orElseThrow(() -> new IllegalArgumentException("Incidencia no encontrada: " + incidenciaId));
 
+        // Forzar la inicialización de proxies lazy antes de que la sesión se limpie por updateEstadoActual
+        if (incidencia.getHabitacion() != null) {
+            incidencia.getHabitacion().getNumero();
+        }
+        if (incidencia.getItem() != null) {
+            incidencia.getItem().getNombre();
+        }
+
         incidencia.resolver(costoReparacion, recepcionista);
         incidencia = incidenciaRepository.save(incidencia);
 
